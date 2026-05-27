@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d0d1a">
+<title>EduPoints</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d1a;--bg2:#13132a;--card:#1a1a35;--card2:#1f1f3d;--border:#2a2a50;
+  --green:#00d4aa;--green2:#00ff88;--blue:#4a9eff;--red:#ff4757;
+  --gold:#ffd700;--silver:#c0c0c0;--bronze:#cd7f32;
+  --text:#e8e8f0;--text2:#8888aa;--nav:64px;--head:56px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+/* HEADER */
+#hdr{height:var(--head);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;flex-shrink:0}
+.logo{font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{font-size:11px;color:var(--text2);margin-left:2px}
+/* CONTENT */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:var(--nav);-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+/* NAV */
+#nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:100;padding-bottom:env(safe-area-inset-bottom,0)}
+.nb{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:11px;transition:color .2s;min-width:58px;-webkit-tap-highlight-color:transparent}
+.nb.on{color:var(--green)}.nb .ic{font-size:22px}
+/* VIEWS */
+.view{display:none;padding:12px;min-height:calc(100vh - var(--head) - var(--nav))}.view.on{display:block}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:44px}
+.btn:active{transform:scale(.95)}
+.btn-p{background:linear-gradient(135deg,var(--green),var(--blue));color:#000}
+.btn-g{background:var(--green);color:#000}
+.btn-b{background:var(--blue);color:#fff}
+.btn-r{background:var(--red);color:#fff}
+.btn-gh{background:var(--card2);border:1px solid var(--border);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:13px;min-height:36px}
+.btn-lg{padding:14px 24px;font-size:16px;min-height:52px}
+.btn-bl{width:100%}
+/* INPUTS */
+.inp{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--green)}
+.sel{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;outline:none;appearance:none}
+.sel:focus{border-color:var(--green)}
+.fg{margin-bottom:14px}.fl{display:block;margin-bottom:6px;font-size:13px;color:var(--text2);font-weight:500}
+/* MODALS */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.ov.on{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.ov.on .modal{transform:translateY(0)}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mt{font-size:18px;font-weight:700}
+.mc{background:var(--card2);border:none;color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+/* FILTER CHIPS */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip.on{background:var(--green);border-color:var(--green);color:#000;font-weight:600}
+/* RANKING */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;padding:16px 0 24px}
+.pi{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.pi .med{font-size:24px}
+.pi .pn{font-size:13px;font-weight:600;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi .pp{font-size:20px;font-weight:900;color:var(--green)}
+.pi .pc{font-size:11px;color:var(--text2)}
+.pb{border-radius:8px 8px 0 0;width:80px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#000}
+.p1 .pb{height:80px;background:var(--gold)}
+.p2 .pb{height:60px;background:var(--silver)}
+.p3 .pb{height:45px;background:var(--bronze)}
+.ri{display:flex;align-items:center;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;gap:12px;cursor:pointer}
+.ri:active{background:var(--card2)}
+.rn{font-size:14px;font-weight:700;color:var(--text2);min-width:28px}
+.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#000;flex-shrink:0}
+.av2{background:linear-gradient(135deg,var(--blue),#a855f7)}
+.rinfo{flex:1;min-width:0}
+.rname{font-weight:600;font-size:15px}
+.rcls{font-size:12px;color:var(--text2)}
+.rpts{font-size:20px;font-weight:900;color:var(--green)}
+/* STUDENTS */
+.si{display:flex;flex-direction:column;align-items:stretch;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
+.si-row{display:flex;align-items:center;gap:10px;cursor:pointer}
+.sname{font-weight:600;font-size:14px}
+.scls{font-size:12px;color:var(--text2)}
+.spts{font-size:20px;font-weight:900;color:var(--green);flex-shrink:0}
+.sx{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.qps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.qp{padding:8px 12px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:transform .1s;min-height:40px;min-width:50px}
+.qp:active{transform:scale(.9)}
+.qpa{background:var(--green);color:#000}
+.qpr{background:var(--red);color:#fff}
+.qpc{background:var(--card2);border:1px solid var(--border);color:var(--text)}
+/* SCANNER */
+#reader{width:100%;max-width:400px;margin:0 auto;border-radius:12px;overflow:hidden;border:2px solid var(--border)}
+.ss{text-align:center;padding:11px;border-radius:10px;font-size:14px;font-weight:600;margin-bottom:12px}
+.ss.act{background:rgba(0,212,170,.15);color:var(--green);border:1px solid var(--green)}
+.ss.off{background:var(--card);color:var(--text2);border:1px solid var(--border)}
+.sr{text-align:center;padding:20px;background:var(--card);border-radius:12px;margin:12px 0;border:1px solid var(--green)}
+.scan-cfg{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:12px}
+.scan-cfg label{flex:1;font-size:14px}
+.scan-cfg .inp{width:80px;text-align:center;padding:8px}
+/* HISTORY */
+.hi{display:flex;align-items:center;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;gap:10px}
+.hpts{font-size:18px;font-weight:900;min-width:52px;text-align:right}
+.hpts.pos{color:var(--green)}.hpts.neg{color:var(--red)}
+.hinfo{flex:1;min-width:0}
+.hname{font-size:14px;font-weight:600}
+.hmeta{font-size:11px;color:var(--text2)}
+/* SETTINGS */
+.ssi{display:flex;align-items:center;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;gap:12px;cursor:pointer}
+.ssic{font-size:20px}.ssil{font-size:14px;font-weight:500}.ssid{font-size:12px;color:var(--text2)}
+.stitle{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;margin-top:20px}
+/* CLASS ITEM */
+.cli{display:flex;align-items:center;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;gap:12px}
+.cldot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.clname{flex:1;font-size:15px;font-weight:500}
+.clcnt{font-size:12px;color:var(--text2)}
+/* TOGGLE */
+.tog{width:44px;height:26px;background:var(--border);border-radius:13px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--green)}
+.tog::after{content:'';position:absolute;width:20px;height:20px;background:white;border-radius:50%;top:3px;left:3px;transition:left .2s}
+.tog.on::after{left:21px}
+/* TOAST */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:1000;font-size:28px;font-weight:900;padding:14px 26px;border-radius:14px;pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);color:#000}
+.toast.sh{transform:translate(-50%,-50%) scale(1)}
+.toast.hd{transform:translate(-50%,-100px) scale(.8);opacity:0;transition:all .3s}
+/* QR PRINT */
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.qr-card{background:white;color:black;border-radius:10px;padding:12px;text-align:center}
+.qr-card .qcn{font-size:13px;font-weight:700;margin-top:8px;color:#000}
+.qr-card .qcc{font-size:11px;color:#666}
+/* MISC */
+.es{text-align:center;padding:40px 20px;color:var(--text2)}
+.es .ei{font-size:48px;margin-bottom:12px}
+.es h3{font-size:16px;margin-bottom:8px;color:var(--text)}
+.es p{font-size:13px}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.st{font-size:16px;font-weight:700}
+.fab{position:fixed;bottom:calc(var(--nav) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));border:none;color:#000;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,170,.4);transition:all .2s;z-index:99;font-weight:900}
+.fab:active{transform:scale(.9)}
+.srch{position:relative;margin-bottom:12px}
+.srch .inp{padding-left:38px}
+.srch::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:15px}
+.co{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s}
+.co.on{border-color:white}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.cpts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+@media print{
+  #hdr,#nav,.fab,.no-print{display:none!important}
+  body{background:white;overflow:visible}
+  #app{height:auto}
+  #content{overflow:visible;padding-bottom:0}
+  .view{display:none!important}
+  #view-qp{display:block!important;padding:16px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<header id="hdr">
+  <div>
+    <span class="logo">EduPoints</span>
+    <span class="logo-sub">Pontuação Escolar</span>
+  </div>
+</header>
+
+<main id="content">
+  <!-- RANKING -->
+  <div class="view on" id="view-rk">
+    <div id="cf-rk" class="chips"></div>
+    <div id="podium"></div>
+    <div id="rklist"></div>
+  </div>
+
+  <!-- STUDENTS -->
+  <div class="view" id="view-st">
+    <div class="srch"><input type="text" class="inp" id="ssearch" placeholder="Buscar aluno..." oninput="renderStudents()"></div>
+    <div id="cf-st" class="chips"></div>
+    <div id="stlist"></div>
+  </div>
+
+  <!-- SCANNER -->
+  <div class="view" id="view-sc">
+    <div class="scan-cfg">
+      <label>Pontos por escaneamento</label>
+      <input type="number" class="inp" id="scanpts" value="1" min="1" max="999" onchange="saveScanPts()">
+    </div>
+    <div id="scanst" class="ss off">Câmera desligada</div>
+    <div id="reader"></div>
+    <div id="scanres" style="display:none"></div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-p btn-lg" id="scanbtn" onclick="toggleScan()">📷 Iniciar Scanner</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="view" id="view-hs">
+    <div class="sh">
+      <span class="st">Histórico</span>
+      <button class="btn btn-gh btn-sm" onclick="clearHist()">Limpar</button>
+    </div>
+    <div id="hslist"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="view" id="view-cfg">
+    <div class="stitle" style="margin-top:4px">Turmas</div>
+    <div id="clslist"></div>
+    <button class="btn btn-gh btn-bl" onclick="openAddClass()">+ Adicionar Turma</button>
+
+    <div class="stitle">Dados</div>
+    <div class="ssi" onclick="exportCSV()">
+      <span class="ssic">📊</span>
+      <div style="flex:1"><div class="ssil">Exportar CSV</div><div class="ssid">Baixar dados dos alunos</div></div>
+      <span style="color:var(--text2)">›</span>
+    </div>
+    <div class="ssi" onclick="openQRPrint()">
+      <span class="ssic">🖨️</span>
+      <div style="flex:1"><div class="ssil">Imprimir QR Codes</div><div class="ssid">Gerar folha com todos os QR Codes</div></div>
+      <span style="color:var(--text2)">›</span>
+    </div>
+    <div class="ssi" onclick="resetAllPts()">
+      <span class="ssic">🔄</span>
+      <div style="flex:1"><div class="ssil">Resetar Pontuações</div><div class="ssid">Zerar pontos de todos os alunos</div></div>
+      <span style="color:var(--red)">›</span>
+    </div>
+
+    <div class="stitle">Preferências</div>
+    <div class="ssi" style="cursor:default">
+      <span class="ssic">🔊</span>
+      <div style="flex:1"><div class="ssil">Som ao pontuar</div></div>
+      <div class="tog on" id="stog" onclick="toggleSound()"></div>
+    </div>
+  </div>
+
+  <!-- QR PRINT (hidden, print only) -->
+  <div class="view" id="view-qp" style="display:none">
+    <div id="qpgrid" class="qr-grid"></div>
+  </div>
+</main>
+
+<nav id="nav">
+  <button class="nb on" data-v="rk" onclick="go('rk')"><span class="ic">🏆</span>Ranking</button>
+  <button class="nb" data-v="st" onclick="go('st')"><span class="ic">👥</span>Alunos</button>
+  <button class="nb" data-v="sc" onclick="go('sc')"><span class="ic">📷</span>Scanner</button>
+  <button class="nb" data-v="hs" onclick="go('hs')"><span class="ic">📋</span>Histórico</button>
+  <button class="nb" data-v="cfg" onclick="go('cfg')"><span class="ic">⚙️</span>Config</button>
+</nav>
+
+<button class="fab no-print" id="fab" onclick="openAddStudent()">+</button>
+</div>
+
+<!-- MODAL: ADD/EDIT STUDENT -->
+<div class="ov" id="mov-st">
+  <div class="modal">
+    <div class="mh">
+      <span class="mt" id="mov-st-title">Adicionar Aluno</span>
+      <button class="mc" onclick="closeOv('mov-st')">✕</button>
+    </div>
+    <div class="fg">
+      <label class="fl">Nome do aluno</label>
+      <input type="text" class="inp" id="st-name" placeholder="Ex: João Silva" onkeydown="if(event.key==='Enter')saveStudent()">
+    </div>
+    <div class="fg">
+      <label class="fl">Turma</label>
+      <select class="sel" id="st-cls"></select>
+    </div>
+    <button class="btn btn-p btn-bl btn-lg" onclick="saveStudent()">Salvar</button>
+  </div>
+</div>
+
+<!-- MODAL: ADD CLASS -->
+<div class="ov" id="mov-cls">
+  <div class="modal">
+    <div class="mh">
+      <span class="mt">Nova Turma</span>
+      <button class="mc" onclick="closeOv('mov-cls')">✕</button>
+    </div>
+    <div class="fg">
+      <label class="fl">Nome da turma</label>
+      <input type="text" class="inp" id="cls-name" placeholder="Ex: 7º Ano A" onkeydown="if(event.key==='Enter')saveClass()">
+    </div>
+    <div class="fg">
+      <label class="fl">Cor</label>
+      <div class="color-row" id="colorpick"></div>
+    </div>
+    <button class="btn btn-p btn-bl btn-lg" onclick="saveClass()">Salvar</button>
+  </div>
+</div>
+
+<!-- MODAL: QR CODE -->
+<div class="ov" id="mov-qr">
+  <div class="modal">
+    <div class="mh">
+      <span class="mt">QR Code</span>
+      <button class="mc" onclick="closeOv('mov-qr')">✕</button>
+    </div>
+    <div style="text-align:center;padding:16px 0">
+      <div id="qrdisp" style="display:inline-block;background:white;padding:12px;border-radius:8px"></div>
+      <div id="qrname" style="margin-top:12px;font-size:18px;font-weight:700"></div>
+      <div id="qrcls" style="font-size:13px;color:var(--text2);margin-top:4px"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gh" style="flex:1" onclick="closeOv('mov-qr')">Fechar</button>
+      <button class="btn btn-p" style="flex:1" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: QUICK POINTS -->
+<div class="ov" id="mov-pts">
+  <div class="modal">
+    <div class="mh">
+      <span class="mt">Pontuar: <span id="pts-name" style="color:var(--green)"></span></span>
+      <button class="mc" onclick="closeOv('mov-pts')">✕</button>
+    </div>
+    <div class="cpts-grid">
+      <button class="btn btn-g btn-lg" onclick="doQP(1)">+1</button>
+      <button class="btn btn-g btn-lg" onclick="doQP(2)">+2</button>
+      <button class="btn btn-g btn-lg" onclick="doQP(5)">+5</button>
+      <button class="btn btn-g btn-lg" onclick="doQP(10)">+10</button>
+      <button class="btn btn-r btn-lg" onclick="doQP(-1)">-1</button>
+      <button class="btn btn-r btn-lg" onclick="doQP(-5)">-5</button>
+    </div>
+    <div class="fg">
+      <label class="fl">Valor personalizado</label>
+      <div style="display:flex;gap:8px">
+        <input type="number" class="inp" id="cust-val" placeholder="Ex: 3 ou -3" onkeydown="if(event.key==='Enter')doQPcust()">
+        <button class="btn btn-p" onclick="doQPcust()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ===== STATE =====
+var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true } };
+var curView = 'rk';
+var rkFilter = 'all';
+var stFilter = 'all';
+var expSt = null;
+var qrScanner = null;
+var scanning = false;
+var editStId = null;
+var qrPtsId = null;
+var audioCtx = null;
+var lastScan = { id:'', t:0 };
+var COLORS = ['#00d4aa','#4a9eff','#ff6b6b','#ffd700','#a29bfe','#fd79a8','#fdcb6e','#6c5ce7','#00b894','#e17055'];
+
+// ===== STORAGE =====
+function save() { try { localStorage.setItem('ep3', JSON.stringify(S)); } catch(e){} }
+function load() {
+  try {
+    var d = localStorage.getItem('ep3');
+    if (d) {
+      var p = JSON.parse(d);
+      S = Object.assign(S, p);
+      if (!S.settings) S.settings = { scanPts:1, sound:true };
+    }
+  } catch(e){}
+}
+
+// ===== UTILS =====
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function esc(s) { if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function clsName(id) { if(!id) return ''; var c = S.classes.find(function(x){return x.id===id;}); return c ? c.name : ''; }
+function clsColor(id) { if(!id) return 'var(--green)'; var c = S.classes.find(function(x){return x.id===id;}); return c ? c.color : 'var(--green)'; }
+function initial(name) { return name ? name.charAt(0).toUpperCase() : '?'; }
+
+// ===== NAV =====
+function go(v) {
+  if (v !== 'sc' && scanning) stopScan();
+  curView = v;
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('on');});
+  document.querySelectorAll('.nb').forEach(function(el){el.classList.remove('on');});
+  var ve = document.getElementById('view-'+v);
+  if (ve) ve.classList.add('on');
+  var nb = document.querySelector('.nb[data-v="'+v+'"]');
+  if (nb) nb.classList.add('on');
+  var fab = document.getElementById('fab');
+  fab.style.display = (v==='st'||v==='rk') ? 'flex' : 'none';
+  render(v);
+}
+
+function render(v) {
+  if (v==='rk') renderRk();
+  else if (v==='st') renderSt();
+  else if (v==='hs') renderHs();
+  else if (v==='cfg') renderCfg();
+  else if (v==='sc') renderSc();
+}
+
+// ===== MODAL =====
+function openOv(id) { document.getElementById(id).classList.add('on'); }
+function closeOv(id) { document.getElementById(id).classList.remove('on'); }
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('ov')) e.target.classList.remove('on');
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key==='Escape') document.querySelectorAll('.ov.on').forEach(function(el){el.classList.remove('on');});
+});
+
+// ===== STUDENTS =====
+function openAddStudent() {
+  editStId = null;
+  document.getElementById('mov-st-title').textContent = 'Adicionar Aluno';
+  document.getElementById('st-name').value = '';
+  fillClsSel('');
+  openOv('mov-st');
+  setTimeout(function(){ document.getElementById('st-name').focus(); }, 300);
+}
+
+function openEditSt(id) {
+  var s = S.students.find(function(x){return x.id===id;});
+  if (!s) return;
+  editStId = id;
+  document.getElementById('mov-st-title').textContent = 'Editar Aluno';
+  document.getElementById('st-name').value = s.name;
+  fillClsSel(s.classId);
+  openOv('mov-st');
+}
+
+function fillClsSel(sel) {
+  var el = document.getElementById('st-cls');
+  el.innerHTML = '<option value="">Sem turma</option>';
+  S.classes.forEach(function(c) {
+    var o = document.createElement('option');
+    o.value = c.id; o.textContent = c.name;
+    if (c.id===sel) o.selected = true;
+    el.appendChild(o);
+  });
+}
+
+function saveStudent() {
+  var name = document.getElementById('st-name').value.trim();
+  var classId = document.getElementById('st-cls').value;
+  if (!name) { alert('Digite o nome do aluno'); return; }
+  if (editStId) {
+    var s = S.students.find(function(x){return x.id===editStId;});
+    if (s) { s.name=name; s.classId=classId; }
+  } else {
+    S.students.push({ id:uid(), name:name, classId:classId, points:0, createdAt:Date.now() });
+  }
+  save(); closeOv('mov-st'); render(curView);
+}
+
+function delSt(id) {
+  if (!confirm('Excluir este aluno?')) return;
+  S.students = S.students.filter(function(x){return x.id!==id;});
+  S.history = S.history.filter(function(x){return x.studentId!==id;});
+  if (expSt===id) expSt=null;
+  save(); render(curView);
+}
+
+// ===== POINTS =====
+function addPts(id, pts, src) {
+  src = src||'manual';
+  var s = S.students.find(function(x){return x.id===id;});
+  if (!s) return;
+  s.points = Math.max(0, s.points + pts);
+  S.history.unshift({ id:uid(), studentId:id, studentName:s.name, points:pts, source:src, timestamp:Date.now() });
+  if (S.history.length > 500) S.history.length = 500;
+  save();
+  showToast(pts);
+  if (S.settings.sound) playSound(pts>0);
+  render(curView);
+}
+
+function showToast(pts) {
+  var t = document.getElementById('toast');
+  t.textContent = (pts>0?'+':'') + pts + ' pts';
+  t.style.background = pts>0 ? 'var(--green)' : 'var(--red)';
+  t.classList.remove('hd'); t.classList.add('sh');
+  setTimeout(function(){
+    t.classList.remove('sh'); t.classList.add('hd');
+    setTimeout(function(){ t.classList.remove('hd'); }, 350);
+  }, 900);
+}
+
+function playSound(pos) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    var t = audioCtx.currentTime;
+    if (pos) {
+      o.frequency.setValueAtTime(523,t);
+      o.frequency.setValueAtTime(659,t+.08);
+      o.frequency.setValueAtTime(784,t+.16);
+    } else {
+      o.frequency.setValueAtTime(400,t);
+      o.frequency.setValueAtTime(280,t+.12);
+    }
+    g.gain.setValueAtTime(0.18,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+.45);
+    o.start(t); o.stop(t+.45);
+  } catch(e){}
+}
+
+// ===== QUICK POINTS MODAL =====
+function openQP(id) {
+  var s = S.students.find(function(x){return x.id===id;});
+  if (!s) return;
+  qrPtsId = id;
+  document.getElementById('pts-name').textContent = s.name;
+  document.getElementById('cust-val').value = '';
+  openOv('mov-pts');
+}
+
+function doQP(pts) {
+  if (qrPtsId) addPts(qrPtsId, pts);
+  closeOv('mov-pts');
+}
+
+function doQPcust() {
+  var v = parseInt(document.getElementById('cust-val').value);
+  if (isNaN(v)||v===0) { alert('Digite um valor válido'); return; }
+  doQP(v);
+}
+
+// ===== FILTER CHIPS =====
+function renderChips(elId, current, onClickFn) {
+  var el = document.getElementById(elId);
+  var items = [{id:'all',name:'Todos'}].concat(S.classes);
+  el.innerHTML = items.map(function(c) {
+    return '<div class="chip'+(c.id===current?' on':'')+'" onclick="'+onClickFn+'(\''+c.id+'\')">'+esc(c.name)+'</div>';
+  }).join('');
+}
+
+function setRkFilter(v) { rkFilter=v; renderRk(); }
+function setStFilter(v) { stFilter=v; renderSt(); }
+
+// ===== RANKING =====
+function renderRk() {
+  renderChips('cf-rk', rkFilter, 'setRkFilter');
+  var sorted = S.students
+    .filter(function(s){ return rkFilter==='all'||s.classId===rkFilter; })
+    .slice().sort(function(a,b){ return b.points-a.points; });
+
+  var pEl = document.getElementById('podium');
+  var lEl = document.getElementById('rklist');
+
+  if (sorted.length===0) {
+    pEl.innerHTML='';
+    lEl.innerHTML='<div class="es"><div class="ei">🏆</div><h3>Nenhum aluno ainda</h3><p>Toque em + para adicionar o primeiro aluno</p></div>';
+    return;
+  }
+
+  // Podium top 3
+  var top = sorted.slice(0,3);
+  var ord = top.length>=2 ? [top[1],top[0],top[2]].filter(Boolean) : [top[0]];
+  var pos = top.length>=2 ? [2,1,3] : [1];
+  var meds = ['','🥇','🥈','🥉'];
+  pEl.innerHTML = '<div class="podium">' + ord.map(function(s,i){
+    var p = pos[i];
+    var cn = clsName(s.classId);
+    return '<div class="pi p'+p+'" onclick="openQP(\''+s.id+'\')">'
+      +'<div class="med">'+meds[p]+'</div>'
+      +'<div class="pn">'+esc(s.name)+'</div>'
+      +'<div class="pp">'+s.points+'</div>'
+      +(cn?'<div class="pc">'+esc(cn)+'</div>':'')
+      +'<div class="pb">'+p+'</div>'
+      +'</div>';
+  }).join('') + '</div>';
+
+  // List 4th+
+  var rest = sorted.slice(3);
+  if (rest.length===0) { lEl.innerHTML=''; return; }
+  lEl.innerHTML = rest.map(function(s,i){
+    var cn = clsName(s.classId);
+    return '<div class="ri" onclick="openQP(\''+s.id+'\')">'
+      +'<div class="rn">'+(i+4)+'</div>'
+      +'<div class="av av2">'+initial(s.name)+'</div>'
+      +'<div class="rinfo"><div class="rname">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
+      +'<div class="rpts">'+s.points+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ===== STUDENTS =====
+function renderStudents() {
+  renderChips('cf-st', stFilter, 'setStFilter');
+  var q = (document.getElementById('ssearch')||{}).value||'';
+  q = q.toLowerCase();
+  var filtered = S.students.filter(function(s){
+    return (stFilter==='all'||s.classId===stFilter) && (!q||s.name.toLowerCase().includes(q));
+  }).slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+  var el = document.getElementById('stlist');
+  if (filtered.length===0) {
+    el.innerHTML='<div class="es"><div class="ei">👥</div><h3>Nenhum aluno encontrado</h3><p>Toque em + para adicionar</p></div>';
+    return;
+  }
+  el.innerHTML = filtered.map(function(s){
+    var cn = clsName(s.classId);
+    var exp = expSt===s.id;
+    return '<div class="si">'
+      +'<div class="si-row" onclick="toggleExp(\''+s.id+'\')">'
+      +'<div class="av">'+initial(s.name)+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="sname">'+esc(s.name)+'</div>'+(cn?'<div class="scls">'+esc(cn)+'</div>':'')+'</div>'
+      +'<div class="spts">'+s.points+'</div>'
+      +'</div>'
+      +(exp?
+        '<div class="sx">'
+        +'<div class="qps">'
+        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',1);event.stopPropagation()">+1</button>'
+        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',2);event.stopPropagation()">+2</button>'
+        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',5);event.stopPropagation()">+5</button>'
+        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',10);event.stopPropagation()">+10</button>'
+        +'<button class="qp qpr" onclick="addPts(\''+s.id+'\',-1);event.stopPropagation()">-1</button>'
+        +'<button class="qp qpr" onclick="addPts(\''+s.id+'\',-5);event.stopPropagation()">-5</button>'
+        +'<button class="qp qpc" onclick="openQP(\''+s.id+'\');event.stopPropagation()">✏️</button>'
+        +'</div>'
+        +'<div style="display:flex;gap:8px">'
+        +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="showQR(\''+s.id+'\');event.stopPropagation()">📱 QR</button>'
+        +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="openEditSt(\''+s.id+'\');event.stopPropagation()">✏️ Editar</button>'
+        +'<button class="btn btn-r btn-sm" onclick="delSt(\''+s.id+'\');event.stopPropagation()">🗑️</button>'
+        +'</div>'
+        +'</div>'
+      :'')
+      +'</div>';
+  }).join('');
+}
+
+function toggleExp(id) { expSt = expSt===id ? null : id; renderStudents(); }
+
+// ===== HISTORY =====
+function renderHs() {
+  var el = document.getElementById('hslist');
+  if (S.history.length===0) {
+    el.innerHTML='<div class="es"><div class="ei">📋</div><h3>Sem histórico</h3><p>Pontue alunos para ver o registro aqui</p></div>';
+    return;
+  }
+  el.innerHTML = S.history.slice(0,100).map(function(h){
+    var d = new Date(h.timestamp);
+    var ds = d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    var src = h.source==='qr'?'📷 QR Code':'👆 Manual';
+    return '<div class="hi">'
+      +'<div class="hinfo"><div class="hname">'+esc(h.studentName)+'</div><div class="hmeta">'+ds+' · '+src+'</div></div>'
+      +'<div class="hpts '+(h.points>=0?'pos':'neg')+'">'+(h.points>0?'+':'')+h.points+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function clearHist() {
+  if (!confirm('Limpar todo o histórico?')) return;
+  S.history=[]; save(); renderHs();
+}
+
+// ===== SETTINGS =====
+function renderCfg() {
+  var el = document.getElementById('clslist');
+  if (S.classes.length===0) {
+    el.innerHTML='<div style="color:var(--text2);font-size:13px;margin-bottom:10px">Nenhuma turma criada.</div>';
+  } else {
+    el.innerHTML = S.classes.map(function(c){
+      var cnt = S.students.filter(function(s){return s.classId===c.id;}).length;
+      return '<div class="cli">'
+        +'<div class="cldot" style="background:'+c.color+'"></div>'
+        +'<div class="clname">'+esc(c.name)+'</div>'
+        +'<div class="clcnt">'+cnt+' aluno'+(cnt!==1?'s':'')+'</div>'
+        +'<button class="btn btn-gh btn-sm" style="padding:6px 10px" onclick="delCls(\''+c.id+'\')">🗑️</button>'
+        +'</div>';
+    }).join('');
+  }
+  var tog = document.getElementById('stog');
+  if (S.settings.sound) tog.classList.add('on'); else tog.classList.remove('on');
+}
+
+function openAddClass() {
+  document.getElementById('cls-name').value='';
+  var el = document.getElementById('colorpick');
+  el.innerHTML = COLORS.map(function(c,i){
+    return '<div class="co'+(i===0?' on':'')+'" style="background:'+c+'" data-color="'+c+'" onclick="selColor(\''+c+'\')"></div>';
+  }).join('');
+  openOv('mov-cls');
+  setTimeout(function(){ document.getElementById('cls-name').focus(); },300);
+}
+
+function selColor(c) {
+  document.querySelectorAll('.co').forEach(function(el){ el.classList.toggle('on',el.dataset.color===c); });
+}
+
+function getSelColor() {
+  var el = document.querySelector('.co.on');
+  return el ? el.dataset.color : COLORS[0];
+}
+
+function saveClass() {
+  var name = document.getElementById('cls-name').value.trim();
+  if (!name) { alert('Digite o nome da turma'); return; }
+  S.classes.push({ id:uid(), name:name, color:getSelColor() });
+  save(); closeOv('mov-cls'); renderCfg();
+}
+
+function delCls(id) {
+  if (!confirm('Excluir turma? Os alunos não serão removidos.')) return;
+  S.classes = S.classes.filter(function(c){return c.id!==id;});
+  S.students.forEach(function(s){ if(s.classId===id) s.classId=''; });
+  save(); renderCfg();
+}
+
+function toggleSound() {
+  S.settings.sound = !S.settings.sound;
+  save();
+  var tog = document.getElementById('stog');
+  tog.classList.toggle('on', S.settings.sound);
+}
+
+function resetAllPts() {
+  if (!confirm('Zerar pontos de TODOS os alunos? Ação irreversível.')) return;
+  S.students.forEach(function(s){ s.points=0; });
+  save(); render(curView);
+  alert('Pontuações zeradas!');
+}
+
+// ===== SCANNER =====
+function renderSc() {
+  document.getElementById('scanpts').value = S.settings.scanPts||1;
+}
+
+function saveScanPts() {
+  var v = parseInt(document.getElementById('scanpts').value);
+  if (!isNaN(v)&&v>0) { S.settings.scanPts=v; save(); }
+}
+
+function toggleScan() {
+  if (scanning) stopScan(); else startScan();
+}
+
+function startScan() {
+  var btn = document.getElementById('scanbtn');
+  var st = document.getElementById('scanst');
+  if (!qrScanner) qrScanner = new Html5Qrcode('reader');
+  btn.textContent = '⏹️ Parar Scanner';
+  st.textContent = 'Iniciando câmera...';
+  st.className = 'ss act';
+  qrScanner.start(
+    {facingMode:'environment'},
+    {fps:10, qrbox:{width:250,height:250}, aspectRatio:1.0},
+    function(text){ handleScan(text); },
+    function(){}
+  ).then(function(){
+    scanning=true;
+    st.textContent='📷 Scanner ativo — aproxime o QR Code';
+  }).catch(function(e){
+    st.textContent='❌ Erro ao acessar câmera. Verifique as permissões.';
+    st.className='ss off';
+    btn.textContent='📷 Iniciar Scanner';
+  });
+}
+
+function stopScan() {
+  if (qrScanner && scanning) {
+    qrScanner.stop().then(function(){
+      scanning=false;
+      var btn=document.getElementById('scanbtn');
+      var st=document.getElementById('scanst');
+      if(btn) btn.textContent='📷 Iniciar Scanner';
+      if(st){st.textContent='Câmera desligada';st.className='ss off';}
+    }).catch(function(){ scanning=false; });
+  }
+}
+
+function handleScan(text) {
+  var now = Date.now();
+  if (text===lastScan.id && now-lastScan.t<3000) return;
+  lastScan={id:text, t:now};
+  var pfx = 'EDUPOINTS:';
+  if (!text.startsWith(pfx)) { showScanRes(null,'QR Code não reconhecido',false); return; }
+  var id = text.slice(pfx.length);
+  var s = S.students.find(function(x){return x.id===id;});
+  if (!s) { showScanRes(null,'Aluno não encontrado',false); return; }
+  var pts = S.settings.scanPts||1;
+  addPts(s.id, pts, 'qr');
+  showScanRes(s, '+'+pts+' ponto'+(pts!==1?'s':'')+'!', true);
+}
+
+function showScanRes(s, msg, ok) {
+  var el = document.getElementById('scanres');
+  el.style.display='block';
+  el.style.borderColor = ok?'var(--green)':'var(--red)';
+  if (s) {
+    var cn=clsName(s.classId);
+    el.innerHTML='<div style="font-size:40px;margin-bottom:8px">✅</div>'
+      +'<div style="font-size:24px;font-weight:900;color:var(--green)">'+esc(s.name)+'</div>'
+      +(cn?'<div style="font-size:13px;color:var(--text2);margin:4px 0">'+esc(cn)+'</div>':'')
+      +'<div style="font-size:16px;color:var(--green);margin-top:6px">'+esc(msg)+'</div>'
+      +'<div style="font-size:32px;font-weight:900;color:var(--green);margin-top:8px">'+s.points+' pts</div>';
+  } else {
+    el.innerHTML='<div style="font-size:40px;margin-bottom:8px">❌</div>'
+      +'<div style="font-size:16px;color:var(--red)">'+esc(msg)+'</div>';
+  }
+  setTimeout(function(){ if(el) el.style.display='none'; },3000);
+}
+
+// ===== QR CODE =====
+function showQR(id) {
+  var s = S.students.find(function(x){return x.id===id;});
+  if (!s) return;
+  var c = document.getElementById('qrdisp');
+  c.innerHTML='';
+  document.getElementById('qrname').textContent=s.name;
+  document.getElementById('qrcls').textContent=clsName(s.classId)||'';
+  openOv('mov-qr');
+  setTimeout(function(){
+    try {
+      new QRCode(c,{text:'EDUPOINTS:'+s.id,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+    } catch(e){ c.textContent='Erro ao gerar QR Code'; }
+  },150);
+}
+
+function openQRPrint() {
+  var grid = document.getElementById('qpgrid');
+  var pv = document.getElementById('view-qp');
+  pv.style.display='block';
+
+  if (S.students.length===0) { alert('Nenhum aluno cadastrado.'); return; }
+
+  grid.innerHTML = S.students.map(function(s){
+    return '<div class="qr-card" id="qpc-'+s.id+'">'
+      +'<div id="qpi-'+s.id+'"></div>'
+      +'<div class="qcn">'+esc(s.name)+'</div>'
+      +'<div class="qcc">'+esc(clsName(s.classId))+'</div>'
+      +'</div>';
+  }).join('');
+
+  var i=0;
+  function genNext(){
+    if (i>=S.students.length) { setTimeout(function(){window.print();},200); return; }
+    var s=S.students[i++];
+    try{ new QRCode(document.getElementById('qpi-'+s.id),{text:'EDUPOINTS:'+s.id,width:130,height:130,colorDark:'#000000',colorLight:'#ffffff'}); }catch(e){}
+    setTimeout(genNext,30);
+  }
+  genNext();
+}
+
+// ===== CSV =====
+function exportCSV() {
+  var rows = [['Nome','Turma','Pontos']].concat(
+    S.students.slice().sort(function(a,b){return b.points-a.points;}).map(function(s){
+      return ['"'+s.name.replace(/"/g,'""')+'"', '"'+(clsName(s.classId)||'').replace(/"/g,'""')+'"', s.points];
+    })
+  );
+  var csv = '﻿' + rows.map(function(r){return r.join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href=url; a.download='edupoints_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ===== SEED DATA =====
+function seedData() {
+  var clsId = uid();
+  S.classes.push({ id: clsId, name: '6º Ano', color: '#4a9eff' });
+  var alunos = [
+    { name: 'ANA LUIZA ROMÃO DA SILVA',           points: 1 },
+    { name: 'ARTHUR OLIVEIRA ANJOS',               points: 5 },
+    { name: 'BERNARDO CALISTA DE JESUS VALENTE',   points: 5 },
+    { name: 'BERNARDO LARANJEIRA SILVA',           points: 4 },
+    { name: 'DAVI RODRIGUES CAGLIARI DE DEUS',     points: 2 },
+    { name: 'EDUARDO SANCHES RIBEIRO',             points: 6 },
+    { name: 'FELIPE TEIXEIRA DOS SANTOS',          points: 3 },
+    { name: 'GABRIELLA OLIVEIRA PINTOR DE BARROS', points: 0 },
+    { name: 'LEONARDO GOMES DOS SANTOS',           points: 5 },
+    { name: 'LUARA MAGALHAES DE OLIVEIRA',         points: 1 },
+    { name: 'MAITÊ NASCIMENTO DE MACÊDO',          points: 5 },
+    { name: 'MANUELA NICOLUCCI ROCHA',             points: 6 },
+    { name: 'MARCELA CUNHA RANDI',                 points: 5 },
+    { name: 'MARIA EDUARDA MOREYRA NASCIMENTO',    points: 6 },
+    { name: 'MARIA LUIZA SILVA ROCHA',             points: 4 },
+    { name: 'MATHEUS HENRIQUE BARRETO SANTANA',    points: 1 },
+    { name: 'MIGUEL ALVES DE SOUZA COSTA',         points: 1 },
+    { name: 'MIGUEL DOS SANTOS SOUZA',             points: 3 },
+    { name: 'NICOLAS MARTINS GUERRA',              points: 3 },
+    { name: 'PEDRO LELLIS LEITE DA CUNHA ROCHA',   points: 2 },
+    { name: 'RICARDO NASCIMENTO OLIVEIRA',         points: 1 },
+    { name: 'SAMUEL VICTOR HUGO CARVALHO MARTINS', points: 3 },
+    { name: 'YAN LUCCA MACHADO DOS SANTOS INÁCIO', points: 2 },
+    { name: 'YASMIN SOUZA FELIX DA SILVA',         points: 5 }
+  ];
+  alunos.forEach(function(a) {
+    S.students.push({ id: uid(), name: a.name, classId: clsId, points: a.points, createdAt: Date.now() });
+  });
+  S.settings.seedVersion = 2;
+  save();
+}
+
+// ===== INIT =====
+load();
+if (!S.settings.seedVersion || S.settings.seedVersion < 2) {
+  S.classes = []; S.students = []; S.history = [];
+  seedData();
+}
+document.getElementById('scanpts').value = S.settings.scanPts||1;
+go('rk');
+</script>
+</body>
+</html>
