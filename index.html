@@ -230,6 +230,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div id="clslist"></div>
     <button class="btn btn-gh btn-bl" onclick="openAddClass()">+ Adicionar Turma</button>
 
+    <div class="stitle">Backup</div>
+    <div class="ssi" onclick="exportBackup()">
+      <span class="ssic">💾</span>
+      <div style="flex:1"><div class="ssil">Exportar Backup</div><div class="ssid">Salva todos os dados em arquivo JSON</div></div>
+      <span style="color:var(--green)">›</span>
+    </div>
+    <div class="ssi" onclick="importBackup()">
+      <span class="ssic">📂</span>
+      <div style="flex:1"><div class="ssil">Importar Backup</div><div class="ssid">Restaura dados de um arquivo JSON</div></div>
+      <span style="color:var(--blue)">›</span>
+    </div>
+
     <div class="stitle">Dados</div>
     <div class="ssi" onclick="exportCSV()">
       <span class="ssic">📊</span>
@@ -920,10 +932,51 @@ function seedData() {
   save();
 }
 
+// ===== BACKUP =====
+function exportBackup() {
+  var json = JSON.stringify(S, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var d = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  a.href = url; a.download = 'edupoints_backup_' + d + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importBackup() {
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (!data.students || !Array.isArray(data.students)) {
+          alert('Arquivo inválido: não é um backup do EduPoints.'); return;
+        }
+        var cnt = data.students.length;
+        if (!confirm('Importar backup com ' + cnt + ' aluno(s)?\n\nATENÇÃO: os dados atuais serão substituídos.')) return;
+        S = data;
+        if (!S.settings) S.settings = { scanPts:1, sound:true };
+        save();
+        go('rk');
+        alert('Backup importado com sucesso!');
+      } catch(err) {
+        alert('Erro ao ler o arquivo. Verifique se é um backup válido.');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 // ===== INIT =====
 load();
-if (!S.settings.seedVersion || S.settings.seedVersion < 2) {
-  S.classes = []; S.students = []; S.history = [];
+// Seed apenas se localStorage estiver completamente vazio (primeira vez)
+if (localStorage.getItem('ep3') === null) {
   seedData();
 }
 document.getElementById('scanpts').value = S.settings.scanPts||1;
