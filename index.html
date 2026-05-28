@@ -174,12 +174,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   #content{overflow:visible;padding-bottom:0}
   .view{display:none!important}
   #view-qp{display:block!important;padding:16px}
+  #qp-header{color:#111!important}
+  #qp-header div{color:#111!important}
 }
 </style>
 </head>
 <body>
 <div id="app">
 <header id="hdr">
+  <img src="logo.png" alt="Logo" style="height:40px;width:auto;object-fit:contain;flex-shrink:0;margin-right:10px">
   <div>
     <span class="logo">EduPoints</span>
     <span class="logo-sub">Pontuação Escolar</span>
@@ -269,6 +272,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
   <!-- QR PRINT (hidden, print only) -->
   <div class="view" id="view-qp" style="display:none">
+    <div id="qp-header" style="text-align:center;padding:16px 0 20px;border-bottom:2px solid #ccc;margin-bottom:20px">
+      <img src="logo.png" alt="Logo" style="height:60px;width:auto;object-fit:contain;display:block;margin:0 auto 10px">
+      <div style="font-size:16px;font-weight:700;color:#111">QR Codes dos Alunos — EduPoints</div>
+    </div>
     <div id="qpgrid" class="qr-grid"></div>
   </div>
 </main>
@@ -827,7 +834,8 @@ function showScanRes(s, msg, ok) {
   el.style.borderColor = ok?'var(--green)':'var(--red)';
   if (s) {
     var cn=clsName(s.classId);
-    el.innerHTML='<div style="font-size:40px;margin-bottom:8px">✅</div>'
+    el.innerHTML='<img src="logo.png" alt="Logo" style="height:32px;width:auto;object-fit:contain;margin-bottom:10px;opacity:.85">'
+      +'<div style="font-size:40px;margin-bottom:8px">✅</div>'
       +'<div style="font-size:24px;font-weight:900;color:var(--green)">'+esc(s.name)+'</div>'
       +(cn?'<div style="font-size:13px;color:var(--text2);margin:4px 0">'+esc(cn)+'</div>':'')
       +'<div style="font-size:16px;color:var(--green);margin-top:6px">'+esc(msg)+'</div>'
