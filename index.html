@@ -182,7 +182,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <body>
 <div id="app">
 <header id="hdr">
-  <img src="logo.png" alt="Logo" style="height:40px;width:auto;object-fit:contain;flex-shrink:0;margin-right:10px">
   <div>
     <span class="logo">EduPoints</span>
     <span class="logo-sub">Pontuação Escolar</span>
@@ -191,10 +190,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 <main id="content">
   <!-- RANKING -->
-  <div class="view on" id="view-rk">
-    <div id="cf-rk" class="chips"></div>
-    <div id="podium"></div>
-    <div id="rklist"></div>
+  <div class="view on" id="view-rk" style="position:relative">
+    <div style="position:fixed;top:var(--head);left:0;right:0;bottom:var(--nav);pointer-events:none;z-index:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
+      <img src="logo.png" alt="" aria-hidden="true" style="width:80%;max-width:420px;height:auto;object-fit:contain;opacity:0.07;user-select:none;-webkit-user-select:none">
+    </div>
+    <div style="position:relative;z-index:1">
+      <div id="cf-rk" class="chips"></div>
+      <div id="podium"></div>
+      <div id="rklist"></div>
+    </div>
   </div>
 
   <!-- STUDENTS -->
@@ -834,8 +838,7 @@ function showScanRes(s, msg, ok) {
   el.style.borderColor = ok?'var(--green)':'var(--red)';
   if (s) {
     var cn=clsName(s.classId);
-    el.innerHTML='<img src="logo.png" alt="Logo" style="height:32px;width:auto;object-fit:contain;margin-bottom:10px;opacity:.85">'
-      +'<div style="font-size:40px;margin-bottom:8px">✅</div>'
+    el.innerHTML='<div style="font-size:40px;margin-bottom:8px">✅</div>'
       +'<div style="font-size:24px;font-weight:900;color:var(--green)">'+esc(s.name)+'</div>'
       +(cn?'<div style="font-size:13px;color:var(--text2);margin:4px 0">'+esc(cn)+'</div>':'')
       +'<div style="font-size:16px;color:var(--green);margin-top:6px">'+esc(msg)+'</div>'
