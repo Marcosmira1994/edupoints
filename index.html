@@ -522,39 +522,43 @@ function loadFromSupabase() {
   });
 }
 
-// loadData: localStorage dá render imediato; Supabase é fonte da verdade
+// loadData: Supabase é sempre a fonte de verdade quando online;
+// localStorage é apenas cache para render imediato e fallback offline
 function loadData() {
-  var lsResult = load();
-  if (lsResult === 'empty') seedData();
+  var lsResult = load(); // popula S com cache local (render imediato via go('rk'))
 
-  if (!navigator.onLine) { setSyncStatus('offline'); return Promise.resolve(); }
+  if (!navigator.onLine) {
+    if (lsResult === 'empty') seedData();
+    setSyncStatus('offline');
+    return Promise.resolve();
+  }
 
   setSyncStatus('syncing');
   return loadFromSupabase()
     .then(function(supa) {
-      var supaHasData  = supa.students.length > 0 || supa.classes.length > 0;
-      var localHasData = S.students.length > 0 || S.classes.length > 0;
-
-      if (S.dirty && localHasData) {
-        // Escritas locais não sincronizadas — empurra para o Supabase
-        return fullSyncToSupabase();
-      } else if (supaHasData) {
-        // Caminho normal: Supabase é fonte da verdade
+      if (supa.students.length > 0 || supa.classes.length > 0) {
+        // Supabase tem dados → sempre sobrescreve o localStorage quando online
         S.classes  = supa.classes;
         S.students = supa.students;
         S.history  = supa.history;
-        S.dirty = false;
+        S.dirty    = false;
         save();
-        render(curView);
         setSyncStatus('idle');
-      } else if (localHasData) {
-        // Supabase vazio (primeira vez ou tabelas recém-criadas) — sobe dados locais
-        return fullSyncToSupabase();
+        render(curView);
       } else {
+        // Supabase vazio: primeira execução ou tabelas recém-criadas
+        if (lsResult === 'empty') seedData();
+        if (S.students.length > 0 || S.classes.length > 0) {
+          return fullSyncToSupabase().then(function() { render(curView); });
+        }
         setSyncStatus('idle');
       }
     })
-    .catch(function() { setSyncStatus('error'); });
+    .catch(function() {
+      // Supabase inacessível: mantém o localStorage como fallback
+      if (lsResult === 'empty') seedData();
+      setSyncStatus('error');
+    });
 }
 
 // ===== UTILS =====
