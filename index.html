@@ -189,6 +189,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <span class="logo">EduPoints</span>
     <span class="logo-sub">Pontuação Escolar</span>
   </div>
+  <span id="sync-dot" style="font-size:13px;margin-left:auto;opacity:.8;cursor:default" title="Verificando...">🟡</span>
 </header>
 
 <main id="content">
@@ -277,10 +278,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     </div>
 
     <div class="stitle">Sobre os dados</div>
-    <div style="background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.35);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
-      <strong style="color:var(--blue)">Dados salvos neste navegador</strong><br>
-      O EduPoints usa o armazenamento local do navegador. Os dados ficam apenas <strong>neste dispositivo</strong> e <strong>neste navegador</strong>.<br><br>
-      Para usar em outro dispositivo: <strong>Exportar Backup</strong> aqui e <strong>Importar Backup</strong> no outro aparelho.
+    <div style="background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.35);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+      <strong style="color:var(--green)">Dados sincronizados na nuvem (Supabase)</strong><br>
+      Abra em <strong>qualquer dispositivo</strong> — os dados são os mesmos em todos.<br><br>
+      Offline: alterações ficam salvas localmente e são enviadas automaticamente ao reconectar. Use <strong>Exportar Backup</strong> para cópias de segurança extras.
     </div>
   </div>
 
@@ -392,7 +393,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 <script>
 // ===== STATE =====
-var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true } };
+var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true }, dirty: false };
 var curView = 'rk';
 var rkFilter = 'all';
 var stFilter = 'all';
@@ -436,6 +437,124 @@ function load() {
     try { localStorage.removeItem('ep3'); } catch(e2) {}
     return 'corrupt';
   }
+}
+
+// ===== SUPABASE =====
+var SUPA_URL = 'https://bzjwfwonelhxfphwrnyn.supabase.co/rest/v1';
+var SUPA_KEY = 'sb_publishable_ISja6zEAXGd6iSO_zxFl1g_0CxLGdRh';
+
+function sbReq(method, table, qs, body) {
+  var url = SUPA_URL + '/' + table + (qs ? '?' + qs : '');
+  var h = {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type': 'application/json'
+  };
+  if (method === 'POST') h['Prefer'] = 'resolution=merge-duplicates,return=minimal';
+  var opts = { method: method, headers: h };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  return fetch(url, opts).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error(t); });
+    return r.status === 204 ? null : r.json().catch(function(){ return null; });
+  });
+}
+
+// Mapeadores: estado em memória ↔ colunas Supabase
+function toSbClass(c)   { return { id: c.id, nome: c.name, cor: c.color }; }
+function toSbStudent(s) { return { id: s.id, nome: s.name, turma_id: s.classId || null, pontos: s.points, criado_em: new Date(s.createdAt || Date.now()).toISOString() }; }
+function toSbHistory(h) { return { id: h.id, aluno_id: h.studentId, aluno_nome: h.studentName, pontos: h.points, origem: h.source, criado_em: new Date(h.timestamp).toISOString() }; }
+function fromSbClass(r)   { return { id: r.id, name: r.nome, color: r.cor }; }
+function fromSbStudent(r) { return { id: r.id, name: r.nome, classId: r.turma_id || '', points: r.pontos, createdAt: new Date(r.criado_em).getTime() }; }
+function fromSbHistory(r) { return { id: r.id, studentId: r.aluno_id, studentName: r.aluno_nome, points: r.pontos, source: r.origem, timestamp: new Date(r.criado_em).getTime() }; }
+
+function setSyncStatus(st) {
+  var el = document.getElementById('sync-dot');
+  if (!el) return;
+  var icons  = { idle:'🟢', syncing:'🟡', offline:'🔴', error:'🔴' };
+  var labels = { idle:'Sincronizado', syncing:'Sincronizando...', offline:'Offline — alterações salvas localmente', error:'Erro de sincronização' };
+  el.textContent = icons[st]  || '⚪';
+  el.title       = labels[st] || '';
+}
+
+// Operações individuais por tabela
+function sbSaveStudent(s)     { return sbReq('POST',   'alunos',    '',               toSbStudent(s)); }
+function sbDelStudent(id)     { return sbReq('DELETE', 'alunos',    'id=eq.' + id); }
+function sbUpdatePts(id, pts) { return sbReq('PATCH',  'alunos',    'id=eq.' + id,    { pontos: pts }); }
+function sbSaveHist(h)        { return sbReq('POST',   'historico', '',               toSbHistory(h)); }
+function sbSaveClass(c)       { return sbReq('POST',   'turmas',    '',               toSbClass(c)); }
+function sbDelClass(id)       { return sbReq('DELETE', 'turmas',    'id=eq.' + id); }
+function sbResetAllPts()      { return sbReq('PATCH',  'alunos',    'pontos=gte.0',   { pontos: 0 }); }
+function sbClearHist()        { return sbReq('DELETE', 'historico', 'id=not.is.null'); }
+
+// syncOp: dispara operação Supabase; marca dirty se offline ou se falhar
+function syncOp(fn) {
+  if (!navigator.onLine) { S.dirty = true; save(); setSyncStatus('offline'); return; }
+  setSyncStatus('syncing');
+  fn().then(function() { setSyncStatus('idle'); })
+      .catch(function() { S.dirty = true; save(); setSyncStatus('error'); });
+}
+
+// fullSyncToSupabase: substitui todos os dados do Supabase pelo estado atual do localStorage
+function fullSyncToSupabase() {
+  setSyncStatus('syncing');
+  // Deleta alunos primeiro (ON DELETE CASCADE remove historico), depois turmas
+  return sbReq('DELETE', 'alunos',    'id=not.is.null').catch(function(){})
+    .then(function() { return sbReq('DELETE', 'turmas', 'id=not.is.null').catch(function(){}); })
+    .then(function() { return S.classes.length  ? sbReq('POST', 'turmas',    '', S.classes.map(toSbClass))    : null; })
+    .then(function() { return S.students.length ? sbReq('POST', 'alunos',    '', S.students.map(toSbStudent)) : null; })
+    .then(function() { return S.history.length  ? sbReq('POST', 'historico', '', S.history.map(toSbHistory))  : null; })
+    .then(function() { S.dirty = false; save(); setSyncStatus('idle'); })
+    .catch(function() { S.dirty = true; save(); setSyncStatus('error'); });
+}
+
+// loadFromSupabase: busca todas as tabelas e retorna objetos mapeados
+function loadFromSupabase() {
+  return Promise.all([
+    sbReq('GET', 'turmas',    'select=*&order=nome.asc'),
+    sbReq('GET', 'alunos',    'select=*&order=nome.asc'),
+    sbReq('GET', 'historico', 'select=*&order=criado_em.desc&limit=500')
+  ]).then(function(res) {
+    return {
+      classes:  (res[0] || []).map(fromSbClass),
+      students: (res[1] || []).map(fromSbStudent),
+      history:  (res[2] || []).map(fromSbHistory)
+    };
+  });
+}
+
+// loadData: localStorage dá render imediato; Supabase é fonte da verdade
+function loadData() {
+  var lsResult = load();
+  if (lsResult === 'empty') seedData();
+
+  if (!navigator.onLine) { setSyncStatus('offline'); return Promise.resolve(); }
+
+  setSyncStatus('syncing');
+  return loadFromSupabase()
+    .then(function(supa) {
+      var supaHasData  = supa.students.length > 0 || supa.classes.length > 0;
+      var localHasData = S.students.length > 0 || S.classes.length > 0;
+
+      if (S.dirty && localHasData) {
+        // Escritas locais não sincronizadas — empurra para o Supabase
+        return fullSyncToSupabase();
+      } else if (supaHasData) {
+        // Caminho normal: Supabase é fonte da verdade
+        S.classes  = supa.classes;
+        S.students = supa.students;
+        S.history  = supa.history;
+        S.dirty = false;
+        save();
+        render(curView);
+        setSyncStatus('idle');
+      } else if (localHasData) {
+        // Supabase vazio (primeira vez ou tabelas recém-criadas) — sobe dados locais
+        return fullSyncToSupabase();
+      } else {
+        setSyncStatus('idle');
+      }
+    })
+    .catch(function() { setSyncStatus('error'); });
 }
 
 // ===== UTILS =====
@@ -513,13 +632,16 @@ function saveStudent() {
   var name = document.getElementById('st-name').value.trim();
   var classId = document.getElementById('st-cls').value;
   if (!name) { alert('Digite o nome do aluno'); return; }
+  var student;
   if (editStId) {
-    var s = S.students.find(function(x){return x.id===editStId;});
-    if (s) { s.name=name; s.classId=classId; }
+    student = S.students.find(function(x){return x.id===editStId;});
+    if (student) { student.name=name; student.classId=classId; }
   } else {
-    S.students.push({ id:uid(), name:name, classId:classId, points:0, createdAt:Date.now() });
+    student = { id:uid(), name:name, classId:classId, points:0, createdAt:Date.now() };
+    S.students.push(student);
   }
   save(); closeOv('mov-st'); render(curView);
+  if (student) syncOp(function() { return sbSaveStudent(student); });
 }
 
 function delSt(id) {
@@ -528,6 +650,7 @@ function delSt(id) {
   S.history = S.history.filter(function(x){return x.studentId!==id;});
   if (expSt===id) expSt=null;
   save(); render(curView);
+  syncOp(function() { return sbDelStudent(id); });
 }
 
 // ===== POINTS =====
@@ -536,12 +659,15 @@ function addPts(id, pts, src) {
   var s = S.students.find(function(x){return x.id===id;});
   if (!s) return;
   s.points = Math.max(0, s.points + pts);
-  S.history.unshift({ id:uid(), studentId:id, studentName:s.name, points:pts, source:src, timestamp:Date.now() });
+  var h = { id:uid(), studentId:id, studentName:s.name, points:pts, source:src, timestamp:Date.now() };
+  S.history.unshift(h);
   if (S.history.length > 500) S.history.length = 500;
   save();
   showToast(pts);
   if (S.settings.sound) playSound(pts>0);
   render(curView);
+  var newPts = s.points;
+  syncOp(function() { return Promise.all([sbUpdatePts(id, newPts), sbSaveHist(h)]); });
 }
 
 function showToast(pts) {
@@ -731,6 +857,7 @@ function renderHs() {
 function clearHist() {
   if (!confirm('Limpar todo o histórico?')) return;
   S.history=[]; save(); renderHs();
+  syncOp(function() { return sbClearHist(); });
 }
 
 // ===== SETTINGS =====
@@ -775,8 +902,10 @@ function getSelColor() {
 function saveClass() {
   var name = document.getElementById('cls-name').value.trim();
   if (!name) { alert('Digite o nome da turma'); return; }
-  S.classes.push({ id:uid(), name:name, color:getSelColor() });
+  var c = { id:uid(), name:name, color:getSelColor() };
+  S.classes.push(c);
   save(); closeOv('mov-cls'); renderCfg();
+  syncOp(function() { return sbSaveClass(c); });
 }
 
 function delCls(id) {
@@ -784,6 +913,7 @@ function delCls(id) {
   S.classes = S.classes.filter(function(c){return c.id!==id;});
   S.students.forEach(function(s){ if(s.classId===id) s.classId=''; });
   save(); renderCfg();
+  syncOp(function() { return sbDelClass(id); });
 }
 
 function toggleSound() {
@@ -798,6 +928,7 @@ function resetAllPts() {
   S.students.forEach(function(s){ s.points=0; });
   save(); render(curView);
   alert('Pontuações zeradas!');
+  syncOp(function() { return sbResetAllPts(); });
 }
 
 // ===== SCANNER =====
@@ -1002,9 +1133,12 @@ function importBackup() {
         if (!confirm('Importar backup com ' + cnt + ' aluno(s)?\n\nATENÇÃO: os dados atuais serão substituídos.')) return;
         S = data;
         if (!S.settings) S.settings = { scanPts:1, sound:true };
+        S.dirty = false;
         save();
         go('rk');
         alert('Backup importado com sucesso!');
+        if (navigator.onLine) fullSyncToSupabase();
+        else { S.dirty = true; save(); setSyncStatus('offline'); }
       } catch(err) {
         alert('Erro ao ler o arquivo. Verifique se é um backup válido.');
       }
@@ -1016,14 +1150,12 @@ function importBackup() {
 
 // ===== INIT =====
 (function() {
-  // Desregistra service workers antigos que poderiam servir HTML/JS em cache no GitHub Pages
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(regs) {
       regs.forEach(function(r) { r.unregister(); });
     });
   }
 
-  // Verifica disponibilidade do localStorage (falha em modo privado/Safari ITP)
   var lsOk = (function() {
     try { localStorage.setItem('__ep_test__', '1'); localStorage.removeItem('__ep_test__'); return true; }
     catch(e) { return false; }
@@ -1032,11 +1164,13 @@ function importBackup() {
     alert('Aviso: o armazenamento local nao esta disponivel neste navegador.\nOs dados NAO serao salvos. Desative o modo privado ou use outro navegador.');
   }
 
-  var loadResult = load();
-  // Seed somente na primeira execucao real (localStorage nunca teve a chave)
-  if (loadResult === 'empty') {
-    seedData();
-  }
+  window.addEventListener('online',  function() {
+    if (S.dirty) fullSyncToSupabase(); else setSyncStatus('idle');
+  });
+  window.addEventListener('offline', function() { setSyncStatus('offline'); });
+
+  // Render imediato com localStorage; Supabase atualiza em background
+  loadData();
   document.getElementById('scanpts').value = S.settings.scanPts || 1;
   go('rk');
 })();
