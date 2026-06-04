@@ -6,6 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0d1a">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>EduPoints</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -272,6 +275,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div style="flex:1"><div class="ssil">Som ao pontuar</div></div>
       <div class="tog on" id="stog" onclick="toggleSound()"></div>
     </div>
+
+    <div class="stitle">Sobre os dados</div>
+    <div style="background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.35);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+      <strong style="color:var(--blue)">Dados salvos neste navegador</strong><br>
+      O EduPoints usa o armazenamento local do navegador. Os dados ficam apenas <strong>neste dispositivo</strong> e <strong>neste navegador</strong>.<br><br>
+      Para usar em outro dispositivo: <strong>Exportar Backup</strong> aqui e <strong>Importar Backup</strong> no outro aparelho.
+    </div>
   </div>
 
   <!-- QR PRINT (hidden, print only) -->
@@ -396,16 +406,36 @@ var lastScan = { id:'', t:0 };
 var COLORS = ['#00d4aa','#4a9eff','#ff6b6b','#ffd700','#a29bfe','#fd79a8','#fdcb6e','#6c5ce7','#00b894','#e17055'];
 
 // ===== STORAGE =====
-function save() { try { localStorage.setItem('ep3', JSON.stringify(S)); } catch(e){} }
+function save() {
+  try {
+    localStorage.setItem('ep3', JSON.stringify(S));
+  } catch(e) {
+    if (e && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+      alert('Armazenamento do navegador cheio!\nExporte um backup e limpe o historico para liberar espaco.');
+    }
+  }
+}
+// Retorna: 'ok' | 'empty' | 'invalid' | 'corrupt'
 function load() {
   try {
     var d = localStorage.getItem('ep3');
-    if (d) {
-      var p = JSON.parse(d);
-      S = Object.assign(S, p);
-      if (!S.settings) S.settings = { scanPts:1, sound:true };
+    if (d === null) return 'empty';
+    var p = JSON.parse(d);
+    if (p && Array.isArray(p.students)) {
+      S.classes  = Array.isArray(p.classes)  ? p.classes  : [];
+      S.students = p.students;
+      S.history  = Array.isArray(p.history)  ? p.history  : [];
+      // Merge explícito garante que chaves adicionadas depois (ex: sound) sempre existam
+      S.settings = Object.assign({ scanPts:1, sound:true }, p.settings || {});
+      return 'ok';
     }
-  } catch(e){}
+    return 'invalid';
+  } catch(e) {
+    // JSON corrompido: faz backup da string bruta e limpa a chave
+    try { localStorage.setItem('ep3_backup', localStorage.getItem('ep3')); } catch(e2) {}
+    try { localStorage.removeItem('ep3'); } catch(e2) {}
+    return 'corrupt';
+  }
 }
 
 // ===== UTILS =====
@@ -985,13 +1015,31 @@ function importBackup() {
 }
 
 // ===== INIT =====
-load();
-// Seed apenas se localStorage estiver completamente vazio (primeira vez)
-if (localStorage.getItem('ep3') === null) {
-  seedData();
-}
-document.getElementById('scanpts').value = S.settings.scanPts||1;
-go('rk');
+(function() {
+  // Desregistra service workers antigos que poderiam servir HTML/JS em cache no GitHub Pages
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(r) { r.unregister(); });
+    });
+  }
+
+  // Verifica disponibilidade do localStorage (falha em modo privado/Safari ITP)
+  var lsOk = (function() {
+    try { localStorage.setItem('__ep_test__', '1'); localStorage.removeItem('__ep_test__'); return true; }
+    catch(e) { return false; }
+  })();
+  if (!lsOk) {
+    alert('Aviso: o armazenamento local nao esta disponivel neste navegador.\nOs dados NAO serao salvos. Desative o modo privado ou use outro navegador.');
+  }
+
+  var loadResult = load();
+  // Seed somente na primeira execucao real (localStorage nunca teve a chave)
+  if (loadResult === 'empty') {
+    seedData();
+  }
+  document.getElementById('scanpts').value = S.settings.scanPts || 1;
+  go('rk');
+})();
 </script>
 </body>
 </html>
