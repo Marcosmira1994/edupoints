@@ -1383,7 +1383,16 @@ function renderCfgMeta() {
     +   '<input type="number" class="inp" id="meta-pts-input" placeholder="Ex: 180" min="1" value="'+(metaAtiva?metaAtiva.meta_pontos:180)+'"></div>'
     + '<div class="fg"><label class="fl">Recompensa</label>'
     +   '<input type="text" class="inp" id="meta-recompensa-input" placeholder="Ex: Aula de jogos, Sessão de filmes..." value="'+esc(metaAtiva?metaAtiva.recompensa||'':'')+'"></div>'
-    + '<button class="btn btn-p btn-bl" onclick="saveMeta()" style="margin-bottom:16px">💾 Salvar Meta</button>';
+    + '<button class="btn btn-p btn-bl" onclick="saveMeta()" style="margin-bottom:8px">💾 Salvar Meta</button>'
+    + (metaAtiva ? '<button class="btn btn-r btn-bl" onclick="deleteMeta()" style="margin-bottom:16px">🗑️ Excluir Meta</button>' : '');
+}
+
+function deleteMeta() {
+  if (!metaAtiva) return;
+  if (!confirm('Tem certeza que deseja excluir a meta atual?')) return;
+  sbReq('DELETE', 'metas', 'id=eq.' + metaAtiva.id)
+    .then(function() { metaAtiva = null; renderMeta(); renderCfgMeta(); })
+    .catch(function() { alert('Erro ao excluir a meta.'); });
 }
 
 function saveMeta() {
