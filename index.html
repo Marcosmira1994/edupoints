@@ -67,6 +67,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 /* RANKING — PODIUM */
 @keyframes podiumIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 @keyframes crownPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes barPulse{0%,100%{opacity:1}50%{opacity:.55}}
 .podium-wrap{padding:8px 4px 0;animation:podiumIn .5s ease-out}
 .podium-stage{display:flex;align-items:flex-end;justify-content:center;gap:4px;padding:0 4px}
 .podium-player{display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1;max-width:140px;transition:opacity .15s}
@@ -211,6 +212,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     </div>
     <div style="position:relative;z-index:1">
       <div id="cf-rk" class="chips"></div>
+      <div id="meta-bar"></div>
       <div id="podium"></div>
       <div id="rklist"></div>
     </div>
@@ -287,6 +289,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div style="flex:1"><div class="ssil">Som ao pontuar</div></div>
       <div class="tog on" id="stog" onclick="toggleSound()"></div>
     </div>
+
+    <div id="meta-cfg"></div>
 
     <div class="stitle">Sobre os dados</div>
     <div style="background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.35);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
@@ -603,11 +607,11 @@ function onRtHistorico(payload) {
     if (!S.history.find(function(x){ return x.id === h.id; })) {
       S.history.unshift(h);
       if (S.history.length > 500) S.history.length = 500;
-      save(); if (curView === 'hs') renderHs();
+      save(); if (curView === 'hs') renderHs(); renderMeta();
     }
   } else if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
     S.history = S.history.filter(function(h){ return h.id !== payload.old.id; });
-    save(); if (curView === 'hs') renderHs();
+    save(); if (curView === 'hs') renderHs(); renderMeta();
   }
 }
 
@@ -878,6 +882,7 @@ function renderRk() {
       +'<div class="rpts">'+s.points+'</div>'
       +'</div>';
   }).join('');
+  renderMeta();
 }
 
 // ===== STUDENTS =====
@@ -974,6 +979,7 @@ function renderCfg() {
   }
   var tog = document.getElementById('stog');
   if (S.settings.sound) tog.classList.add('on'); else tog.classList.remove('on');
+  renderCfgMeta();
 }
 
 function openAddClass() {
@@ -1245,6 +1251,114 @@ function importBackup() {
   input.click();
 }
 
+// ===== META SEMANAL =====
+var metaAtiva = null;
+
+function getWeekDates() {
+  var now = new Date();
+  var day = now.getDay(); // 0=Dom 1=Seg … 6=Sab
+  var diffMon = day === 0 ? -6 : 1 - day;
+  var mon = new Date(now); mon.setDate(now.getDate() + diffMon);
+  var fri = new Date(mon); fri.setDate(mon.getDate() + 4);
+  var fmt = function(d) {
+    return d.getFullYear() + '-'
+      + String(d.getMonth()+1).padStart(2,'0') + '-'
+      + String(d.getDate()).padStart(2,'0');
+  };
+  return { inicio: fmt(mon), fim: fmt(fri) };
+}
+
+function calcPontosSemanais() {
+  if (!metaAtiva) return 0;
+  var ini = new Date(metaAtiva.semana_inicio + 'T00:00:00');
+  var fim = new Date(metaAtiva.semana_fim    + 'T23:59:59');
+  return S.history
+    .filter(function(h){ return h.points > 0 && new Date(h.timestamp) >= ini && new Date(h.timestamp) <= fim; })
+    .reduce(function(acc, h){ return acc + h.points; }, 0);
+}
+
+function fetchMetaAtiva() {
+  var w = getWeekDates();
+  return sbReq('GET', 'metas',
+    'semana_inicio=eq.' + w.inicio + '&semana_fim=eq.' + w.fim + '&order=criado_em.desc&limit=1'
+  ).then(function(rows){ metaAtiva = rows && rows.length ? rows[0] : null; })
+   .catch(function(){ metaAtiva = null; });
+}
+
+function renderMeta() {
+  var el = document.getElementById('meta-bar');
+  if (!el) return;
+  if (!metaAtiva) {
+    el.innerHTML = '<div style="text-align:center;font-size:12px;color:var(--text2);padding:4px 0 10px">Nenhuma meta definida para esta semana. Configure em ⚙️ Config</div>';
+    return;
+  }
+  var pts  = calcPontosSemanais();
+  var meta = metaAtiva.meta_pontos;
+  var pct  = Math.min(100, meta > 0 ? Math.round(pts / meta * 100) : 0);
+  var cor  = pct >= 100 ? '#00ff88' : pct >= 80 ? 'var(--green)' : pct >= 41 ? 'var(--gold)' : 'var(--red)';
+  var atingida = pct >= 100;
+  var fmtD = function(s){ var d = new Date(s+'T12:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); };
+  el.innerHTML =
+    '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +  '<span style="font-size:14px;font-weight:700">🎯 Meta da Semana</span>'
+    +  '<span style="font-size:11px;color:var(--text2)">'+fmtD(metaAtiva.semana_inicio)+' – '+fmtD(metaAtiva.semana_fim)+'</span>'
+    +'</div>'
+    +'<div style="background:var(--bg);border-radius:8px;height:14px;overflow:hidden;margin-bottom:6px">'
+    +  '<div style="height:100%;width:'+pct+'%;background:'+cor+';border-radius:8px;transition:width .5s ease'+(atingida?';animation:barPulse 1.2s ease infinite':'')+'"></div>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:12px">'
+    +  '<span style="color:var(--text2)">'+pts+' / '+meta+' pontos</span>'
+    +  '<span style="font-weight:700;color:'+cor+'">'+pct+'%</span>'
+    +'</div>'
+    +(atingida?'<div style="margin-top:8px;padding:8px 10px;background:rgba(0,255,136,.12);border:1px solid #00ff88;border-radius:8px;font-size:13px;font-weight:700;color:#00ff88;text-align:center">🏆 Meta atingida! Vocês ganharam: '+esc(metaAtiva.recompensa||'Aula especial')+'!</div>':'')
+    +'</div>';
+}
+
+function renderCfgMeta() {
+  var el = document.getElementById('meta-cfg');
+  if (!el) return;
+  var w = getWeekDates();
+  var fmtD = function(s){ var d = new Date(s+'T12:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); };
+  var ativaHtml = '';
+  if (metaAtiva) {
+    var pts = calcPontosSemanais();
+    var pct = Math.min(100, metaAtiva.meta_pontos > 0 ? Math.round(pts/metaAtiva.meta_pontos*100) : 0);
+    ativaHtml = '<div style="background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px">'
+      +'<div style="font-weight:700;margin-bottom:3px">Meta ativa: '+metaAtiva.meta_pontos+' pts</div>'
+      +'<div style="color:var(--text2)">Progresso: '+pts+' / '+metaAtiva.meta_pontos+' ('+pct+'%)</div>'
+      +'<div style="color:var(--text2)">Recompensa: '+esc(metaAtiva.recompensa||'Aula especial')+'</div>'
+    +'</div>';
+  }
+  el.innerHTML =
+    '<div class="stitle">Meta Semanal</div>'
+    +'<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Semana: '+fmtD(w.inicio)+' – '+fmtD(w.fim)+'</div>'
+    +ativaHtml
+    +'<div class="fg"><label class="fl">Meta de pontos</label>'
+    +  '<input type="number" class="inp" id="meta-pts-input" placeholder="Ex: 180" min="1" value="'+(metaAtiva?metaAtiva.meta_pontos:180)+'"></div>'
+    +'<div class="fg"><label class="fl">Recompensa</label>'
+    +  '<input type="text" class="inp" id="meta-recompensa-input" placeholder="Ex: Aula de jogos, Sessão de filmes..." value="'+esc(metaAtiva?metaAtiva.recompensa||'':'')+'"></div>'
+    +'<button class="btn btn-p btn-bl" onclick="saveMeta()" style="margin-bottom:16px">💾 Salvar Meta da Semana</button>';
+}
+
+function saveMeta() {
+  var ptsEl   = document.getElementById('meta-pts-input');
+  var recoEl  = document.getElementById('meta-recompensa-input');
+  var pts     = parseInt(ptsEl ? ptsEl.value : '');
+  var recomp  = (recoEl ? recoEl.value.trim() : '') || 'Aula especial';
+  if (isNaN(pts) || pts <= 0) { alert('Digite um valor válido para a meta de pontos.'); return; }
+  var w = getWeekDates();
+  sbReq('POST', 'metas', '', {
+    turma: 'all',
+    meta_pontos: pts,
+    semana_inicio: w.inicio,
+    semana_fim: w.fim,
+    recompensa: recomp
+  }).then(function(){ return fetchMetaAtiva(); })
+    .then(function(){ renderMeta(); renderCfgMeta(); alert('Meta salva!'); })
+    .catch(function(){ alert('Erro ao salvar. Verifique as políticas RLS da tabela metas.'); });
+}
+
 // ===== INIT =====
 (function() {
   if ('serviceWorker' in navigator) {
@@ -1275,6 +1389,7 @@ function importBackup() {
         }
       })
       .catch(function() { setStatus('error'); });
+    fetchMetaAtiva().then(renderMeta);
     initRealtime();
   } else {
     setStatus('offline');
