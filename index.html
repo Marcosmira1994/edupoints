@@ -170,6 +170,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .co.on{border-color:white}
 .color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .cpts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.cat-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.cat-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cat-btn:active{opacity:.7}
+.cat-pos{background:var(--green);color:#000}
+.cat-neg{background:var(--red);color:#fff}
+.cat-val{font-size:15px;font-weight:900;margin-left:10px;flex-shrink:0}
+.cat-sep{height:1px;background:var(--border);margin:4px 0}
 @media print{
   #hdr,#nav,.fab,.no-print{display:none!important}
   body{background:white;overflow:visible}
@@ -374,13 +381,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <span class="mt">Pontuar: <span id="pts-name" style="color:var(--green)"></span></span>
       <button class="mc" onclick="closeOv('mov-pts')">✕</button>
     </div>
-    <div class="cpts-grid">
-      <button class="btn btn-g btn-lg" onclick="doQP(1)">+1</button>
-      <button class="btn btn-g btn-lg" onclick="doQP(2)">+2</button>
-      <button class="btn btn-g btn-lg" onclick="doQP(5)">+5</button>
-      <button class="btn btn-g btn-lg" onclick="doQP(10)">+10</button>
-      <button class="btn btn-r btn-lg" onclick="doQP(-1)">-1</button>
-      <button class="btn btn-r btn-lg" onclick="doQP(-5)">-5</button>
+    <div class="cat-list">
+      <button class="cat-btn cat-pos" onclick="selectCat(3,'Tarefa de casa entregue')"><span>Tarefa de casa entregue</span><span class="cat-val">+3</span></button>
+      <button class="cat-btn cat-pos" onclick="selectCat(2,'Participação em aula')"><span>Participação em aula</span><span class="cat-val">+2</span></button>
+      <button class="cat-btn cat-pos" onclick="selectCat(5,'Atividade em sala completa')"><span>Atividade em sala completa</span><span class="cat-val">+5</span></button>
+      <button class="cat-btn cat-pos" onclick="selectCat(10,'Prova/trabalho importante')"><span>Prova/trabalho importante</span><span class="cat-val">+10</span></button>
+      <button class="cat-btn cat-pos" onclick="selectCat(5,'Comportamento exemplar')"><span>Comportamento exemplar</span><span class="cat-val">+5</span></button>
+      <button class="cat-btn cat-pos" onclick="selectCat(2,'Ajudou um colega')"><span>Ajudou um colega</span><span class="cat-val">+2</span></button>
+      <div class="cat-sep"></div>
+      <button class="cat-btn cat-neg" onclick="selectCat(-3,'Tarefa não entregue')"><span>Tarefa não entregue</span><span class="cat-val">-3</span></button>
+      <button class="cat-btn cat-neg" onclick="selectCat(-2,'Falta de material')"><span>Falta de material</span><span class="cat-val">-2</span></button>
+      <button class="cat-btn cat-neg" onclick="selectCat(-5,'Indisciplina leve')"><span>Indisciplina leve</span><span class="cat-val">-5</span></button>
+      <button class="cat-btn cat-neg" onclick="selectCat(-10,'Indisciplina grave')"><span>Indisciplina grave</span><span class="cat-val">-10</span></button>
+      <button class="cat-btn cat-neg" onclick="selectCat(-10,'Desrespeito')"><span>Desrespeito</span><span class="cat-val">-10</span></button>
     </div>
     <div class="fg">
       <label class="fl">Valor personalizado</label>
@@ -793,6 +806,12 @@ function doQPcust() {
   var v = parseInt(document.getElementById('cust-val').value);
   if (isNaN(v)||v===0) { alert('Digite um valor válido'); return; }
   doQP(v);
+}
+
+function selectCat(pts, label) {
+  document.getElementById('cust-val').value = pts;
+  document.getElementById('modal-obs').value = label;
+  document.getElementById('modal-obs').focus();
 }
 
 // ===== FILTER CHIPS =====
