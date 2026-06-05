@@ -389,6 +389,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
         <button class="btn btn-p" onclick="doQPcust()">OK</button>
       </div>
     </div>
+    <textarea id="modal-obs" class="inp" rows="2" placeholder="Observação (opcional)..." style="resize:none;font-size:13px;margin-top:4px;width:100%"></textarea>
   </div>
 </div>
 
@@ -712,13 +713,15 @@ function delSt(id) {
 }
 
 // ===== POINTS =====
-function addPts(id, pts, src) {
+function addPts(id, pts, src, obs) {
   src = src||'manual';
+  if (obs === undefined) {
+    var obsEl = document.getElementById('obs-' + id);
+    obs = obsEl ? obsEl.value.trim() : '';
+  }
   var s = S.students.find(function(x){return x.id===id;});
   if (!s) return;
   s.points = Math.max(0, s.points + pts);
-  var obsEl = document.getElementById('obs-' + id);
-  var obs = obsEl ? obsEl.value.trim() : '';
   var h = { id:uid(), studentId:id, studentName:s.name, points:pts, source:src, timestamp:Date.now(), obs: obs };
   S.history.unshift(h);
   if (S.history.length > 500) S.history.length = 500;
@@ -774,11 +777,15 @@ function openQP(id) {
   qrPtsId = id;
   document.getElementById('pts-name').textContent = s.name;
   document.getElementById('cust-val').value = '';
+  document.getElementById('modal-obs').value = '';
   openOv('mov-pts');
 }
 
 function doQP(pts) {
-  if (qrPtsId) addPts(qrPtsId, pts);
+  if (!qrPtsId) return;
+  var obsEl = document.getElementById('modal-obs');
+  var obs = obsEl ? obsEl.value.trim() : '';
+  addPts(qrPtsId, pts, 'manual', obs);
   closeOv('mov-pts');
 }
 
