@@ -469,10 +469,10 @@ function sbReq(method, table, qs, body) {
 // Mapeadores: estado em memória ↔ colunas Supabase
 function toSbClass(c)   { return { id: c.id, nome: c.name, cor: c.color }; }
 function toSbStudent(s) { return { id: s.id, nome: s.name, turma_id: s.classId || null, pontos: s.points, criado_em: new Date(s.createdAt || Date.now()).toISOString() }; }
-function toSbHistory(h) { return { id: h.id, aluno_id: h.studentId, aluno_nome: h.studentName, pontos: h.points, origem: h.source, criado_em: new Date(h.timestamp).toISOString() }; }
+function toSbHistory(h) { return { id: h.id, aluno_id: h.studentId, aluno_nome: h.studentName, pontos: h.points, origem: h.source, criado_em: new Date(h.timestamp).toISOString(), observacao: h.obs || null }; }
 function fromSbClass(r)   { return { id: r.id, name: r.nome, color: r.cor }; }
 function fromSbStudent(r) { return { id: r.id, name: r.nome, classId: r.turma_id || '', points: r.pontos, createdAt: new Date(r.criado_em).getTime() }; }
-function fromSbHistory(r) { return { id: r.id, studentId: r.aluno_id, studentName: r.aluno_nome, points: r.pontos, source: r.origem, timestamp: new Date(r.criado_em).getTime() }; }
+function fromSbHistory(r) { return { id: r.id, studentId: r.aluno_id, studentName: r.aluno_nome, points: r.pontos, source: r.origem, timestamp: new Date(r.criado_em).getTime(), obs: r.observacao || '' }; }
 
 // --- Badge de status ---
 function setStatus(st) {
@@ -717,7 +717,9 @@ function addPts(id, pts, src) {
   var s = S.students.find(function(x){return x.id===id;});
   if (!s) return;
   s.points = Math.max(0, s.points + pts);
-  var h = { id:uid(), studentId:id, studentName:s.name, points:pts, source:src, timestamp:Date.now() };
+  var obsEl = document.getElementById('obs-' + id);
+  var obs = obsEl ? obsEl.value.trim() : '';
+  var h = { id:uid(), studentId:id, studentName:s.name, points:pts, source:src, timestamp:Date.now(), obs: obs };
   S.history.unshift(h);
   if (S.history.length > 500) S.history.length = 500;
   save();
@@ -886,6 +888,7 @@ function renderStudents() {
         +'<button class="qp qpr" onclick="addPts(\''+s.id+'\',-5);event.stopPropagation()">-5</button>'
         +'<button class="qp qpc" onclick="openQP(\''+s.id+'\');event.stopPropagation()">✏️</button>'
         +'</div>'
+        +'<textarea id="obs-'+s.id+'" class="inp" rows="2" placeholder="Observação (opcional)..." style="font-size:13px;resize:none;margin-bottom:10px" onclick="event.stopPropagation()"></textarea>'
         +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="showQR(\''+s.id+'\');event.stopPropagation()">📱 QR</button>'
         +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="openEditSt(\''+s.id+'\');event.stopPropagation()">✏️ Editar</button>'
@@ -911,7 +914,11 @@ function renderHs() {
     var ds = d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     var src = h.source==='qr'?'📷 QR Code':'👆 Manual';
     return '<div class="hi">'
-      +'<div class="hinfo"><div class="hname">'+esc(h.studentName)+'</div><div class="hmeta">'+ds+' · '+src+'</div></div>'
+      +'<div class="hinfo">'
+        +'<div class="hname">'+esc(h.studentName)+'</div>'
+        +'<div class="hmeta">'+ds+' · '+src+'</div>'
+        +(h.obs ? '<div style="font-size:12px;color:var(--text2);font-style:italic;margin-top:3px">💬 '+esc(h.obs)+'</div>' : '')
+      +'</div>'
       +'<div class="hpts '+(h.points>=0?'pos':'neg')+'">'+(h.points>0?'+':'')+h.points+'</div>'
       +'</div>';
   }).join('');
