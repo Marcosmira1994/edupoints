@@ -189,7 +189,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <span class="logo">EduPoints</span>
     <span class="logo-sub">Pontuação Escolar</span>
   </div>
-  <span id="sync-dot" style="font-size:13px;margin-left:auto;opacity:.8;cursor:default" title="Verificando...">🟡</span>
+  <div id="sb-badge" onclick="openStatusPanel()" style="margin-left:auto;display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;user-select:none;position:relative;-webkit-tap-highlight-color:transparent">
+    <span id="sb-icon" style="font-size:11px">🟡</span>
+    <span id="sb-label" style="font-size:10px;font-weight:700;color:#f0a500">VERIFICANDO</span>
+    <div id="sb-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;min-width:210px;z-index:500;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
+  </div>
 </header>
 
 <main id="content">
@@ -394,7 +398,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // ===== STATE =====
-var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true }, dirty: false };
+var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true } };
 var curView = 'rk';
 var rkFilter = 'all';
 var stFilter = 'all';
@@ -441,24 +445,23 @@ function load() {
 }
 
 // ===== SUPABASE =====
-var SUPA_URL = 'https://bzjwfwonelhxfphwrnyn.supabase.co/rest/v1';
-var SUPA_KEY = 'sb_publishable_ISja6zEAXGd6iSO_zxFl1g_0CxLGdRh';
+var SB_URL  = 'https://bzjwfwonelhxfphwrnyn.supabase.co/rest/v1';
+var SB_KEY  = 'sb_publishable_ISja6zEAXGd6iSO_zxFl1g_0CxLGdRh';
+var sbStatus   = 'offline';
+var sbLastSync = null;
 
 function sbReq(method, table, qs, body) {
-  var url = SUPA_URL + '/' + table + (qs ? '?' + qs : '');
+  var url = SB_URL + '/' + table + (qs ? '?' + qs : '');
   var h = {
-    'apikey': SUPA_KEY,
-    'Authorization': 'Bearer ' + SUPA_KEY,
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
     'Content-Type': 'application/json'
   };
   if (method === 'POST') h['Prefer'] = 'resolution=merge-duplicates,return=minimal';
   var opts = { method: method, headers: h };
   if (body !== undefined) opts.body = JSON.stringify(body);
   return fetch(url, opts).then(function(r) {
-    if (!r.ok) return r.text().then(function(t) {
-      console.error('[EduPoints] sbReq ERRO HTTP ' + r.status + ' — ' + method + ' /' + table + '\n' + t);
-      throw new Error('HTTP ' + r.status + ': ' + t);
-    });
+    if (!r.ok) return r.text().then(function(t) { throw new Error('HTTP ' + r.status + ': ' + t); });
     return r.status === 204 ? null : r.json().catch(function(){ return null; });
   });
 }
@@ -471,87 +474,50 @@ function fromSbClass(r)   { return { id: r.id, name: r.nome, color: r.cor }; }
 function fromSbStudent(r) { return { id: r.id, name: r.nome, classId: r.turma_id || '', points: r.pontos, createdAt: new Date(r.criado_em).getTime() }; }
 function fromSbHistory(r) { return { id: r.id, studentId: r.aluno_id, studentName: r.aluno_nome, points: r.pontos, source: r.origem, timestamp: new Date(r.criado_em).getTime() }; }
 
-function setSyncStatus(st) {
-  var el = document.getElementById('sync-dot');
-  if (!el) return;
-  var icons  = { idle:'🟢', syncing:'🟡', offline:'🔴', error:'🔴' };
-  var labels = { idle:'Sincronizado', syncing:'Sincronizando...', offline:'Offline — alterações salvas localmente', error:'Erro de sincronização' };
-  el.textContent = icons[st]  || '⚪';
-  el.title       = labels[st] || '';
+// --- Badge de status ---
+function setStatus(st) {
+  sbStatus = st;
+  if (st === 'ok') sbLastSync = new Date();
+  var icon  = document.getElementById('sb-icon');
+  var label = document.getElementById('sb-label');
+  if (!icon || !label) return;
+  var map = {
+    ok:      { i:'🟢', l:'ONLINE',        c:'var(--green)' },
+    syncing: { i:'🟡', l:'SINCRONIZANDO', c:'#f0a500'      },
+    offline: { i:'🔴', l:'OFFLINE',       c:'var(--red)'   },
+    error:   { i:'🔴', l:'ERRO',          c:'var(--red)'   }
+  };
+  var cfg = map[st] || map.offline;
+  icon.textContent  = cfg.i;
+  label.textContent = cfg.l;
+  label.style.color = cfg.c;
 }
 
-function showSyncError(msg) {
-  var hdr = document.getElementById('hdr');
-  if (hdr) {
-    hdr.style.transition = 'box-shadow .2s';
-    hdr.style.boxShadow  = '0 0 0 3px var(--red)';
-    setTimeout(function() { hdr.style.boxShadow = ''; }, 3500);
-  }
-  var el = document.getElementById('sync-err-banner');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'sync-err-banner';
-    el.style.cssText = 'position:fixed;top:calc(var(--head) + 6px);left:12px;right:12px;'
-      + 'background:var(--red);color:#fff;font-size:13px;font-weight:600;'
-      + 'padding:10px 14px;border-radius:10px;z-index:300;text-align:center;'
-      + 'box-shadow:0 4px 16px rgba(255,71,87,.5)';
-    document.body.appendChild(el);
-  }
-  el.textContent = '⚠️ Supabase: ' + (msg || 'erro desconhecido — verifique RLS e o console');
-  el.style.display = 'block';
-  clearTimeout(el._t);
-  el._t = setTimeout(function() { el.style.display = 'none'; }, 4000);
+function openStatusPanel() {
+  var panel = document.getElementById('sb-panel');
+  if (!panel) return;
+  var open = panel.style.display !== 'block';
+  panel.style.display = open ? 'block' : 'none';
+  if (!open) return;
+  var msgs = { ok:'🟢 Conectado', syncing:'🟡 Sincronizando...', offline:'🔴 Sem conexão', error:'🔴 Erro de conexão' };
+  var ls = sbLastSync ? sbLastSync.toLocaleTimeString('pt-BR') : '—';
+  panel.innerHTML =
+    '<div style="font-weight:700;margin-bottom:8px">' + (msgs[sbStatus]||msgs.offline) + '</div>' +
+    '<div style="font-size:12px;color:var(--text2)">Última sync: ' + ls + '</div>' +
+    '<div style="font-size:12px;color:var(--text2);margin-top:4px">' +
+      S.students.length + ' alunos · ' + S.classes.length + ' turmas</div>';
 }
 
-// Operações individuais por tabela
-function sbSaveStudent(s)     { return sbReq('POST',   'alunos',    '',               toSbStudent(s)); }
-function sbDelStudent(id)     { return sbReq('DELETE', 'alunos',    'id=eq.' + id); }
-function sbUpdatePts(id, pts) { return sbReq('PATCH',  'alunos',    'id=eq.' + id,    { pontos: pts }); }
-function sbSaveHist(h)        { return sbReq('POST',   'historico', '',               toSbHistory(h)); }
-function sbSaveClass(c)       { return sbReq('POST',   'turmas',    '',               toSbClass(c)); }
-function sbDelClass(id)       { return sbReq('DELETE', 'turmas',    'id=eq.' + id); }
-function sbResetAllPts()      { return sbReq('PATCH',  'alunos',    'pontos=gte.0',   { pontos: 0 }); }
-function sbClearHist()        { return sbReq('DELETE', 'historico', 'id=not.is.null'); }
-
-// syncOp: dispara operação Supabase; marca dirty se offline ou se falhar
-function syncOp(label, fn) {
-  if (!navigator.onLine) { S.dirty = true; save(); setSyncStatus('offline'); return; }
-  setSyncStatus('syncing');
-  console.log('[EduPoints] SUPABASE WRITE tentando → ' + label);
-  fn()
-    .then(function() {
-      console.log('[EduPoints] SUPABASE WRITE sucesso  → ' + label);
-      setSyncStatus('idle');
-    })
-    .catch(function(e) {
-      var msg = e && e.message ? e.message : String(e);
-      console.error('[EduPoints] SUPABASE WRITE ERRO   → ' + label + '\n' + msg);
-      showSyncError(msg);
-      S.dirty = true; save(); setSyncStatus('error');
-    });
+// --- REST helper ---
+function sbWrite(fn) {
+  if (!navigator.onLine) return;
+  setStatus('syncing');
+  fn().then(function() { setStatus('ok'); })
+      .catch(function() { setStatus('error'); });
 }
 
-// fullSyncToSupabase: substitui todos os dados do Supabase pelo estado atual do localStorage
-function fullSyncToSupabase() {
-  console.log('[EduPoints] FULL SYNC iniciando — ' + S.students.length + ' alunos, ' + S.classes.length + ' turmas');
-  setSyncStatus('syncing');
-  // Deleta alunos primeiro (ON DELETE CASCADE remove historico), depois turmas
-  return sbReq('DELETE', 'alunos',    'id=not.is.null').catch(function(){})
-    .then(function() { return sbReq('DELETE', 'turmas', 'id=not.is.null').catch(function(){}); })
-    .then(function() { return S.classes.length  ? sbReq('POST', 'turmas',    '', S.classes.map(toSbClass))    : null; })
-    .then(function() { return S.students.length ? sbReq('POST', 'alunos',    '', S.students.map(toSbStudent)) : null; })
-    .then(function() { return S.history.length  ? sbReq('POST', 'historico', '', S.history.map(toSbHistory))  : null; })
-    .then(function() { S.dirty = false; save(); setSyncStatus('idle'); console.log('[EduPoints] FULL SYNC concluído'); })
-    .catch(function(e) {
-      var msg = e && e.message ? e.message : String(e);
-      console.error('[EduPoints] FULL SYNC ERRO\n' + msg);
-      showSyncError(msg);
-      S.dirty = true; save(); setSyncStatus('error');
-    });
-}
-
-// loadFromSupabase: busca todas as tabelas e retorna objetos mapeados
-function loadFromSupabase() {
+// --- Carregar todas as tabelas ---
+function sbLoadAll() {
   return Promise.all([
     sbReq('GET', 'turmas',    'select=*&order=nome.asc'),
     sbReq('GET', 'alunos',    'select=*&order=nome.asc'),
@@ -565,60 +531,30 @@ function loadFromSupabase() {
   });
 }
 
-// loadData: Supabase é sempre a fonte de verdade quando online;
-// localStorage é apenas cache para render imediato e fallback offline
-function loadData() {
-  var lsResult = load(); // popula S com cache local (render imediato via go('rk'))
-
-  if (!navigator.onLine) {
-    if (lsResult === 'empty') seedData();
-    setSyncStatus('offline');
-    return Promise.resolve();
-  }
-
-  setSyncStatus('syncing');
-  return loadFromSupabase()
-    .then(function(supa) {
-      if (supa.students.length > 0 || supa.classes.length > 0) {
-        // Supabase tem dados → sempre sobrescreve o localStorage quando online
-        S.classes  = supa.classes;
-        S.students = supa.students;
-        S.history  = supa.history;
-        S.dirty    = false;
-        save();
-        setSyncStatus('idle');
-        render(curView);
-      } else {
-        // Supabase vazio: primeira execução ou tabelas recém-criadas
-        if (lsResult === 'empty') seedData();
-        if (S.students.length > 0 || S.classes.length > 0) {
-          return fullSyncToSupabase().then(function() { render(curView); });
-        }
-        setSyncStatus('idle');
-      }
-    })
-    .catch(function() {
-      // Supabase inacessível: mantém o localStorage como fallback
-      if (lsResult === 'empty') seedData();
-      setSyncStatus('error');
-    });
+// --- Empurrar todos os dados locais para o Supabase (primeira execução) ---
+function sbPushAll() {
+  return sbReq('DELETE', 'alunos', 'id=not.is.null').catch(function(){})
+    .then(function() { return sbReq('DELETE', 'turmas', 'id=not.is.null').catch(function(){}); })
+    .then(function() { return S.classes.length  ? sbReq('POST', 'turmas',    '', S.classes.map(toSbClass))    : null; })
+    .then(function() { return S.students.length ? sbReq('POST', 'alunos',    '', S.students.map(toSbStudent)) : null; })
+    .then(function() { return S.history.length  ? sbReq('POST', 'historico', '', S.history.map(toSbHistory))  : null; });
 }
 
 // ===== REALTIME =====
-function flashSyncDot() {
-  var el = document.getElementById('sync-dot');
-  if (!el) return;
-  var prev = el.textContent;
-  el.textContent = '🟡';
-  clearTimeout(el._flash);
-  el._flash = setTimeout(function() { if (el.textContent === '🟡') el.textContent = prev; }, 800);
+function flashBadge() {
+  var icon = document.getElementById('sb-icon');
+  var label = document.getElementById('sb-label');
+  if (!icon || !label) return;
+  var pi = icon.textContent, pl = label.textContent, pc = label.style.color;
+  icon.textContent = '🟡'; label.textContent = 'SINCRONIZANDO'; label.style.color = '#f0a500';
+  clearTimeout(label._f);
+  label._f = setTimeout(function() {
+    if (label.textContent === 'SINCRONIZANDO') { icon.textContent = pi; label.textContent = pl; label.style.color = pc; }
+  }, 800);
 }
 
 function initRealtime() {
-  if (typeof supabase === 'undefined') {
-    console.warn('[EduPoints] Realtime: SDK nao carregado');
-    return;
-  }
+  if (typeof supabase === 'undefined') return;
   var client = supabase.createClient(
     'https://bzjwfwonelhxfphwrnyn.supabase.co',
     'sb_publishable_ISja6zEAXGd6iSO_zxFl1g_0CxLGdRh'
@@ -627,23 +563,18 @@ function initRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'alunos' },    onRtAluno)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, onRtHistorico)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'turmas' },    onRtTurma)
-    .subscribe(function(status) {
-      console.log('[EduPoints] Realtime status:', status);
-    });
+    .subscribe();
 }
 
 function onRtAluno(payload) {
-  console.log('[EduPoints] RT aluno', payload.eventType, payload.new || payload.old);
-  flashSyncDot();
+  flashBadge();
   var r = payload.new, old = payload.old;
   if (payload.eventType === 'INSERT') {
-    if (!S.students.find(function(s){ return s.id === r.id; }))
-      S.students.push(fromSbStudent(r));
+    if (!S.students.find(function(s){ return s.id === r.id; })) S.students.push(fromSbStudent(r));
   } else if (payload.eventType === 'UPDATE') {
     var idx = -1;
     S.students.forEach(function(s, i){ if (s.id === r.id) idx = i; });
-    if (idx >= 0) S.students[idx] = fromSbStudent(r);
-    else S.students.push(fromSbStudent(r));
+    if (idx >= 0) S.students[idx] = fromSbStudent(r); else S.students.push(fromSbStudent(r));
   } else if (payload.eventType === 'DELETE' && old && old.id) {
     S.students = S.students.filter(function(s){ return s.id !== old.id; });
     S.history  = S.history.filter(function(h){ return h.studentId !== old.id; });
@@ -652,34 +583,28 @@ function onRtAluno(payload) {
 }
 
 function onRtHistorico(payload) {
-  console.log('[EduPoints] RT historico', payload.eventType);
-  flashSyncDot();
+  flashBadge();
   if (payload.eventType === 'INSERT') {
     var h = fromSbHistory(payload.new);
     if (!S.history.find(function(x){ return x.id === h.id; })) {
       S.history.unshift(h);
       if (S.history.length > 500) S.history.length = 500;
-      save();
-      if (curView === 'hs') renderHs();
+      save(); if (curView === 'hs') renderHs();
     }
   } else if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
     S.history = S.history.filter(function(h){ return h.id !== payload.old.id; });
-    save();
-    if (curView === 'hs') renderHs();
+    save(); if (curView === 'hs') renderHs();
   }
 }
 
 function onRtTurma(payload) {
-  console.log('[EduPoints] RT turma', payload.eventType, payload.new || payload.old);
-  flashSyncDot();
+  flashBadge();
   var r = payload.new, old = payload.old;
   if (payload.eventType === 'INSERT') {
-    if (!S.classes.find(function(c){ return c.id === r.id; }))
-      S.classes.push(fromSbClass(r));
+    if (!S.classes.find(function(c){ return c.id === r.id; })) S.classes.push(fromSbClass(r));
   } else if (payload.eventType === 'UPDATE') {
     var cls = S.classes.find(function(c){ return c.id === r.id; });
-    if (cls) { cls.name = r.nome; cls.color = r.cor; }
-    else S.classes.push(fromSbClass(r));
+    if (cls) { cls.name = r.nome; cls.color = r.cor; } else S.classes.push(fromSbClass(r));
   } else if (payload.eventType === 'DELETE' && old && old.id) {
     S.classes = S.classes.filter(function(c){ return c.id !== old.id; });
     S.students.forEach(function(s){ if (s.classId === old.id) s.classId = ''; });
@@ -722,6 +647,9 @@ function openOv(id) { document.getElementById(id).classList.add('on'); }
 function closeOv(id) { document.getElementById(id).classList.remove('on'); }
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('ov')) e.target.classList.remove('on');
+  var panel = document.getElementById('sb-panel');
+  var badge = document.getElementById('sb-badge');
+  if (panel && badge && !badge.contains(e.target)) panel.style.display = 'none';
 });
 document.addEventListener('keydown', function(e) {
   if (e.key==='Escape') document.querySelectorAll('.ov.on').forEach(function(el){el.classList.remove('on');});
@@ -771,18 +699,16 @@ function saveStudent() {
     S.students.push(student);
   }
   save(); closeOv('mov-st'); render(curView);
-  if (student) syncOp('salvar aluno: ' + student.name, function() { return sbSaveStudent(student); });
+  if (student) sbWrite(function() { return sbReq('POST', 'alunos', '', toSbStudent(student)); });
 }
 
 function delSt(id) {
   if (!confirm('Excluir este aluno?')) return;
-  var st = S.students.find(function(x){return x.id===id;});
-  var stName = st ? st.name : id;
   S.students = S.students.filter(function(x){return x.id!==id;});
   S.history = S.history.filter(function(x){return x.studentId!==id;});
   if (expSt===id) expSt=null;
   save(); render(curView);
-  syncOp('excluir aluno: ' + stName, function() { return sbDelStudent(id); });
+  sbWrite(function() { return sbReq('DELETE', 'alunos', 'id=eq.' + id); });
 }
 
 // ===== POINTS =====
@@ -799,8 +725,11 @@ function addPts(id, pts, src) {
   if (S.settings.sound) playSound(pts>0);
   render(curView);
   var newPts = s.points;
-  syncOp('pontuar ' + s.name + ' → ' + newPts + ' pts (delta ' + (pts > 0 ? '+' : '') + pts + ')', function() {
-    return Promise.all([sbUpdatePts(id, newPts), sbSaveHist(h)]);
+  sbWrite(function() {
+    return Promise.all([
+      sbReq('PATCH', 'alunos',    'id=eq.' + id, { pontos: newPts }),
+      sbReq('POST',  'historico', '',             toSbHistory(h))
+    ]);
   });
 }
 
@@ -991,7 +920,7 @@ function renderHs() {
 function clearHist() {
   if (!confirm('Limpar todo o histórico?')) return;
   S.history=[]; save(); renderHs();
-  syncOp('limpar histórico', function() { return sbClearHist(); });
+  sbWrite(function() { return sbReq('DELETE', 'historico', 'id=not.is.null'); });
 }
 
 // ===== SETTINGS =====
@@ -1039,7 +968,7 @@ function saveClass() {
   var c = { id:uid(), name:name, color:getSelColor() };
   S.classes.push(c);
   save(); closeOv('mov-cls'); renderCfg();
-  syncOp('salvar turma: ' + c.name, function() { return sbSaveClass(c); });
+  sbWrite(function() { return sbReq('POST', 'turmas', '', toSbClass(c)); });
 }
 
 function delCls(id) {
@@ -1047,7 +976,7 @@ function delCls(id) {
   S.classes = S.classes.filter(function(c){return c.id!==id;});
   S.students.forEach(function(s){ if(s.classId===id) s.classId=''; });
   save(); renderCfg();
-  syncOp('excluir turma: ' + id, function() { return sbDelClass(id); });
+  sbWrite(function() { return sbReq('DELETE', 'turmas', 'id=eq.' + id); });
 }
 
 function toggleSound() {
@@ -1062,7 +991,7 @@ function resetAllPts() {
   S.students.forEach(function(s){ s.points=0; });
   save(); render(curView);
   alert('Pontuações zeradas!');
-  syncOp('zerar pontos de todos', function() { return sbResetAllPts(); });
+  sbWrite(function() { return sbReq('PATCH', 'alunos', 'pontos=gte.0', { pontos: 0 }); });
 }
 
 // ===== SCANNER =====
@@ -1267,12 +1196,13 @@ function importBackup() {
         if (!confirm('Importar backup com ' + cnt + ' aluno(s)?\n\nATENÇÃO: os dados atuais serão substituídos.')) return;
         S = data;
         if (!S.settings) S.settings = { scanPts:1, sound:true };
-        S.dirty = false;
         save();
         go('rk');
         alert('Backup importado com sucesso!');
-        if (navigator.onLine) fullSyncToSupabase();
-        else { S.dirty = true; save(); setSyncStatus('offline'); }
+        if (navigator.onLine) {
+          setStatus('syncing');
+          sbPushAll().then(function() { setStatus('ok'); }).catch(function() { setStatus('error'); });
+        }
       } catch(err) {
         alert('Erro ao ler o arquivo. Verifique se é um backup válido.');
       }
@@ -1290,24 +1220,47 @@ function importBackup() {
     });
   }
 
-  var lsOk = (function() {
-    try { localStorage.setItem('__ep_test__', '1'); localStorage.removeItem('__ep_test__'); return true; }
-    catch(e) { return false; }
-  })();
-  if (!lsOk) {
-    alert('Aviso: o armazenamento local nao esta disponivel neste navegador.\nOs dados NAO serao salvos. Desative o modo privado ou use outro navegador.');
-  }
-
-  window.addEventListener('online',  function() {
-    if (S.dirty) fullSyncToSupabase(); else setSyncStatus('idle');
-  });
-  window.addEventListener('offline', function() { setSyncStatus('offline'); });
-
-  // Render imediato com localStorage; Supabase atualiza em background
-  loadData();
+  // 1. Render imediato com localStorage (ou seed se vazio)
+  var lsResult = load();
+  if (lsResult === 'empty') seedData();
   document.getElementById('scanpts').value = S.settings.scanPts || 1;
   go('rk');
-  initRealtime();
+
+  // 2. Supabase como fonte de verdade quando online
+  if (navigator.onLine) {
+    setStatus('syncing');
+    sbLoadAll()
+      .then(function(data) {
+        if (data.students.length > 0 || data.classes.length > 0) {
+          S.classes  = data.classes;
+          S.students = data.students;
+          S.history  = data.history;
+          save(); render(curView); setStatus('ok');
+        } else {
+          // Supabase vazio: sobe dados locais
+          return sbPushAll().then(function() { setStatus('ok'); });
+        }
+      })
+      .catch(function() { setStatus('error'); });
+    initRealtime();
+  } else {
+    setStatus('offline');
+  }
+
+  window.addEventListener('online', function() {
+    setStatus('syncing');
+    sbLoadAll()
+      .then(function(data) {
+        if (data.students.length > 0 || data.classes.length > 0) {
+          S.classes = data.classes; S.students = data.students; S.history = data.history;
+          save(); render(curView);
+        }
+        setStatus('ok');
+        initRealtime();
+      })
+      .catch(function() { setStatus('error'); });
+  });
+  window.addEventListener('offline', function() { setStatus('offline'); });
 })();
 </script>
 </body>
