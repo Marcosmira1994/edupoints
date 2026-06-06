@@ -197,7 +197,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <span class="logo">EduPoints</span>
     <span class="logo-sub">Pontuação Escolar</span>
   </div>
-  <div id="sb-badge" onclick="openStatusPanel()" style="margin-left:auto;display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;user-select:none;position:relative;-webkit-tap-highlight-color:transparent">
+  <button id="lock-btn" onclick="toggleAdmin()" title="Modo Admin" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px 6px;margin-left:auto;line-height:1;-webkit-tap-highlight-color:transparent">🔒</button>
+  <div id="sb-badge" onclick="openStatusPanel()" style="display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;user-select:none;position:relative;-webkit-tap-highlight-color:transparent">
     <span id="sb-icon" style="font-size:11px">🟡</span>
     <span id="sb-label" style="font-size:10px;font-weight:700;color:#f0a500">VERIFICANDO</span>
     <div id="sb-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;min-width:210px;z-index:500;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
@@ -410,6 +411,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   </div>
 </div>
 
+<!-- MODAL: ADMIN -->
+<div class="ov" id="mov-admin">
+  <div class="modal">
+    <div class="mh">
+      <span class="mt">🔒 Modo Admin</span>
+      <button class="mc" onclick="closeOv('mov-admin')">✕</button>
+    </div>
+    <div class="fg">
+      <label class="fl">Senha</label>
+      <input type="password" class="inp" id="admin-pwd" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')checkAdminPwd()">
+    </div>
+    <button class="btn btn-p btn-bl btn-lg" onclick="checkAdminPwd()">Entrar</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast" class="toast"></div>
 
@@ -417,6 +433,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <script>
 // ===== STATE =====
 var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true } };
+var isAdmin   = sessionStorage.getItem('ep_admin') === '1';
+var ADMIN_PWD = 'admin4585';
 var curView = 'rk';
 var rkFilter = 'all';
 var stFilter = 'all';
@@ -639,6 +657,7 @@ function initial(name) { return name ? name.charAt(0).toUpperCase() : '?'; }
 
 // ===== NAV =====
 function go(v) {
+  if (!isAdmin && v !== 'rk') return; // visitante só acessa ranking
   if (v !== 'sc' && scanning) stopScan();
   curView = v;
   document.querySelectorAll('.view').forEach(function(el){el.classList.remove('on');});
@@ -648,7 +667,7 @@ function go(v) {
   var nb = document.querySelector('.nb[data-v="'+v+'"]');
   if (nb) nb.classList.add('on');
   var fab = document.getElementById('fab');
-  fab.style.display = (v==='st'||v==='rk') ? 'flex' : 'none';
+  fab.style.display = isAdmin && (v==='st'||v==='rk') ? 'flex' : 'none';
   render(v);
 }
 
@@ -672,6 +691,47 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
   if (e.key==='Escape') document.querySelectorAll('.ov.on').forEach(function(el){el.classList.remove('on');});
 });
+
+// ===== ADMIN =====
+function updateAdminUI() {
+  var btn = document.getElementById('lock-btn');
+  if (btn) btn.textContent = isAdmin ? '🔓' : '🔒';
+  ['st','sc','hs','cfg'].forEach(function(v) {
+    var nb = document.querySelector('.nb[data-v="'+v+'"]');
+    if (nb) nb.style.display = isAdmin ? '' : 'none';
+  });
+  var fab = document.getElementById('fab');
+  if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
+  if (!isAdmin && curView !== 'rk') go('rk');
+  else render(curView);
+}
+
+function toggleAdmin() {
+  if (isAdmin) {
+    if (confirm('Sair do modo admin?')) {
+      isAdmin = false;
+      sessionStorage.removeItem('ep_admin');
+      updateAdminUI();
+    }
+  } else {
+    document.getElementById('admin-pwd').value = '';
+    openOv('mov-admin');
+    setTimeout(function(){ document.getElementById('admin-pwd').focus(); }, 300);
+  }
+}
+
+function checkAdminPwd() {
+  if (document.getElementById('admin-pwd').value === ADMIN_PWD) {
+    isAdmin = true;
+    sessionStorage.setItem('ep_admin', '1');
+    closeOv('mov-admin');
+    updateAdminUI();
+  } else {
+    alert('Senha incorreta.');
+    document.getElementById('admin-pwd').value = '';
+    document.getElementById('admin-pwd').focus();
+  }
+}
 
 // ===== STUDENTS =====
 function openAddStudent() {
@@ -850,7 +910,8 @@ function renderRk() {
 
   function podiumPlayer(s, rank) {
     if (!s) return '';
-    return '<div class="podium-player rank-'+rank+'" onclick="openQP(\''+s.id+'\')">'
+    var click = isAdmin ? ' onclick="openQP(\''+s.id+'\')"' : ' style="cursor:default"';
+    return '<div class="podium-player rank-'+rank+'"'+click+'>'
       +'<div class="podium-crown">'+crowns[rank]+'</div>'
       +'<div class="podium-av">'+initial(s.name)+'</div>'
       +'<div class="podium-pts-label">pontos</div>'
@@ -875,7 +936,7 @@ function renderRk() {
   var divider = '<div class="rank-divider"><span>Classificação Geral</span></div>';
   lEl.innerHTML = divider + rest.map(function(s,i){
     var cn = clsName(s.classId);
-    return '<div class="ri" onclick="openQP(\''+s.id+'\')">'
+    return '<div class="ri"' + (isAdmin ? ' onclick="openQP(\''+s.id+'\')"' : '') + '>'
       +'<div class="rn">'+(i+4)+'</div>'
       +'<div class="av av2">'+initial(s.name)+'</div>'
       +'<div class="rinfo"><div class="rname">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
@@ -1441,6 +1502,7 @@ function saveMeta() {
       .catch(function() { setStatus('error'); });
     fetchMetaAtiva().then(renderMeta);
     initRealtime();
+    updateAdminUI();
   } else {
     setStatus('offline');
   }
