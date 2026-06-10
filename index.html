@@ -244,7 +244,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <div class="view" id="view-hs">
     <div class="sh">
       <span class="st">Histórico</span>
-      <button class="btn btn-gh btn-sm" onclick="clearHist()">Limpar</button>
+      <button id="hist-clear-btn" class="btn btn-gh btn-sm" onclick="clearHist()">Limpar</button>
     </div>
     <div id="hslist"></div>
   </div>
@@ -657,7 +657,7 @@ function initial(name) { return name ? name.charAt(0).toUpperCase() : '?'; }
 
 // ===== NAV =====
 function go(v) {
-  if (!isAdmin && v !== 'rk') return; // visitante só acessa ranking
+  if (!isAdmin && v !== 'rk' && v !== 'hs') return; // visitante acessa ranking e histórico
   if (v !== 'sc' && scanning) stopScan();
   curView = v;
   document.querySelectorAll('.view').forEach(function(el){el.classList.remove('on');});
@@ -696,13 +696,15 @@ document.addEventListener('keydown', function(e) {
 function updateAdminUI() {
   var btn = document.getElementById('lock-btn');
   if (btn) btn.textContent = isAdmin ? '🔓' : '🔒';
-  ['st','sc','hs','cfg'].forEach(function(v) {
+  ['st','sc','cfg'].forEach(function(v) {
     var nb = document.querySelector('.nb[data-v="'+v+'"]');
     if (nb) nb.style.display = isAdmin ? '' : 'none';
   });
+  var clearBtn = document.getElementById('hist-clear-btn');
+  if (clearBtn) clearBtn.style.display = isAdmin ? '' : 'none';
   var fab = document.getElementById('fab');
   if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
-  if (!isAdmin && curView !== 'rk') go('rk');
+  if (!isAdmin && curView !== 'rk' && curView !== 'hs') go('rk');
   else render(curView);
 }
 
