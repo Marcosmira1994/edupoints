@@ -267,6 +267,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <span style="color:var(--blue)">›</span>
     </div>
 
+    <div id="cloud-backup-section" style="display:none">
+      <div class="stitle">Backups na Nuvem</div>
+      <div class="ssi" onclick="fazerBackupAgora()">
+        <span class="ssic">☁️</span>
+        <div style="flex:1"><div class="ssil">Fazer Backup Agora</div><div class="ssid">Salva snapshot dos alunos e pontos no Supabase</div></div>
+        <span style="color:var(--green)">›</span>
+      </div>
+      <div id="backup-list" style="margin-top:8px"></div>
+    </div>
+
     <div class="stitle">Dados</div>
     <div class="ssi" onclick="exportCSV()">
       <span class="ssic">📊</span>
@@ -709,6 +719,9 @@ function updateAdminUI() {
   if (clearBtn) clearBtn.style.display = isAdmin ? '' : 'none';
   var recalcBtn = document.getElementById('btn-recalc');
   if (recalcBtn) recalcBtn.style.display = isAdmin ? '' : 'none';
+  var cloudBk = document.getElementById('cloud-backup-section');
+  if (cloudBk) cloudBk.style.display = isAdmin ? '' : 'none';
+  if (isAdmin && navigator.onLine) backupAutomatico();
   var fab = document.getElementById('fab');
   if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
   if (!isAdmin && curView !== 'rk' && curView !== 'hs') go('rk');
@@ -1050,6 +1063,7 @@ function renderCfg() {
   var tog = document.getElementById('stog');
   if (S.settings.sound) tog.classList.add('on'); else tog.classList.remove('on');
   renderCfgMeta();
+  if (isAdmin) renderCfgBackups();
 }
 
 function openAddClass() {
@@ -1360,6 +1374,104 @@ function importBackup() {
     reader.readAsText(file);
   };
   input.click();
+}
+
+// ===== CLOUD BACKUPS =====
+function saveBackup(descricao) {
+  var dados = {
+    students: S.students,
+    classes:  S.classes,
+    history:  S.history.slice(0, 300)
+  };
+  return sbReq('POST', 'backups', '', { dados: dados, descricao: descricao })
+    .then(function() { return purgaBackupsAntigos(); });
+}
+
+function purgaBackupsAntigos() {
+  return sbReq('GET', 'backups', 'select=id&order=criado_em.desc')
+    .then(function(rows) {
+      if (!rows || rows.length <= 30) return;
+      return Promise.all(rows.slice(30).map(function(r) {
+        return sbReq('DELETE', 'backups', 'id=eq.' + r.id).catch(function(){});
+      }));
+    });
+}
+
+function backupAutomatico() {
+  if (!isAdmin || !navigator.onLine) return;
+  sbReq('GET', 'backups', 'select=criado_em&order=criado_em.desc&limit=1')
+    .then(function(rows) {
+      var ultimo = rows && rows.length ? new Date(rows[0].criado_em).getTime() : 0;
+      if (Date.now() - ultimo > 24 * 60 * 60 * 1000) {
+        saveBackup('Automático').catch(function(){});
+      }
+    }).catch(function(){});
+}
+
+function fazerBackupAgora() {
+  if (!confirm('Criar backup agora?')) return;
+  setStatus('syncing');
+  saveBackup('Manual')
+    .then(function() {
+      setStatus('ok');
+      renderCfgBackups();
+      alert('✅ Backup criado com sucesso!');
+    })
+    .catch(function() {
+      setStatus('error');
+      alert('Erro ao criar backup.');
+    });
+}
+
+function renderCfgBackups() {
+  var el = document.getElementById('backup-list');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text2);font-size:12px;padding:4px 0">Carregando...</div>';
+  sbReq('GET', 'backups', 'select=id,criado_em,descricao&order=criado_em.desc&limit=5')
+    .then(function(rows) {
+      if (!rows || rows.length === 0) {
+        el.innerHTML = '<div style="color:var(--text2);font-size:12px;padding:4px 0">Nenhum backup ainda.</div>';
+        return;
+      }
+      el.innerHTML = rows.map(function(b) {
+        var d = new Date(b.criado_em);
+        var ds = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+        return '<div class="ssi" style="cursor:default">'
+          + '<span class="ssic">💾</span>'
+          + '<div style="flex:1"><div class="ssil">' + esc(b.descricao || 'Backup') + '</div>'
+          + '<div class="ssid">' + ds + '</div></div>'
+          + '<button class="btn btn-b btn-sm" onclick="restaurarBackup(' + b.id + ')">Restaurar</button>'
+          + '</div>';
+      }).join('');
+    })
+    .catch(function() {
+      el.innerHTML = '<div style="color:var(--red);font-size:12px;padding:4px 0">Erro ao carregar backups.</div>';
+    });
+}
+
+function restaurarBackup(id) {
+  if (!confirm('Restaurar este backup?\n\nOS DADOS ATUAIS SERÃO SUBSTITUÍDOS.\nEsta ação não pode ser desfeita.')) return;
+  setStatus('syncing');
+  sbReq('GET', 'backups', 'select=dados,criado_em&id=eq.' + id)
+    .then(function(rows) {
+      if (!rows || !rows.length) throw new Error('Backup não encontrado');
+      var d = rows[0].dados;
+      if (!d || !Array.isArray(d.students)) throw new Error('Dados do backup inválidos');
+      S.students = d.students;
+      S.classes  = Array.isArray(d.classes) ? d.classes : S.classes;
+      S.history  = Array.isArray(d.history) ? d.history : [];
+      save();
+      render(curView);
+      return sbPushAll();
+    })
+    .then(function() {
+      setStatus('ok');
+      alert('✅ Backup restaurado! ' + S.students.length + ' alunos recuperados.');
+    })
+    .catch(function(e) {
+      setStatus('error');
+      alert('Erro ao restaurar: ' + (e && e.message ? e.message : 'verifique o console'));
+    });
 }
 
 // ===== META SEMANAL =====
