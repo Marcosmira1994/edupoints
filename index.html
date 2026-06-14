@@ -74,7 +74,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .podium-player:active{opacity:.75}
 .podium-crown{font-size:20px;margin-bottom:4px;line-height:1}
 .rank-1 .podium-crown{font-size:28px;animation:crownPulse 2s infinite}
-.podium-av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;border:3px solid;margin-bottom:7px;transition:box-shadow .3s}
+.podium-av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;border:3px solid;margin-bottom:7px;transition:box-shadow .3s;overflow:hidden}
 .rank-1 .podium-av{width:72px;height:72px;font-size:26px;border-color:var(--gold);background:linear-gradient(135deg,#2d2200,#4a3800);color:var(--gold);box-shadow:0 0 28px rgba(255,215,0,.55),0 0 8px rgba(255,215,0,.3)}
 .rank-2 .podium-av{width:58px;height:58px;font-size:20px;border-color:var(--silver);background:linear-gradient(135deg,#1c1c1c,#2e2e2e);color:var(--silver);box-shadow:0 0 16px rgba(192,192,192,.35)}
 .rank-3 .podium-av{width:52px;height:52px;font-size:18px;border-color:var(--bronze);background:linear-gradient(135deg,#201000,#341a00);color:var(--bronze);box-shadow:0 0 14px rgba(205,127,50,.35)}
@@ -97,8 +97,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .ri{display:flex;align-items:center;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;gap:12px;cursor:pointer}
 .ri:active{background:var(--card2)}
 .rn{font-size:14px;font-weight:700;color:var(--text2);min-width:28px}
-.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#000;flex-shrink:0}
+.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#000;flex-shrink:0;overflow:hidden}
 .av2{background:linear-gradient(135deg,var(--blue),#a855f7)}
+.av img,.podium-av img{width:100%;height:100%;object-fit:cover;display:block}
 .rinfo{flex:1;min-width:0}
 .rname{font-weight:600;font-size:15px}
 .rcls{font-size:12px;color:var(--text2)}
@@ -519,10 +520,10 @@ function sbReq(method, table, qs, body) {
 
 // Mapeadores: estado em memória ↔ colunas Supabase
 function toSbClass(c)   { return { id: c.id, nome: c.name, cor: c.color }; }
-function toSbStudent(s) { return { id: s.id, nome: s.name, turma_id: s.classId || null, pontos: s.points, criado_em: new Date(s.createdAt || Date.now()).toISOString() }; }
+function toSbStudent(s) { return { id: s.id, nome: s.name, turma_id: s.classId || null, pontos: s.points, criado_em: new Date(s.createdAt || Date.now()).toISOString(), foto_url: s.fotoUrl || null }; }
 function toSbHistory(h) { return { id: h.id, aluno_id: h.studentId, aluno_nome: h.studentName, pontos: h.points, origem: h.source, criado_em: new Date(h.timestamp).toISOString(), observacao: h.obs || null }; }
 function fromSbClass(r)   { return { id: r.id, name: r.nome, color: r.cor }; }
-function fromSbStudent(r) { return { id: r.id, name: r.nome, classId: r.turma_id || '', points: r.pontos, createdAt: new Date(r.criado_em).getTime() }; }
+function fromSbStudent(r) { return { id: r.id, name: r.nome, classId: r.turma_id || '', points: r.pontos, createdAt: new Date(r.criado_em).getTime(), fotoUrl: r.foto_url || null }; }
 function fromSbHistory(r) { return { id: r.id, studentId: r.aluno_id, studentName: r.aluno_nome, points: r.pontos, source: r.origem, timestamp: new Date(r.criado_em).getTime(), obs: r.observacao || '' }; }
 
 // --- Badge de status ---
@@ -669,6 +670,44 @@ function esc(s) { if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,
 function clsName(id) { if(!id) return ''; var c = S.classes.find(function(x){return x.id===id;}); return c ? c.name : ''; }
 function clsColor(id) { if(!id) return 'var(--green)'; var c = S.classes.find(function(x){return x.id===id;}); return c ? c.color : 'var(--green)'; }
 function initial(name) { return name ? name.charAt(0).toUpperCase() : '?'; }
+
+function mkAv(s, cls, extraStyle) {
+  var sty = extraStyle ? ' style="' + extraStyle + '"' : '';
+  if (s && s.fotoUrl) {
+    var ws = 'padding:0' + (extraStyle ? ';' + extraStyle : '');
+    return '<div class="' + cls + '" style="' + ws + '"><img src="' + esc(s.fotoUrl) + '" loading="lazy"></div>';
+  }
+  return '<div class="' + cls + '"' + sty + '>' + (s ? initial(s.name) : '?') + '</div>';
+}
+
+function uploadFoto(id) {
+  var s = S.students.find(function(x){ return x.id === id; });
+  if (!s) return;
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/jpeg,image/png,image/webp';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Foto muito grande. Máximo 2MB.'); return; }
+    var base = 'https://bzjwfwonelhxfphwrnyn.supabase.co';
+    var path = 'fotos-alunos/' + id;
+    fetch(base + '/storage/v1/object/' + path, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+      body: file
+    })
+    .then(function(r) {
+      if (!r.ok) return r.text().then(function(t){ throw new Error(t); });
+      s.fotoUrl = base + '/storage/v1/object/public/' + path + '?t=' + Date.now();
+      save();
+      render(curView);
+      return sbReq('PATCH', 'alunos', 'id=eq.' + id, { foto_url: s.fotoUrl });
+    })
+    .catch(function(e) { alert('Erro ao enviar foto: ' + (e && e.message ? e.message : 'tente novamente')); });
+  };
+  input.click();
+}
 
 // ===== NAV =====
 function go(v) {
@@ -935,7 +974,7 @@ function renderRk() {
     var click = isAdmin ? ' onclick="openQP(\''+s.id+'\')"' : ' style="cursor:default"';
     return '<div class="podium-player rank-'+rank+'"'+click+'>'
       +'<div class="podium-crown">'+crowns[rank]+'</div>'
-      +'<div class="podium-av">'+initial(s.name)+'</div>'
+      +mkAv(s,'podium-av')
       +'<div class="podium-pts-label">pontos</div>'
       +'<div class="podium-pts">'+s.points+'</div>'
       +'<div class="podium-name">'+esc(s.name)+'</div>'
@@ -960,7 +999,7 @@ function renderRk() {
     var cn = clsName(s.classId);
     return '<div class="ri"' + (isAdmin ? ' onclick="openQP(\''+s.id+'\')"' : '') + '>'
       +'<div class="rn">'+(i+4)+'</div>'
-      +'<div class="av av2">'+initial(s.name)+'</div>'
+      +mkAv(s,'av av2')
       +'<div class="rinfo"><div class="rname">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
       +'<div class="rpts">'+s.points+'</div>'
       +'</div>';
@@ -987,7 +1026,7 @@ function renderStudents() {
     var exp = expSt===s.id;
     return '<div class="si">'
       +'<div class="si-row" onclick="toggleExp(\''+s.id+'\')">'
-      +'<div class="av">'+initial(s.name)+'</div>'
+      +mkAv(s,'av')
       +'<div style="flex:1;min-width:0"><div class="sname">'+esc(s.name)+'</div>'+(cn?'<div class="scls">'+esc(cn)+'</div>':'')+'</div>'
       +'<div class="spts">'+s.points+'</div>'
       +'</div>'
@@ -1004,6 +1043,7 @@ function renderStudents() {
         +'</div>'
         +'<textarea id="obs-'+s.id+'" class="inp" rows="2" placeholder="Observação (opcional)..." style="font-size:13px;resize:none;margin-bottom:10px" onclick="event.stopPropagation()"></textarea>'
         +'<div style="display:flex;gap:8px">'
+        +(isAdmin?'<button class="btn btn-gh btn-sm" onclick="uploadFoto(\''+s.id+'\');event.stopPropagation()">📷 Foto</button>':'')
         +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="showQR(\''+s.id+'\');event.stopPropagation()">📱 QR</button>'
         +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="openEditSt(\''+s.id+'\');event.stopPropagation()">✏️ Editar</button>'
         +'<button class="btn btn-r btn-sm" onclick="delSt(\''+s.id+'\');event.stopPropagation()">🗑️</button>'
@@ -1027,7 +1067,9 @@ function renderHs() {
     var d = new Date(h.timestamp);
     var ds = d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     var src = h.source==='qr'?'📷 QR Code':'👆 Manual';
+    var stu = S.students.find(function(x){ return x.id === h.studentId; });
     return '<div class="hi">'
+      +mkAv(stu,'av','width:32px;height:32px;font-size:12px;flex-shrink:0')
       +'<div class="hinfo">'
         +'<div class="hname">'+esc(h.studentName)+'</div>'
         +'<div class="hmeta">'+ds+' · '+src+'</div>'
