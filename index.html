@@ -283,6 +283,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div style="flex:1"><div class="ssil">Resetar Pontuações</div><div class="ssid">Zerar pontos de todos os alunos</div></div>
       <span style="color:var(--red)">›</span>
     </div>
+    <div class="ssi" id="btn-recalc" onclick="recalcularPontosDoHistorico()" style="display:none">
+      <span class="ssic">🔧</span>
+      <div style="flex:1"><div class="ssil">Restaurar Pontos do Histórico</div><div class="ssid">Recalcula pontos de cada aluno pelo histórico completo</div></div>
+      <span style="color:var(--blue)">›</span>
+    </div>
 
     <div class="stitle">Preferências</div>
     <div class="ssi" style="cursor:default">
@@ -702,6 +707,8 @@ function updateAdminUI() {
   });
   var clearBtn = document.getElementById('hist-clear-btn');
   if (clearBtn) clearBtn.style.display = isAdmin ? '' : 'none';
+  var recalcBtn = document.getElementById('btn-recalc');
+  if (recalcBtn) recalcBtn.style.display = isAdmin ? '' : 'none';
   var fab = document.getElementById('fab');
   if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
   if (!isAdmin && curView !== 'rk' && curView !== 'hs') go('rk');
@@ -1094,6 +1101,47 @@ function resetAllPts() {
   save(); render(curView);
   alert('Pontuações zeradas!');
   sbWrite(function() { return sbReq('PATCH', 'alunos', 'pontos=gte.0', { pontos: 0 }); });
+}
+
+// Restaura pontos recalculando pelo histórico completo no Supabase.
+// A meta NUNCA toca nos pontos — ela só controla a barra visual.
+function recalcularPontosDoHistorico() {
+  if (!confirm('Recalcular pontos de todos os alunos pelo histórico completo?\n\nOs pontos serão recalculados somando todos os registros do histórico no Supabase.')) return;
+  setStatus('syncing');
+  sbReq('GET', 'historico', 'select=aluno_id,pontos&order=criado_em.asc')
+    .then(function(rows) {
+      // Replay cronológico mantendo piso em 0 (igual ao addPts)
+      var acc = {};
+      (rows || []).forEach(function(r) {
+        if (!acc[r.aluno_id]) acc[r.aluno_id] = 0;
+        acc[r.aluno_id] = Math.max(0, acc[r.aluno_id] + r.pontos);
+      });
+
+      var updates = [];
+      var relatorio = [];
+      var atualizados = 0;
+
+      S.students.forEach(function(s) {
+        var novo = acc[s.id] !== undefined ? acc[s.id] : s.points;
+        relatorio.push(s.name + ': ' + s.points + ' → ' + novo + ' pts');
+        if (s.points !== novo) {
+          atualizados++;
+          s.points = novo;
+          updates.push(sbReq('PATCH', 'alunos', 'id=eq.' + s.id, { pontos: novo }));
+        }
+      });
+
+      return Promise.all(updates).then(function() {
+        save();
+        render(curView);
+        setStatus('ok');
+        alert('✅ Restauração concluída!\n\n' + atualizados + ' aluno(s) atualizados.\n\n' + relatorio.join('\n'));
+      });
+    })
+    .catch(function(e) {
+      setStatus('error');
+      alert('Erro ao restaurar: ' + (e && e.message ? e.message : 'verifique o console'));
+    });
 }
 
 // ===== SCANNER =====
