@@ -727,7 +727,7 @@ function go(v) {
 
 function render(v) {
   if (v==='rk') renderRk();
-  else if (v==='st') renderSt();
+  else if (v==='st') renderStudents();
   else if (v==='hs') renderHs();
   else if (v==='cfg') renderCfg();
   else if (v==='sc') renderSc();
@@ -949,7 +949,7 @@ function renderChips(elId, current, onClickFn) {
 }
 
 function setRkFilter(v) { rkFilter=v; renderRk(); }
-function setStFilter(v) { stFilter=v; renderSt(); }
+function setStFilter(v) { stFilter=v; renderStudents(); }
 
 // ===== RANKING =====
 function renderRk() {
