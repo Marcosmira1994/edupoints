@@ -54,7 +54,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 /* MODALS */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
 .ov.on{opacity:1;pointer-events:all}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);position:relative;inset:auto;opacity:1;pointer-events:auto;display:block;overscroll-behavior:auto}
 .ov.on .modal{transform:translateY(0)}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .mt{font-size:18px;font-weight:700}
@@ -279,7 +279,6 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .ri:hover{
   border-color:rgba(255,255,255,.2)!important;
   background:rgba(255,255,255,.08)!important;
-  transform:translateX(3px)!important;
 }
 /* Pontuação em destaque — verde/ciano brilhante */
 .rpts{
@@ -292,24 +291,15 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .rk-sep{display:flex;align-items:center;gap:8px;margin:10px 0;opacity:.4}
 .rk-sep::before,.rk-sep::after{content:'';flex:1;height:1px;background:var(--border)}
 .rk-sep span{font-size:10px;color:var(--text2);white-space:nowrap;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-/* Animação flutuante — apenas no hover */
+/* Cards do ranking — sem animação de hover */
 .ranking-area{position:relative}
-.rank-card{transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+.rank-card{transition:box-shadow .25s ease,border-color .25s ease,background .25s ease}
 .rank-card:hover{
-  animation:cardWobble .4s ease-in-out;
-  transform:translateY(-4px);
-  box-shadow:0 10px 36px rgba(0,0,0,.55)!important;
+  box-shadow:0 8px 32px rgba(0,0,0,.55)!important;
   border-color:rgba(255,255,255,.22)!important;
-}
-@keyframes cardWobble{
-  0%  {transform:translateY(0) translateX(0)}
-  30% {transform:translateY(-4px) translateX(3px)}
-  60% {transform:translateY(-4px) translateX(-2px)}
-  100%{transform:translateY(-4px) translateX(0)}
 }
 @media(prefers-reduced-motion:reduce){
   .rank-card{transition:none}
-  .rank-card:hover{animation:none;transform:translateY(-4px)}
 }
 /* Pódio Aura Ranker — avatares dominantes, ocupa quase toda a tela */
 /* Mobile: reduz padding do view e dá altura mínima ao pódio */
@@ -713,6 +703,7 @@ var editStId = null;
 var qrPtsId = null;
 var profileId = null;
 var confettiLaunched = false;
+var rkAnimDone = false;
 var audioCtx = null;
 var lastScan = { id:'', t:0 };
 var COLORS = ['#00d4aa','#4a9eff','#ff6b6b','#ffd700','#a29bfe','#fd79a8','#fdcb6e','#6c5ce7','#00b894','#e17055'];
@@ -967,6 +958,7 @@ function uploadFoto(id) {
 function go(v) {
   if (!isAdmin && v !== 'rk' && v !== 'hs') return; // visitante acessa ranking e histórico
   if (v !== 'sc' && scanning) stopScan();
+  if (v === 'rk') rkAnimDone = false; // reseta animações de entrada ao navegar para ranking
   curView = v;
   document.querySelectorAll('.view').forEach(function(el){el.classList.remove('on');});
   document.querySelectorAll('.nb').forEach(function(el){el.classList.remove('on');});
@@ -1371,7 +1363,9 @@ function renderRk() {
     var cn = clsName(s.classId);
     var rankCls = ['','aura-1','aura-2','aura-3'][rank];
     var aniDelays = ['', '0.1s', '0.25s', '0.4s'];
-    return '<div class="podium-aura-card '+rankCls+' animate__animated animate__bounceIn" style="animation-delay:'+aniDelays[rank]+'" onclick="openProfile(\''+s.id+'\')">'
+    var aniCls = rkAnimDone ? '' : ' animate__animated animate__bounceIn';
+    var aniStyle = rkAnimDone ? '' : ';animation-delay:'+aniDelays[rank];
+    return '<div class="podium-aura-card '+rankCls+aniCls+'" style="'+aniStyle.slice(1)+'" onclick="openProfile(\''+s.id+'\')">'
       +'<div class="aura-crown">'+crowns[rank]+'</div>'
       +'<div class="aura-av-wrap">'
       +mkAv(s,'podium-av')
@@ -1408,7 +1402,9 @@ function renderRk() {
     var rank = i+1;
     var cn = clsName(s.classId);
     var delay = Math.min(i * 0.055, 0.5).toFixed(2) + 's';
-    return '<div class="ri rank-card animate__animated animate__fadeInRight" style="animation-delay:'+delay+'" onclick="openProfile(\''+s.id+'\')">'
+    var aniCls = rkAnimDone ? '' : ' animate__animated animate__fadeInRight';
+    var aniSty = rkAnimDone ? '' : 'animation-delay:'+delay+';';
+    return '<div class="ri rank-card'+aniCls+'" style="'+aniSty+'" onclick="openProfile(\''+s.id+'\')">'
       +mkBadge(rank)
       +mkAvRk(s, rank)
       +'<div class="rinfo"><div class="rname" data-sid="'+s.id+'">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
@@ -1429,6 +1425,24 @@ function renderRk() {
     var target = parseInt(el.getAttribute('data-pts')) || 0;
     animateCount(el, target, 850);
   });
+
+  // Remove classes de animação de entrada via animationend (once:true)
+  if (!rkAnimDone) {
+    var toClean = Array.prototype.slice.call(pEl.querySelectorAll('.animate__animated'))
+      .concat(Array.prototype.slice.call(lEl.querySelectorAll('.animate__animated')));
+    var pending = toClean.length;
+    if (pending === 0) {
+      rkAnimDone = true;
+    } else {
+      toClean.forEach(function(el) {
+        el.addEventListener('animationend', function() {
+          el.classList.remove('animate__animated', 'animate__bounceIn', 'animate__fadeInRight');
+          pending--;
+          if (pending <= 0) rkAnimDone = true;
+        }, { once: true });
+      });
+    }
+  }
 
   renderMeta();
 }
