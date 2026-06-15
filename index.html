@@ -54,8 +54,8 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 /* MODALS */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
 .ov.on{opacity:1;pointer-events:all}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);position:relative;inset:auto;opacity:1;pointer-events:auto;display:block;overscroll-behavior:auto}
-.ov.on .modal{transform:translateY(0)}
+.ep-modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.ov.on .ep-modal{transform:translateY(0)}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .mt{font-size:18px;font-weight:700}
 .mc{background:var(--card2);border:none;color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
@@ -181,8 +181,8 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .cat-sep{height:1px;background:var(--border);margin:4px 0}
 /* RANKING — modal de perfil centralizado */
 #mov-profile{align-items:center;padding:16px}
-#mov-profile .modal{border-radius:20px!important;transform:translateY(24px)!important}
-#mov-profile.on .modal{transform:translateY(0)!important}
+#mov-profile .ep-modal{border-radius:20px!important;transform:translateY(24px)!important}
+#mov-profile.on .ep-modal{transform:translateY(0)!important}
 /* RANKING — layout duas colunas (desktop) */
 @media(min-width:768px){
   #view-rk>.rk-inner{display:flex;flex-direction:column;height:calc(100dvh - var(--head) - var(--nav));overflow:hidden;padding:0 12px}
@@ -217,7 +217,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .view.on{animation:fadeInUp .28s ease-out}
 /* Glassmorphism */
 .si,.ri,.hi,.ssi,.cli,.scan-cfg{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.modal{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.ep-modal{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 /* Avatares — sombra + hover */
 .av{box-shadow:0 3px 10px rgba(0,0,0,.45);transition:transform .2s ease,box-shadow .2s ease}
 .av:hover{transform:scale(1.06);box-shadow:0 6px 18px rgba(0,0,0,.6)}
@@ -247,8 +247,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .hdr-sep{width:1px;height:26px;background:rgba(255,255,255,.1);flex-shrink:0;margin:0 2px}
 .logo-gaia{font-size:10px;color:var(--text2);margin-top:1px}
 /* Perfil modal */
-#mov-profile .modal{background:rgba(10,14,26,.9)!important}
-#mov-profile.on .modal{animation:none}
+#mov-profile .ep-modal{background:rgba(10,14,26,.9)!important}
 /* Mobile */
 @media(max-width:500px){
   .nb.hn{padding:4px 5px;min-width:34px;font-size:9px}
@@ -558,7 +557,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 
 <!-- MODAL: ADD/EDIT STUDENT -->
 <div class="ov" id="mov-st">
-  <div class="modal">
+  <div class="ep-modal">
     <div class="mh">
       <span class="mt" id="mov-st-title">Adicionar Aluno</span>
       <button class="mc" onclick="closeOv('mov-st')">✕</button>
@@ -577,7 +576,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 
 <!-- MODAL: ADD CLASS -->
 <div class="ov" id="mov-cls">
-  <div class="modal">
+  <div class="ep-modal">
     <div class="mh">
       <span class="mt">Nova Turma</span>
       <button class="mc" onclick="closeOv('mov-cls')">✕</button>
@@ -596,7 +595,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 
 <!-- MODAL: QR CODE -->
 <div class="ov" id="mov-qr">
-  <div class="modal">
+  <div class="ep-modal">
     <div class="mh">
       <span class="mt">QR Code</span>
       <button class="mc" onclick="closeOv('mov-qr')">✕</button>
@@ -615,7 +614,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 
 <!-- MODAL: QUICK POINTS -->
 <div class="ov" id="mov-pts">
-  <div class="modal">
+  <div class="ep-modal">
     <div class="mh">
       <span class="mt">Pontuar: <span id="pts-name" style="color:var(--green)"></span></span>
       <button class="mc" onclick="closeOv('mov-pts')">✕</button>
@@ -647,7 +646,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 
 <!-- MODAL: ADMIN -->
 <div class="ov" id="mov-admin">
-  <div class="modal">
+  <div class="ep-modal">
     <div class="mh">
       <span class="mt">🔒 Modo Admin</span>
       <button class="mc" onclick="closeOv('mov-admin')">✕</button>
@@ -663,7 +662,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 <!-- TOAST -->
 <!-- MODAL: PERFIL DO ALUNO -->
 <div class="ov" id="mov-profile">
-  <div class="modal" style="max-width:480px">
+  <div class="ep-modal" style="max-width:480px">
     <div class="mh">
       <span class="mt" id="profile-rank" style="color:var(--gold)"></span>
       <button class="mc" onclick="closeOv('mov-profile')">✕</button>
@@ -1281,13 +1280,6 @@ function openProfile(id) {
   var btn = document.getElementById('profile-qp-btn');
   if (btn) btn.style.display = isAdmin ? '' : 'none';
 
-  // Animate.css zoomIn via fadeIn (evita conflito com transform:translateY !important)
-  var modal = document.querySelector('#mov-profile .modal');
-  if (modal) {
-    modal.classList.remove('animate__animated', 'animate__fadeIn');
-    void modal.offsetWidth;
-    modal.classList.add('animate__animated', 'animate__fadeIn');
-  }
   openOv('mov-profile');
   renderProfileChart(id);
 }
