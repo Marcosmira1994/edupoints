@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -248,7 +248,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .logo-gaia{font-size:10px;color:var(--text2);margin-top:1px}
 /* Perfil modal */
 #mov-profile .modal{background:rgba(10,14,26,.9)!important}
-#mov-profile.on .modal{animation:scaleIn .22s ease-out}
+#mov-profile.on .modal{animation:none}
 /* Mobile */
 @media(max-width:500px){
   .nb.hn{padding:4px 5px;min-width:34px;font-size:9px}
@@ -392,7 +392,19 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
   .podium-aura-card.aura-1{padding-top:32px}
   .podium-aura{gap:12px;padding:12px 8px 16px}
 }
+/* DaisyUI cat buttons */
+.cat-dui{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:5px;transition:opacity .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:42px;gap:10px}
+.cat-dui:active{opacity:.75}
+.cat-dui-sep{height:1px;background:rgba(255,255,255,.1);margin:6px 0}
+/* DaisyUI btn integration — garante space-between sobrescreve justify-content:center do .btn */
+.btn.cat-dui{justify-content:space-between}
 </style>
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<!-- DaisyUI (dark theme via data-theme no html) -->
+<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -619,18 +631,18 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <button class="mc" onclick="closeOv('mov-pts')">✕</button>
     </div>
     <div class="cat-list">
-      <button class="cat-btn cat-pos" onclick="selectCat(3,'Tarefa de casa entregue')"><span>Tarefa de casa entregue</span><span class="cat-val">+3</span></button>
-      <button class="cat-btn cat-pos" onclick="selectCat(2,'Participação em aula')"><span>Participação em aula</span><span class="cat-val">+2</span></button>
-      <button class="cat-btn cat-pos" onclick="selectCat(5,'Atividade em sala completa')"><span>Atividade em sala completa</span><span class="cat-val">+5</span></button>
-      <button class="cat-btn cat-pos" onclick="selectCat(10,'Prova/trabalho importante')"><span>Prova/trabalho importante</span><span class="cat-val">+10</span></button>
-      <button class="cat-btn cat-pos" onclick="selectCat(5,'Comportamento exemplar')"><span>Comportamento exemplar</span><span class="cat-val">+5</span></button>
-      <button class="cat-btn cat-pos" onclick="selectCat(2,'Ajudou um colega')"><span>Ajudou um colega</span><span class="cat-val">+2</span></button>
-      <div class="cat-sep"></div>
-      <button class="cat-btn cat-neg" onclick="selectCat(-3,'Tarefa não entregue')"><span>Tarefa não entregue</span><span class="cat-val">-3</span></button>
-      <button class="cat-btn cat-neg" onclick="selectCat(-2,'Falta de material')"><span>Falta de material</span><span class="cat-val">-2</span></button>
-      <button class="cat-btn cat-neg" onclick="selectCat(-5,'Indisciplina leve')"><span>Indisciplina leve</span><span class="cat-val">-5</span></button>
-      <button class="cat-btn cat-neg" onclick="selectCat(-10,'Indisciplina grave')"><span>Indisciplina grave</span><span class="cat-val">-10</span></button>
-      <button class="cat-btn cat-neg" onclick="selectCat(-10,'Desrespeito')"><span>Desrespeito</span><span class="cat-val">-10</span></button>
+      <button class="btn btn-success cat-dui" onclick="selectCat(3,'Tarefa de casa entregue')"><span>📚 Tarefa de casa entregue</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+3</span></button>
+      <button class="btn btn-success cat-dui" onclick="selectCat(2,'Participação em aula')"><span>🙋 Participação em aula</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+2</span></button>
+      <button class="btn btn-success cat-dui" onclick="selectCat(5,'Atividade em sala completa')"><span>✅ Atividade em sala completa</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+5</span></button>
+      <button class="btn btn-success cat-dui" onclick="selectCat(10,'Prova/trabalho importante')"><span>🏆 Prova/trabalho importante</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+10</span></button>
+      <button class="btn btn-success cat-dui" onclick="selectCat(5,'Comportamento exemplar')"><span>⭐ Comportamento exemplar</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+5</span></button>
+      <button class="btn btn-success cat-dui" onclick="selectCat(2,'Ajudou um colega')"><span>🤝 Ajudou um colega</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+2</span></button>
+      <div class="cat-dui-sep"></div>
+      <button class="btn btn-error cat-dui" onclick="selectCat(-3,'Tarefa não entregue')"><span>📭 Tarefa não entregue</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">-3</span></button>
+      <button class="btn btn-error cat-dui" onclick="selectCat(-2,'Falta de material')"><span>🎒 Falta de material</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">-2</span></button>
+      <button class="btn btn-error cat-dui" onclick="selectCat(-5,'Indisciplina leve')"><span>⚠️ Indisciplina leve</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">-5</span></button>
+      <button class="btn btn-error cat-dui" onclick="selectCat(-10,'Indisciplina grave')"><span>🚨 Indisciplina grave</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">-10</span></button>
+      <button class="btn btn-error cat-dui" onclick="selectCat(-10,'Desrespeito')"><span>🚫 Desrespeito</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">-10</span></button>
     </div>
     <div class="fg">
       <label class="fl">Valor personalizado</label>
@@ -674,11 +686,16 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
     </div>
     <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Últimas movimentações</div>
     <div id="profile-hist"></div>
+    <div id="profile-chart-wrap" style="display:none;margin-top:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Evolução de Pontos</div>
+      <canvas id="profile-chart" height="160" style="width:100%;display:block"></canvas>
+    </div>
     <button id="profile-qp-btn" class="btn btn-p btn-bl" style="margin-top:14px;display:none" onclick="openProfileQP()">✏️ Pontuar</button>
   </div>
 </div>
 
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast" style="display:none"></div>
+<div id="dui-toast-container" aria-live="polite" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1100;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -1126,6 +1143,16 @@ function addPts(id, pts, src, obs) {
   showToast(pts);
   if (S.settings.sound) playSound(pts>0);
   render(curView);
+  // Pulse no nome do aluno após render
+  var _pulseId = id;
+  setTimeout(function() {
+    document.querySelectorAll('[data-sid="' + _pulseId + '"]').forEach(function(el) {
+      el.classList.remove('animate__animated', 'animate__pulse');
+      void el.offsetWidth;
+      el.classList.add('animate__animated', 'animate__pulse');
+      setTimeout(function() { el.classList.remove('animate__animated', 'animate__pulse'); }, 1000);
+    });
+  }, 60);
   var newPts = s.points;
   sbWrite(function() {
     return Promise.all([
@@ -1136,14 +1163,19 @@ function addPts(id, pts, src, obs) {
 }
 
 function showToast(pts) {
-  var t = document.getElementById('toast');
-  t.textContent = (pts>0?'+':'') + pts + ' pts';
-  t.style.background = pts>0 ? 'var(--green)' : 'var(--red)';
-  t.classList.remove('hd'); t.classList.add('sh');
-  setTimeout(function(){
-    t.classList.remove('sh'); t.classList.add('hd');
-    setTimeout(function(){ t.classList.remove('hd'); }, 350);
-  }, 900);
+  var container = document.getElementById('dui-toast-container');
+  if (!container) return;
+  var el = document.createElement('div');
+  var isPos = pts > 0;
+  el.className = 'alert animate__animated animate__bounceIn';
+  el.style.cssText = 'font-size:26px;font-weight:900;padding:12px 28px;border-radius:14px;border:none;min-width:140px;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,.55);background:' + (isPos ? 'var(--green)' : 'var(--red)') + ';color:' + (isPos ? '#000' : '#fff');
+  el.textContent = (isPos ? '+' : '') + pts + ' pts';
+  container.appendChild(el);
+  setTimeout(function() {
+    el.classList.remove('animate__bounceIn');
+    el.classList.add('animate__fadeOutUp');
+    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 600);
+  }, 1300);
 }
 
 function playSound(pos) {
@@ -1256,7 +1288,16 @@ function openProfile(id) {
 
   var btn = document.getElementById('profile-qp-btn');
   if (btn) btn.style.display = isAdmin ? '' : 'none';
+
+  // Animate.css zoomIn via fadeIn (evita conflito com transform:translateY !important)
+  var modal = document.querySelector('#mov-profile .modal');
+  if (modal) {
+    modal.classList.remove('animate__animated', 'animate__fadeIn');
+    void modal.offsetWidth;
+    modal.classList.add('animate__animated', 'animate__fadeIn');
+  }
   openOv('mov-profile');
+  renderProfileChart(id);
 }
 
 function openProfileQP() {
@@ -1329,13 +1370,14 @@ function renderRk() {
     if (!s) return '';
     var cn = clsName(s.classId);
     var rankCls = ['','aura-1','aura-2','aura-3'][rank];
-    return '<div class="podium-aura-card '+rankCls+'" onclick="openProfile(\''+s.id+'\')">'
+    var aniDelays = ['', '0.1s', '0.25s', '0.4s'];
+    return '<div class="podium-aura-card '+rankCls+' animate__animated animate__bounceIn" style="animation-delay:'+aniDelays[rank]+'" onclick="openProfile(\''+s.id+'\')">'
       +'<div class="aura-crown">'+crowns[rank]+'</div>'
       +'<div class="aura-av-wrap">'
       +mkAv(s,'podium-av')
       +'<div class="aura-badge">'+rank+'</div>'
       +'</div>'
-      +'<div class="aura-name">'+esc(s.name)+'</div>'
+      +'<div class="aura-name" data-sid="'+s.id+'">'+esc(s.name)+'</div>'
       +(cn?'<div class="aura-cls">'+esc(cn)+'</div>':'')
       +'<div class="aura-pts" data-pts-podium="'+s.points+'">'+s.points+'</div>'
       +'</div>';
@@ -1365,10 +1407,11 @@ function renderRk() {
   var listHtml = sorted.map(function(s,i){
     var rank = i+1;
     var cn = clsName(s.classId);
-    return '<div class="ri rank-card" onclick="openProfile(\''+s.id+'\')">'
+    var delay = Math.min(i * 0.055, 0.5).toFixed(2) + 's';
+    return '<div class="ri rank-card animate__animated animate__fadeInRight" style="animation-delay:'+delay+'" onclick="openProfile(\''+s.id+'\')">'
       +mkBadge(rank)
       +mkAvRk(s, rank)
-      +'<div class="rinfo"><div class="rname">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
+      +'<div class="rinfo"><div class="rname" data-sid="'+s.id+'">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
       +'<div class="rpts" data-pts="'+s.points+'">'+s.points+'</div>'
       +'</div>';
   });
@@ -2030,6 +2073,83 @@ function saveMeta() {
     .then(function(){ return fetchMetaAtiva(); })
     .then(function(){ renderMeta(); renderCfgMeta(); alert('Meta salva!'); })
     .catch(function(){ alert('Erro ao salvar. Verifique as políticas RLS da tabela metas.'); });
+}
+
+// ===== GRÁFICO DE EVOLUÇÃO =====
+var profileChart = null;
+
+function renderProfileChart(id) {
+  var wrap = document.getElementById('profile-chart-wrap');
+  var canvas = document.getElementById('profile-chart');
+  if (!wrap || !canvas) return;
+  if (profileChart) { try { profileChart.destroy(); } catch(e){} profileChart = null; }
+  wrap.style.display = 'none';
+  if (typeof Chart === 'undefined') return;
+
+  function drawChart(entries) {
+    if (!entries || entries.length < 2) return;
+    var labels = [], data = [], cum = 0;
+    entries.forEach(function(e) {
+      cum = Math.max(0, cum + e.pts);
+      var d = new Date(e.ts);
+      labels.push(d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}));
+      data.push(cum);
+    });
+    wrap.style.display = '';
+    profileChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          borderColor: '#00ff88',
+          backgroundColor: 'rgba(0,255,136,0.07)',
+          borderWidth: 2.5,
+          pointRadius: data.length > 25 ? 0 : 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#00ff88',
+          pointBorderColor: '#00ff88',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 700 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(10,14,26,.96)',
+            borderColor: 'rgba(0,255,136,.3)',
+            borderWidth: 1,
+            titleColor: 'rgba(255,255,255,.45)',
+            bodyColor: '#00ff88',
+            padding: 10,
+            callbacks: { label: function(ctx) { return ctx.parsed.y + ' pts'; } }
+          }
+        },
+        scales: {
+          x: { grid:{ color:'rgba(255,255,255,.04)' }, ticks:{ color:'rgba(255,255,255,.3)', font:{ size:9 }, maxTicksLimit:8 }, border:{ display:false } },
+          y: { grid:{ color:'rgba(255,255,255,.04)' }, ticks:{ color:'rgba(255,255,255,.3)', font:{ size:9 } }, border:{ display:false }, beginAtZero:true }
+        }
+      }
+    });
+  }
+
+  // Tenta Supabase (histórico completo); fallback para dados locais
+  sbReq('GET', 'historico', 'select=pontos,criado_em&aluno_id=eq.' + id + '&order=criado_em.asc&limit=60')
+    .then(function(rows) {
+      if (rows && rows.length >= 2) {
+        drawChart(rows.map(function(r){ return { pts: r.pontos, ts: new Date(r.criado_em).getTime() }; }));
+      } else {
+        var local = S.history.filter(function(h){ return h.studentId === id; }).slice().reverse();
+        drawChart(local.map(function(h){ return { pts: h.points, ts: h.timestamp }; }));
+      }
+    })
+    .catch(function() {
+      var local = S.history.filter(function(h){ return h.studentId === id; }).slice().reverse();
+      drawChart(local.map(function(h){ return { pts: h.points, ts: h.timestamp }; }));
+    });
 }
 
 // ===== INIT =====
