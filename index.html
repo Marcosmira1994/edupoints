@@ -267,6 +267,85 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
   #qp-header{color:#111!important}
   #qp-header div{color:#111!important}
 }
+/* ===== RANKING GAME STYLE ===== */
+/* Cards modernos */
+.ri{
+  background:rgba(255,255,255,.04)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:16px!important;
+  box-shadow:0 4px 24px rgba(0,0,0,.4)!important;
+  transition:all .3s ease!important;
+}
+.ri:hover{
+  border-color:rgba(255,255,255,.2)!important;
+  background:rgba(255,255,255,.08)!important;
+  transform:translateX(3px)!important;
+}
+/* Pontuação em destaque — verde/ciano brilhante */
+.rpts{
+  font-size:22px!important;
+  font-weight:900!important;
+  color:#00ff88!important;
+  text-shadow:0 0 10px rgba(0,255,136,.45)!important;
+}
+/* Separador sutil entre seções da lista */
+.rk-sep{display:flex;align-items:center;gap:8px;margin:10px 0;opacity:.4}
+.rk-sep::before,.rk-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+.rk-sep span{font-size:10px;color:var(--text2);white-space:nowrap;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+/* Animações flutuantes */
+.ranking-area{overflow:hidden;position:relative}
+.ranking-track{animation:rankingFloat 5s ease-in-out infinite;will-change:transform}
+@keyframes rankingFloat{
+  0%  {transform:translateY(0px) rotateZ(-0.15deg)}
+  50% {transform:translateY(-10px) rotateZ(0.15deg)}
+  100%{transform:translateY(0px) rotateZ(-0.15deg)}
+}
+.rank-card{animation:cardWobble 4s ease-in-out infinite;will-change:transform}
+.rank-card:nth-child(2n){animation-delay:-1s}
+.rank-card:nth-child(3n){animation-delay:-2s}
+@keyframes cardWobble{
+  0%,100%{transform:translateX(0px)}
+  50%    {transform:translateX(4px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .ranking-track,.rank-card{animation:none}
+}
+/* Pódio Aura Ranker — top 3 cards grandes */
+.podium-aura{display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:12px 4px 0}
+.podium-aura-card{display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1;max-width:150px;border-radius:18px;padding:14px 8px 10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .3s ease;position:relative}
+.podium-aura-card:active{opacity:.75}
+.podium-aura-card:hover{transform:translateY(-4px)}
+.podium-aura-card.aura-1{background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.3);box-shadow:0 0 30px rgba(255,215,0,.15);order:2}
+.podium-aura-card.aura-2{background:rgba(192,192,192,.07);border:1px solid rgba(192,192,192,.25);box-shadow:0 0 18px rgba(192,192,192,.1);order:1}
+.podium-aura-card.aura-3{background:rgba(205,127,50,.07);border:1px solid rgba(205,127,50,.25);box-shadow:0 0 16px rgba(205,127,50,.1);order:3}
+.aura-av-wrap{position:relative;margin-bottom:8px}
+.aura-badge{position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;border:2px solid var(--bg)}
+.aura-1 .aura-badge{background:#FFD700;color:#000}
+.aura-2 .aura-badge{background:#C0C0C0;color:#000}
+.aura-3 .aura-badge{background:#CD7F32;color:#000}
+.aura-crown{font-size:22px;margin-bottom:6px;line-height:1}
+.aura-1 .aura-crown{font-size:30px;animation:crownPulse 2s infinite}
+.aura-name{font-size:12px;font-weight:700;text-align:center;line-height:1.35;margin-bottom:4px;word-break:break-word;color:var(--text)}
+.aura-1 .aura-name{font-size:13px;color:#fff}
+.aura-pts{font-weight:900;text-align:center;line-height:1}
+.aura-1 .aura-pts{font-size:24px;color:var(--gold);text-shadow:0 0 12px rgba(255,215,0,.5)}
+.aura-2 .aura-pts{font-size:20px;color:var(--silver)}
+.aura-3 .aura-pts{font-size:18px;color:var(--bronze)}
+.aura-cls{font-size:10px;color:var(--text2);margin-top:2px;text-align:center}
+/* Avatar colorido no pódio aura para rank 1 */
+.aura-1 .podium-av{width:72px!important;height:72px!important;font-size:26px!important;border-color:var(--gold)!important;background:linear-gradient(135deg,#2d2200,#4a3800)!important;color:var(--gold)!important;box-shadow:0 0 28px rgba(255,215,0,.55),0 0 8px rgba(255,215,0,.3)!important;animation:goldGlowPulse 2.5s ease-in-out infinite!important}
+.aura-2 .podium-av{width:60px!important;height:60px!important;font-size:22px!important;border-color:var(--silver)!important;background:linear-gradient(135deg,#1c1c1c,#2e2e2e)!important;color:var(--silver)!important;box-shadow:0 0 16px rgba(192,192,192,.35)!important}
+.aura-3 .podium-av{width:52px!important;height:52px!important;font-size:18px!important;border-color:var(--bronze)!important;background:linear-gradient(135deg,#201000,#341a00)!important;color:var(--bronze)!important;box-shadow:0 0 14px rgba(205,127,50,.35)!important}
+/* Desktop: avatares maiores no pódio aura */
+@media(min-width:768px){
+  .aura-1 .podium-av{width:110px!important;height:110px!important;font-size:40px!important}
+  .aura-2 .podium-av{width:84px!important;height:84px!important;font-size:30px!important}
+  .aura-3 .podium-av{width:74px!important;height:74px!important;font-size:26px!important}
+  .aura-1 .aura-pts{font-size:30px}
+  .aura-2 .aura-pts{font-size:24px}
+  .aura-3 .aura-pts{font-size:22px}
+  .podium-aura-card{max-width:200px;padding:18px 12px 14px}
+}
 </style>
 </head>
 <body>
@@ -1176,51 +1255,62 @@ function renderRk() {
   var crowns = ['','🏆','🥈','🥉'];
   var delays = {1:'.05s', 2:'.2s', 3:'.35s'};
 
-  function podiumPlayer(s, rank) {
+  // ── Pódio Aura Ranker (top 3 cards lado a lado: 2º | 1º | 3º) ──
+  function auraCard(s, rank) {
     if (!s) return '';
-    return '<div class="podium-player rank-'+rank+'" onclick="openProfile(\''+s.id+'\')" style="cursor:pointer;animation:podiumIn .55s ease-out '+delays[rank]+' both">'
-      +'<div class="podium-crown">'+crowns[rank]+'</div>'
+    var cn = clsName(s.classId);
+    var rankCls = ['','aura-1','aura-2','aura-3'][rank];
+    return '<div class="podium-aura-card '+rankCls+'" onclick="openProfile(\''+s.id+'\')">'
+      +'<div class="aura-crown">'+crowns[rank]+'</div>'
+      +'<div class="aura-av-wrap">'
       +mkAv(s,'podium-av')
-      +'<div class="podium-pts-label">pontos</div>'
-      +'<div class="podium-pts">'+s.points+'</div>'
-      +'<div class="podium-name">'+esc(s.name)+'</div>'
-      +'<div class="podium-block">'+rank+'</div>'
+      +'<div class="aura-badge">'+rank+'</div>'
+      +'</div>'
+      +'<div class="aura-name">'+esc(s.name)+'</div>'
+      +(cn?'<div class="aura-cls">'+esc(cn)+'</div>':'')
+      +'<div class="aura-pts" data-pts-podium="'+s.points+'">'+s.points+'</div>'
       +'</div>';
   }
 
   var top = sorted.slice(0,3);
-  var stageHTML = podiumPlayer(top[1]||null, 2)
-    + podiumPlayer(top[0], 1)
-    + podiumPlayer(top[2]||null, 3);
+  var auraHTML = auraCard(top[1]||null, 2)
+    + auraCard(top[0], 1)
+    + auraCard(top[2]||null, 3);
 
-  pEl.innerHTML = '<div class="podium-wrap"><div class="podium-stage">' + stageHTML + '</div></div>';
+  pEl.innerHTML = '<div class="podium-wrap"><div class="podium-aura">' + auraHTML + '</div></div>';
 
-  // Build position badge
+  // Build position badge for list
   function mkBadge(rank) {
-    var cfg = rank===1 ? {bg:'#FFD700',c:'#000'} : rank===2 ? {bg:'#C0C0C0',c:'#000'} : rank===3 ? {bg:'#CD7F32',c:'#000'} : {bg:'rgba(255,255,255,.1)',c:'var(--text2)'};
-    return '<div style="min-width:26px;height:26px;border-radius:50%;background:'+cfg.bg+';color:'+cfg.c+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">'+rank+'</div>';
+    var cfg = rank===1 ? {bg:'#FFD700',c:'#000'} : rank===2 ? {bg:'#C0C0C0',c:'#000'} : rank===3 ? {bg:'#CD7F32',c:'#000'} : {bg:'rgba(255,255,255,.12)',c:'var(--text2)'};
+    return '<div style="min-width:28px;height:28px;border-radius:50%;background:'+cfg.bg+';color:'+cfg.c+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0">'+rank+'</div>';
   }
 
-  // Full list in right column (all students)
-  var topBgs = ['rgba(255,215,0,.09)','rgba(192,192,192,.08)','rgba(205,127,50,.08)'];
+  // Avatar com borda colorida para top 3 na lista
+  function mkAvRk(s, rank) {
+    var borderColor = rank===1 ? 'rgba(255,215,0,.7)' : rank===2 ? 'rgba(192,192,192,.6)' : rank===3 ? 'rgba(205,127,50,.6)' : '';
+    var extra = rank<=3 ? 'border:2px solid '+borderColor+';box-sizing:border-box' : '';
+    return mkAv(s, 'av av2', extra);
+  }
 
+  // Lista completa (todas as posições)
   var listHtml = sorted.map(function(s,i){
     var rank = i+1;
     var cn = clsName(s.classId);
-    var bg = rank <= 3 ? 'background:'+topBgs[i]+';border-color:rgba(255,255,255,.14);' : '';
-    return '<div class="ri" onclick="openProfile(\''+s.id+'\')" style="'+bg+'">'
+    return '<div class="ri rank-card" onclick="openProfile(\''+s.id+'\')">'
       +mkBadge(rank)
-      +mkAv(s,'av av2')
+      +mkAvRk(s, rank)
       +'<div class="rinfo"><div class="rname">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
       +'<div class="rpts" data-pts="'+s.points+'">'+s.points+'</div>'
       +'</div>';
   });
 
   var sep = sorted.length > 3
-    ? '<div style="display:flex;align-items:center;gap:8px;margin:8px 0;opacity:.45"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:10px;color:var(--text2);white-space:nowrap">Demais posições</span><div style="flex:1;height:1px;background:var(--border)"></div></div>'
+    ? '<div class="rk-sep"><span>Demais posições</span></div>'
     : '';
 
-  lEl.innerHTML = listHtml.slice(0,3).join('') + sep + listHtml.slice(3).join('');
+  lEl.innerHTML = '<div class="ranking-area"><div class="ranking-track">'
+    + listHtml.slice(0,3).join('') + sep + listHtml.slice(3).join('')
+    + '</div></div>';
 
   // Animate point counts
   lEl.querySelectorAll('.rpts[data-pts]').forEach(function(el){
