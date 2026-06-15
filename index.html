@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0d0d1a">
+<meta name="theme-color" content="#0a0e1a">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -15,12 +15,12 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d0d1a;--bg2:#13132a;--card:#1a1a35;--card2:#1f1f3d;--border:#2a2a50;
+  --bg:#0a0e1a;--bg2:#0d1528;--card:rgba(255,255,255,.06);--card2:rgba(255,255,255,.03);--border:rgba(255,255,255,.1);
   --green:#00d4aa;--green2:#00ff88;--blue:#4a9eff;--red:#ff4757;
   --gold:#ffd700;--silver:#c0c0c0;--bronze:#cd7f32;
-  --text:#e8e8f0;--text2:#8888aa;--nav:64px;--head:56px;
+  --text:#e8e8f0;--text2:#8888aa;--nav:0px;--head:60px;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;overflow:hidden}
+html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#0a0e1a 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 /* HEADER */
 #hdr{height:var(--head);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;flex-shrink:0}
@@ -207,6 +207,56 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   #rk-left .rank-3 .podium-block{height:78px}
   #rk-left .podium-player{max-width:220px}
 }
+/* ===== REDESIGN PRO ===== */
+/* Animações */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@keyframes goldGlowPulse{0%,100%{box-shadow:0 0 0 3px var(--gold),0 0 22px rgba(255,215,0,.6),0 4px 12px rgba(0,0,0,.4)}50%{box-shadow:0 0 0 3px var(--gold),0 0 50px rgba(255,215,0,.95),0 0 80px rgba(255,215,0,.3),0 4px 12px rgba(0,0,0,.4)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.85) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+/* Views */
+.view.on{animation:fadeInUp .28s ease-out}
+/* Glassmorphism */
+.si,.ri,.hi,.ssi,.cli,.scan-cfg{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.modal{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+/* Avatares — sombra + hover */
+.av{box-shadow:0 3px 10px rgba(0,0,0,.45);transition:transform .2s ease,box-shadow .2s ease}
+.av:hover{transform:scale(1.06);box-shadow:0 6px 18px rgba(0,0,0,.6)}
+.podium-player:hover .podium-av{transform:scale(1.06)}
+.podium-av{transition:transform .2s ease}
+/* 1° lugar — glow dourado pulsante */
+.rank-1 .podium-av{animation:goldGlowPulse 2.5s ease-in-out infinite,crownPulse 2s infinite!important}
+/* Pódio — blocos maiores */
+.rank-1 .podium-block{height:120px!important}
+.rank-2 .podium-block{height:90px!important}
+.rank-3 .podium-block{height:70px!important}
+/* Lista ranking — hover */
+.ri{transition:background .18s ease,border-color .18s ease,transform .15s ease}
+.ri:hover{background:rgba(255,255,255,.1)!important;border-color:rgba(255,255,255,.18)!important;transform:translateX(2px)}
+/* HEADER NAV */
+#nav{display:none!important}
+#content{padding-bottom:8px}
+.fab{bottom:16px!important}
+#hdr{gap:10px}
+#hnav{display:flex;align-items:center;gap:2px;flex:1;justify-content:center;min-width:0;overflow:hidden}
+.nb.hn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 8px;border:none;background:none;color:var(--text2);font-size:10px;font-weight:500;cursor:pointer;border-radius:8px;transition:color .2s,background .2s;position:relative;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:unset;min-width:40px}
+.nb.hn:hover{background:rgba(255,255,255,.07);color:var(--text)}
+.nb.hn.on{color:var(--green)}
+.nb.hn .ic{font-size:17px;line-height:1}
+.nb.hn::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%) scale(0);width:5px;height:5px;border-radius:50%;background:var(--green);transition:transform .2s}
+.nb.hn.on::after{transform:translateX(-50%) scale(1)}
+.hdr-sep{width:1px;height:26px;background:rgba(255,255,255,.1);flex-shrink:0;margin:0 2px}
+.logo-gaia{font-size:10px;color:var(--text2);margin-top:1px}
+/* Perfil modal */
+#mov-profile .modal{background:rgba(10,14,26,.9)!important}
+#mov-profile.on .modal{animation:scaleIn .22s ease-out}
+/* Mobile */
+@media(max-width:500px){
+  .nb.hn{padding:4px 5px;min-width:34px;font-size:9px}
+  .nb.hn .ic{font-size:15px}
+  .hn-lbl{display:none}
+  .hdr-sep{display:none}
+  .logo-gaia{display:none}
+}
 @media print{
   #hdr,#nav,.fab,.no-print{display:none!important}
   body{background:white;overflow:visible}
@@ -222,15 +272,25 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <body>
 <div id="app">
 <header id="hdr">
-  <div>
-    <span class="logo">EduPoints</span>
-    <span class="logo-sub">Pontuação Escolar</span>
+  <div style="display:flex;flex-direction:column;flex-shrink:0">
+    <span class="logo">🏆 EduPoints</span>
+    <span class="logo-gaia">Colégio Gaia — 6º Ano</span>
   </div>
-  <button id="lock-btn" onclick="toggleAdmin()" title="Modo Admin" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px 6px;margin-left:auto;line-height:1;-webkit-tap-highlight-color:transparent">🔒</button>
-  <div id="sb-badge" onclick="openStatusPanel()" style="display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;user-select:none;position:relative;-webkit-tap-highlight-color:transparent">
-    <span id="sb-icon" style="font-size:11px">🟡</span>
-    <span id="sb-label" style="font-size:10px;font-weight:700;color:#f0a500">VERIFICANDO</span>
-    <div id="sb-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;min-width:210px;z-index:500;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
+  <div class="hdr-sep"></div>
+  <div id="hnav">
+    <button class="nb hn on" data-v="rk" onclick="go('rk')" title="Ranking"><span class="ic">🏆</span><span class="hn-lbl">Ranking</span></button>
+    <button class="nb hn" data-v="hs" onclick="go('hs')" title="Histórico"><span class="ic">📋</span><span class="hn-lbl">Histórico</span></button>
+    <button class="nb hn" data-v="st" onclick="go('st')" title="Alunos"><span class="ic">👥</span><span class="hn-lbl">Alunos</span></button>
+    <button class="nb hn" data-v="sc" onclick="go('sc')" title="Scanner"><span class="ic">📷</span><span class="hn-lbl">Scanner</span></button>
+    <button class="nb hn" data-v="cfg" onclick="go('cfg')" title="Config"><span class="ic">⚙️</span><span class="hn-lbl">Config</span></button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <button id="lock-btn" onclick="toggleAdmin()" title="Modo Admin" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;-webkit-tap-highlight-color:transparent">🔒</button>
+    <div id="sb-badge" onclick="openStatusPanel()" style="display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;user-select:none;position:relative;-webkit-tap-highlight-color:transparent">
+      <span id="sb-icon" style="font-size:11px">🟡</span>
+      <span id="sb-label" style="font-size:10px;font-weight:700;color:#f0a500">VERIFICANDO</span>
+      <div id="sb-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;min-width:210px;z-index:500;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
+    </div>
   </div>
 </header>
 
@@ -509,6 +569,7 @@ var scanning = false;
 var editStId = null;
 var qrPtsId = null;
 var profileId = null;
+var confettiLaunched = false;
 var audioCtx = null;
 var lastScan = { id:'', t:0 };
 var COLORS = ['#00d4aa','#4a9eff','#ff6b6b','#ffd700','#a29bfe','#fd79a8','#fdcb6e','#6c5ce7','#00b894','#e17055'];
@@ -1009,16 +1070,22 @@ function openProfile(id) {
 
   var sorted = S.students.slice().sort(function(a,b){ return b.points - a.points; });
   var rank = sorted.findIndex(function(x){ return x.id === id; }) + 1;
-  var rankTxt = rank === 1 ? '🏆 1º lugar' : rank === 2 ? '🥈 2º lugar' : rank === 3 ? '🥉 3º lugar' : rank + 'º lugar';
+  var medals = {1:'🏆', 2:'🥈', 3:'🥉'};
+  var rankTxt = (medals[rank] || '🎖️') + ' ' + (rank <= 3 ? rank+'º lugar' : rank+'º lugar');
+  var rankColor = rank===1 ? 'var(--gold)' : rank===2 ? 'var(--silver)' : rank===3 ? 'var(--bronze)' : 'var(--text2)';
   document.getElementById('profile-rank').textContent = rankTxt;
+  document.getElementById('profile-rank').style.color = rankColor;
 
-  var cor = clsColor(s.classId);
+  var borderColor = rank===1 ? 'var(--gold)' : rank===2 ? 'var(--silver)' : rank===3 ? 'var(--bronze)' : clsColor(s.classId);
   document.getElementById('profile-av-wrap').innerHTML =
-    mkAv(s, 'av', 'width:150px;height:150px;font-size:52px;margin:0 auto;border:4px solid '+cor);
+    mkAv(s, 'av', 'width:160px;height:160px;font-size:58px;margin:0 auto;border:4px solid '+borderColor+';box-shadow:0 0 24px rgba(0,0,0,.5)');
 
   document.getElementById('profile-name').textContent = s.name;
   document.getElementById('profile-cls').textContent = clsName(s.classId) || '';
-  document.getElementById('profile-pts-val').textContent = s.points + ' pts';
+
+  var ptsEl = document.getElementById('profile-pts-val');
+  ptsEl.textContent = '0 pts';
+  setTimeout(function(){ animateCount(ptsEl, s.points, 700, function(v){ return v + ' pts'; }); }, 120);
 
   var hist = S.history.filter(function(h){ return h.studentId === id; }).slice(0, 5);
   var hEl = document.getElementById('profile-hist');
@@ -1029,7 +1096,9 @@ function openProfile(id) {
       var d = new Date(h.timestamp);
       var ds = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
       var label = h.obs || (h.source === 'qr' ? '📷 QR Code' : '👆 Manual');
+      var icon = h.points >= 0 ? '✅' : '❌';
       return '<div class="hi" style="margin-bottom:5px">'
+        + '<div style="font-size:18px;flex-shrink:0">' + icon + '</div>'
         + '<div class="hinfo"><div class="hname" style="font-size:13px">' + esc(label) + '</div>'
         + '<div class="hmeta">' + ds + '</div></div>'
         + '<div class="hpts '+(h.points>=0?'pos':'neg')+'">'+(h.points>0?'+':'')+h.points+'</div>'
@@ -1045,6 +1114,45 @@ function openProfile(id) {
 function openProfileQP() {
   closeOv('mov-profile');
   if (profileId) openQP(profileId);
+}
+
+// ===== ANIMAÇÕES VISUAIS =====
+function animateCount(el, target, dur, fmt) {
+  if (!el) return;
+  if (target === 0) { el.textContent = fmt ? fmt(0) : '0'; return; }
+  var t0 = null;
+  dur = dur || 800;
+  fmt = fmt || function(v){ return String(v); };
+  function step(ts) {
+    if (!t0) t0 = ts;
+    var p = Math.min((ts - t0) / dur, 1);
+    var eased = 1 - Math.pow(1 - p, 2);
+    el.textContent = fmt(Math.round(eased * target));
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = fmt(target);
+  }
+  requestAnimationFrame(step);
+}
+
+function launchConfetti() {
+  if (confettiLaunched) return;
+  confettiLaunched = true;
+  var colors = ['#FFD700','#FF6B6B','#4A9EFF','#00D4AA','#A855F7','#FF69B4','#00FF88','#FFA500'];
+  var c = document.createElement('div');
+  c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden';
+  document.body.appendChild(c);
+  for (var i = 0; i < 60; i++) {
+    var p = document.createElement('div');
+    var col = colors[i % colors.length];
+    var left = 5 + Math.random() * 90;
+    var delay = Math.random() * 2.2;
+    var dur = 2.5 + Math.random() * 2;
+    var size = 5 + Math.random() * 9;
+    var shape = Math.random() > 0.5 ? '50%' : '2px';
+    p.style.cssText = 'position:absolute;top:-15px;left:'+left+'%;width:'+size+'px;height:'+(size*0.55)+'px;background:'+col+';border-radius:'+shape+';animation:confettiFall '+dur+'s '+delay+'s ease-in both;transform:rotate('+Math.round(Math.random()*360)+'deg)';
+    c.appendChild(p);
+  }
+  setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 5500);
 }
 
 // ===== RANKING =====
@@ -1063,11 +1171,14 @@ function renderRk() {
     return;
   }
 
+  if (sorted.length >= 1) launchConfetti();
+
   var crowns = ['','🏆','🥈','🥉'];
+  var delays = {1:'.05s', 2:'.2s', 3:'.35s'};
 
   function podiumPlayer(s, rank) {
     if (!s) return '';
-    return '<div class="podium-player rank-'+rank+'" onclick="openProfile(\''+s.id+'\')" style="cursor:pointer">'
+    return '<div class="podium-player rank-'+rank+'" onclick="openProfile(\''+s.id+'\')" style="cursor:pointer;animation:podiumIn .55s ease-out '+delays[rank]+' both">'
       +'<div class="podium-crown">'+crowns[rank]+'</div>'
       +mkAv(s,'podium-av')
       +'<div class="podium-pts-label">pontos</div>'
@@ -1078,27 +1189,45 @@ function renderRk() {
   }
 
   var top = sorted.slice(0,3);
-  // Display order: 2nd (left), 1st (center), 3rd (right)
   var stageHTML = podiumPlayer(top[1]||null, 2)
     + podiumPlayer(top[0], 1)
     + podiumPlayer(top[2]||null, 3);
 
   pEl.innerHTML = '<div class="podium-wrap"><div class="podium-stage">' + stageHTML + '</div></div>';
 
-  // List 4th+
-  var rest = sorted.slice(3);
-  if (rest.length===0) { lEl.innerHTML=''; return; }
+  // Build position badge
+  function mkBadge(rank) {
+    var cfg = rank===1 ? {bg:'#FFD700',c:'#000'} : rank===2 ? {bg:'#C0C0C0',c:'#000'} : rank===3 ? {bg:'#CD7F32',c:'#000'} : {bg:'rgba(255,255,255,.1)',c:'var(--text2)'};
+    return '<div style="min-width:26px;height:26px;border-radius:50%;background:'+cfg.bg+';color:'+cfg.c+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">'+rank+'</div>';
+  }
 
-  var divider = '<div class="rank-divider"><span>Classificação Geral</span></div>';
-  lEl.innerHTML = divider + rest.map(function(s,i){
+  // Full list in right column (all students)
+  var topBgs = ['rgba(255,215,0,.09)','rgba(192,192,192,.08)','rgba(205,127,50,.08)'];
+
+  var listHtml = sorted.map(function(s,i){
+    var rank = i+1;
     var cn = clsName(s.classId);
-    return '<div class="ri" onclick="openProfile(\''+s.id+'\')">'
-      +'<div class="rn">'+(i+4)+'</div>'
+    var bg = rank <= 3 ? 'background:'+topBgs[i]+';border-color:rgba(255,255,255,.14);' : '';
+    return '<div class="ri" onclick="openProfile(\''+s.id+'\')" style="'+bg+'">'
+      +mkBadge(rank)
       +mkAv(s,'av av2')
       +'<div class="rinfo"><div class="rname">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
-      +'<div class="rpts">'+s.points+'</div>'
+      +'<div class="rpts" data-pts="'+s.points+'">'+s.points+'</div>'
       +'</div>';
-  }).join('');
+  });
+
+  var sep = sorted.length > 3
+    ? '<div style="display:flex;align-items:center;gap:8px;margin:8px 0;opacity:.45"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:10px;color:var(--text2);white-space:nowrap">Demais posições</span><div style="flex:1;height:1px;background:var(--border)"></div></div>'
+    : '';
+
+  lEl.innerHTML = listHtml.slice(0,3).join('') + sep + listHtml.slice(3).join('');
+
+  // Animate point counts
+  lEl.querySelectorAll('.rpts[data-pts]').forEach(function(el){
+    var target = parseInt(el.getAttribute('data-pts')) || 0;
+    animateCount(el, target, 850);
+  });
+
   renderMeta();
 }
 
@@ -1660,16 +1789,22 @@ function renderMeta() {
   } else if (hoje > metaAtiva.semana_fim) {
     var atingida = pts >= meta;
     cor    = atingida ? '#00ff88' : 'var(--red)';
-    texto  = '🎯 Meta ' + periodo + ' · ' + pts + ' / ' + meta + ' pts · ' + (atingida ? '✓ Atingida!' : 'encerrada');
-    barHtml = '<div style="background:var(--border);border-radius:2px;height:4px;overflow:hidden;margin-top:5px">'
-      + '<div style="height:100%;width:'+pct+'%;background:'+cor+';border-radius:2px"></div></div>';
+    texto  = '🎯 Meta ' + periodo + ' · ' + pts + ' / ' + meta + ' pts · ' + (atingida ? '🏆 Atingida!' : 'encerrada');
+    var grad = atingida ? '#00ff88' : 'linear-gradient(90deg,#ff4757,#ff8c00)';
+    barHtml = '<div style="background:rgba(255,255,255,.07);border-radius:999px;height:14px;overflow:hidden;margin-top:7px;max-width:500px">'
+      + '<div style="height:100%;width:'+pct+'%;background:'+grad+';border-radius:999px'+(atingida?';animation:barPulse 1.2s ease infinite':'')+'"></div></div>';
   } else {
     texto   = '🎯 Meta ' + periodo + ' · ' + pts + ' / ' + meta + ' pts · ' + pct + '%';
-    barHtml = '<div style="background:var(--border);border-radius:2px;height:4px;overflow:hidden;margin-top:5px">'
-      + '<div style="height:100%;width:'+pct+'%;background:'+cor+';border-radius:2px;transition:width .5s ease'+(pct>=100?';animation:barPulse 1.2s ease infinite':'')+'"></div></div>';
+    var barGrad = pct >= 100 ? '#00ff88'
+      : pct >= 71 ? 'linear-gradient(90deg,#ffd700,#00ff88)'
+      : pct >= 41 ? 'linear-gradient(90deg,#ff8c00,#ffd700)'
+      : 'linear-gradient(90deg,#ff4757,#ff8c00)';
+    var barAnim = pct >= 100 ? ';animation:barPulse 1.2s ease infinite' : '';
+    barHtml = '<div style="background:rgba(255,255,255,.07);border-radius:999px;height:14px;overflow:hidden;margin-top:7px;max-width:500px">'
+      + '<div style="height:100%;width:'+pct+'%;background:'+barGrad+';border-radius:999px;transition:width .6s ease'+barAnim+'"></div></div>';
   }
 
-  el.innerHTML = '<div style="padding:4px 0 8px">'
+  el.innerHTML = '<div style="padding:4px 0 10px;max-width:500px">'
     + '<div style="font-size:12px;color:'+cor+'">'+texto+'</div>'
     + barHtml
     + '</div>';
