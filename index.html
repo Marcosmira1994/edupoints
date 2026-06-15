@@ -292,23 +292,24 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .rk-sep{display:flex;align-items:center;gap:8px;margin:10px 0;opacity:.4}
 .rk-sep::before,.rk-sep::after{content:'';flex:1;height:1px;background:var(--border)}
 .rk-sep span{font-size:10px;color:var(--text2);white-space:nowrap;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-/* Animações flutuantes */
-.ranking-area{overflow:hidden;position:relative}
-.ranking-track{animation:rankingFloat 5s ease-in-out infinite;will-change:transform}
-@keyframes rankingFloat{
-  0%  {transform:translateY(0px) rotateZ(-0.15deg)}
-  50% {transform:translateY(-10px) rotateZ(0.15deg)}
-  100%{transform:translateY(0px) rotateZ(-0.15deg)}
+/* Animação flutuante — apenas no hover */
+.ranking-area{position:relative}
+.rank-card{transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+.rank-card:hover{
+  animation:cardWobble .4s ease-in-out;
+  transform:translateY(-4px);
+  box-shadow:0 10px 36px rgba(0,0,0,.55)!important;
+  border-color:rgba(255,255,255,.22)!important;
 }
-.rank-card{animation:cardWobble 4s ease-in-out infinite;will-change:transform}
-.rank-card:nth-child(2n){animation-delay:-1s}
-.rank-card:nth-child(3n){animation-delay:-2s}
 @keyframes cardWobble{
-  0%,100%{transform:translateX(0px)}
-  50%    {transform:translateX(4px)}
+  0%  {transform:translateY(0) translateX(0)}
+  30% {transform:translateY(-4px) translateX(3px)}
+  60% {transform:translateY(-4px) translateX(-2px)}
+  100%{transform:translateY(-4px) translateX(0)}
 }
 @media(prefers-reduced-motion:reduce){
-  .ranking-track,.rank-card{animation:none}
+  .rank-card{transition:none}
+  .rank-card:hover{animation:none;transform:translateY(-4px)}
 }
 /* Pódio Aura Ranker — top 3 cards grandes */
 .podium-aura{display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:12px 4px 0}
@@ -364,6 +365,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
     <button class="nb hn" data-v="cfg" onclick="go('cfg')" title="Config"><span class="ic">⚙️</span><span class="hn-lbl">Config</span></button>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <button id="fs-btn" onclick="toggleFullscreen()" title="Tela cheia" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 6px;line-height:1;-webkit-tap-highlight-color:transparent;color:var(--text2)">⛶</button>
     <button id="lock-btn" onclick="toggleAdmin()" title="Modo Admin" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;-webkit-tap-highlight-color:transparent">🔒</button>
     <div id="sb-badge" onclick="openStatusPanel()" style="display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;user-select:none;position:relative;-webkit-tap-highlight-color:transparent">
       <span id="sb-icon" style="font-size:11px">🟡</span>
@@ -956,6 +958,28 @@ function updateAdminUI() {
   if (!isAdmin && curView !== 'rk' && curView !== 'hs') go('rk');
   else render(curView);
 }
+
+function toggleFullscreen() {
+  var btn = document.getElementById('fs-btn');
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(function(){});
+  } else {
+    document.exitFullscreen().catch(function(){});
+  }
+}
+document.addEventListener('fullscreenchange', function() {
+  var btn = document.getElementById('fs-btn');
+  if (!btn) return;
+  if (document.fullscreenElement) {
+    btn.textContent = '✕';
+    btn.title = 'Sair da tela cheia';
+    btn.style.color = 'var(--green)';
+  } else {
+    btn.textContent = '⛶';
+    btn.title = 'Tela cheia';
+    btn.style.color = 'var(--text2)';
+  }
+});
 
 function toggleAdmin() {
   if (isAdmin) {
