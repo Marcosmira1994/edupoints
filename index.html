@@ -179,6 +179,34 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .cat-neg{background:var(--red);color:#fff}
 .cat-val{font-size:15px;font-weight:900;margin-left:10px;flex-shrink:0}
 .cat-sep{height:1px;background:var(--border);margin:4px 0}
+/* RANKING — modal de perfil centralizado */
+#mov-profile{align-items:center;padding:16px}
+#mov-profile .modal{border-radius:20px!important;transform:translateY(24px)!important}
+#mov-profile.on .modal{transform:translateY(0)!important}
+/* RANKING — layout duas colunas (desktop) */
+@media(min-width:768px){
+  #view-rk>.rk-inner{display:flex;flex-direction:column;height:calc(100dvh - var(--head) - var(--nav));overflow:hidden;padding:0 12px}
+  #view-rk>.rk-inner>.chips{flex-shrink:0}
+  #view-rk>.rk-inner>#meta-bar{flex-shrink:0}
+  #rk-layout{display:flex;gap:12px;flex:1;overflow:hidden;padding-bottom:8px}
+  #rk-left{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+  #rk-left .podium-wrap{flex:1;display:flex;flex-direction:column;justify-content:center}
+  #rk-right{width:30%;flex-shrink:0;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px}
+  #rk-right .rank-divider{display:none}
+  /* Avatares maiores no pódio desktop */
+  #rk-left .rank-1 .podium-av{width:120px;height:120px;font-size:42px}
+  #rk-left .rank-2 .podium-av{width:90px;height:90px;font-size:32px}
+  #rk-left .rank-3 .podium-av{width:80px;height:80px;font-size:28px}
+  #rk-left .rank-1 .podium-pts{font-size:38px}
+  #rk-left .rank-2 .podium-pts{font-size:30px}
+  #rk-left .rank-3 .podium-pts{font-size:26px}
+  #rk-left .rank-1 .podium-name{font-size:14px}
+  #rk-left .rank-1 .podium-crown{font-size:34px}
+  #rk-left .rank-1 .podium-block{height:130px}
+  #rk-left .rank-2 .podium-block{height:100px}
+  #rk-left .rank-3 .podium-block{height:78px}
+  #rk-left .podium-player{max-width:220px}
+}
 @media print{
   #hdr,#nav,.fab,.no-print{display:none!important}
   body{background:white;overflow:visible}
@@ -212,11 +240,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div style="position:fixed;top:var(--head);left:0;right:0;bottom:var(--nav);pointer-events:none;z-index:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
       <img src="logo.png" alt="" aria-hidden="true" style="width:80%;max-width:420px;height:auto;object-fit:contain;opacity:0.07;user-select:none;-webkit-user-select:none">
     </div>
-    <div style="position:relative;z-index:1">
+    <div class="rk-inner" style="position:relative;z-index:1">
       <div id="cf-rk" class="chips"></div>
       <div id="meta-bar"></div>
-      <div id="podium"></div>
-      <div id="rklist"></div>
+      <div id="rk-layout">
+        <div id="rk-left"><div id="podium"></div></div>
+        <div id="rk-right"><div id="rklist"></div></div>
+      </div>
     </div>
   </div>
 
@@ -443,6 +473,25 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 </div>
 
 <!-- TOAST -->
+<!-- MODAL: PERFIL DO ALUNO -->
+<div class="ov" id="mov-profile">
+  <div class="modal" style="max-width:480px">
+    <div class="mh">
+      <span class="mt" id="profile-rank" style="color:var(--gold)"></span>
+      <button class="mc" onclick="closeOv('mov-profile')">✕</button>
+    </div>
+    <div style="text-align:center;padding:4px 0 16px">
+      <div id="profile-av-wrap" style="margin-bottom:14px"></div>
+      <div id="profile-name" style="font-size:19px;font-weight:800"></div>
+      <div id="profile-cls" style="font-size:13px;color:var(--text2);margin-top:4px"></div>
+      <div id="profile-pts-val" style="font-size:40px;font-weight:900;color:var(--green);margin-top:10px;line-height:1"></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Últimas movimentações</div>
+    <div id="profile-hist"></div>
+    <button id="profile-qp-btn" class="btn btn-p btn-bl" style="margin-top:14px;display:none" onclick="openProfileQP()">✏️ Pontuar</button>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -459,6 +508,7 @@ var qrScanner = null;
 var scanning = false;
 var editStId = null;
 var qrPtsId = null;
+var profileId = null;
 var audioCtx = null;
 var lastScan = { id:'', t:0 };
 var COLORS = ['#00d4aa','#4a9eff','#ff6b6b','#ffd700','#a29bfe','#fd79a8','#fdcb6e','#6c5ce7','#00b894','#e17055'];
@@ -951,6 +1001,52 @@ function renderChips(elId, current, onClickFn) {
 function setRkFilter(v) { rkFilter=v; renderRk(); }
 function setStFilter(v) { stFilter=v; renderStudents(); }
 
+// ===== PERFIL DO ALUNO =====
+function openProfile(id) {
+  var s = S.students.find(function(x){ return x.id === id; });
+  if (!s) return;
+  profileId = id;
+
+  var sorted = S.students.slice().sort(function(a,b){ return b.points - a.points; });
+  var rank = sorted.findIndex(function(x){ return x.id === id; }) + 1;
+  var rankTxt = rank === 1 ? '🏆 1º lugar' : rank === 2 ? '🥈 2º lugar' : rank === 3 ? '🥉 3º lugar' : rank + 'º lugar';
+  document.getElementById('profile-rank').textContent = rankTxt;
+
+  var cor = clsColor(s.classId);
+  document.getElementById('profile-av-wrap').innerHTML =
+    mkAv(s, 'av', 'width:150px;height:150px;font-size:52px;margin:0 auto;border:4px solid '+cor);
+
+  document.getElementById('profile-name').textContent = s.name;
+  document.getElementById('profile-cls').textContent = clsName(s.classId) || '';
+  document.getElementById('profile-pts-val').textContent = s.points + ' pts';
+
+  var hist = S.history.filter(function(h){ return h.studentId === id; }).slice(0, 5);
+  var hEl = document.getElementById('profile-hist');
+  if (hist.length === 0) {
+    hEl.innerHTML = '<div style="text-align:center;color:var(--text2);font-size:13px;padding:10px 0">Sem movimentações</div>';
+  } else {
+    hEl.innerHTML = hist.map(function(h) {
+      var d = new Date(h.timestamp);
+      var ds = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      var label = h.obs || (h.source === 'qr' ? '📷 QR Code' : '👆 Manual');
+      return '<div class="hi" style="margin-bottom:5px">'
+        + '<div class="hinfo"><div class="hname" style="font-size:13px">' + esc(label) + '</div>'
+        + '<div class="hmeta">' + ds + '</div></div>'
+        + '<div class="hpts '+(h.points>=0?'pos':'neg')+'">'+(h.points>0?'+':'')+h.points+'</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  var btn = document.getElementById('profile-qp-btn');
+  if (btn) btn.style.display = isAdmin ? '' : 'none';
+  openOv('mov-profile');
+}
+
+function openProfileQP() {
+  closeOv('mov-profile');
+  if (profileId) openQP(profileId);
+}
+
 // ===== RANKING =====
 function renderRk() {
   renderChips('cf-rk', rkFilter, 'setRkFilter');
@@ -971,8 +1067,7 @@ function renderRk() {
 
   function podiumPlayer(s, rank) {
     if (!s) return '';
-    var click = isAdmin ? ' onclick="openQP(\''+s.id+'\')"' : ' style="cursor:default"';
-    return '<div class="podium-player rank-'+rank+'"'+click+'>'
+    return '<div class="podium-player rank-'+rank+'" onclick="openProfile(\''+s.id+'\')" style="cursor:pointer">'
       +'<div class="podium-crown">'+crowns[rank]+'</div>'
       +mkAv(s,'podium-av')
       +'<div class="podium-pts-label">pontos</div>'
@@ -997,7 +1092,7 @@ function renderRk() {
   var divider = '<div class="rank-divider"><span>Classificação Geral</span></div>';
   lEl.innerHTML = divider + rest.map(function(s,i){
     var cn = clsName(s.classId);
-    return '<div class="ri"' + (isAdmin ? ' onclick="openQP(\''+s.id+'\')"' : '') + '>'
+    return '<div class="ri" onclick="openProfile(\''+s.id+'\')">'
       +'<div class="rn">'+(i+4)+'</div>'
       +mkAv(s,'av av2')
       +'<div class="rinfo"><div class="rname">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
