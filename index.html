@@ -301,10 +301,10 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
   .rank-card{transition:none}
 }
 /* Pódio Aura Ranker — avatares dominantes, ocupa quase toda a tela */
-/* Mobile: reduz padding do view e dá altura mínima ao pódio */
+/* Mobile: reduz padding do view; pódio fica colado na barra de meta, sem altura mínima forçada */
 @media(max-width:767px){
   #view-rk{padding:4px 4px 0!important}
-  .podium-wrap{min-height:calc(100dvh - var(--head) - 80px)}
+  .podium-wrap{min-height:unset}
 }
 /* podium-wrap: sempre flex-column para .podium-aura poder crescer */
 .podium-wrap{display:flex;flex-direction:column;padding:0;animation:podiumIn .5s ease-out}
