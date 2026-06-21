@@ -932,7 +932,7 @@ function initial(name) { return name ? name.charAt(0).toUpperCase() : '?'; }
 
 function mkAv(s, cls, extraStyle) {
   var sty = extraStyle ? ' style="' + extraStyle + '"' : '';
-  if (isAdmin && s && s.fotoUrl) {
+  if (s && s.fotoUrl) {
     var ws = 'padding:0' + (extraStyle ? ';' + extraStyle : '');
     return '<div class="' + cls + '" style="' + ws + '"><img src="' + esc(s.fotoUrl) + '" loading="lazy"></div>';
   }
