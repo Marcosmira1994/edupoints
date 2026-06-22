@@ -387,6 +387,12 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .cat-dui-sep{height:1px;background:rgba(255,255,255,.1);margin:6px 0}
 /* DaisyUI btn integration — garante space-between sobrescreve justify-content:center do .btn */
 .btn.cat-dui{justify-content:space-between}
+/* Lista de acessos: altura máxima com rolagem interna estilizada */
+#acessos-list{max-height:300px;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+#acessos-list::-webkit-scrollbar{width:8px}
+#acessos-list::-webkit-scrollbar-track{background:transparent}
+#acessos-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+#acessos-list::-webkit-scrollbar-thumb:hover{background:var(--text2)}
 </style>
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -513,7 +519,10 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <div class="stitle">📊 Acessos ao Site</div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
         <div style="font-size:13px;color:var(--text2)">Total: <strong id="acessos-total" style="color:var(--green)">—</strong></div>
-        <button class="btn btn-gh" style="width:auto;padding:8px 14px;margin:0" onclick="carregarAcessos()">🔄 Atualizar</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-gh" style="width:auto;padding:8px 14px;margin:0" onclick="carregarAcessos()">🔄 Atualizar</button>
+          <button class="btn btn-gh" style="width:auto;padding:8px 14px;margin:0;color:var(--red)" onclick="limparHistoricoAcessos()">🗑️ Limpar Histórico</button>
+        </div>
       </div>
       <div id="acessos-list"></div>
     </div>
@@ -1117,9 +1126,31 @@ function registrarAcesso() {
       .then(function(d){ if (d && d.ip) registro.ip = d.ip; })
       .catch(function(){ /* segue sem IP */ })
       .then(function(){
-        sbReq('POST', 'acessos', '', registro).catch(function(){});
+        sbReq('POST', 'acessos', '', registro)
+          .then(function(){ limparAcessosAntigos(); })
+          .catch(function(){});
       });
   } catch(e) { /* nunca bloqueia a entrada no app */ }
+}
+
+// Mantém somente os 30 acessos mais recentes, removendo os mais antigos
+function limparAcessosAntigos() {
+  sbReq('GET', 'acessos', 'select=id&order=criado_em.asc')
+    .then(function(rows){
+      if (!Array.isArray(rows) || rows.length <= 30) return;
+      var excedentes = rows.slice(0, rows.length - 30).map(function(r){ return r.id; });
+      if (!excedentes.length) return;
+      return sbReq('DELETE', 'acessos', 'id=in.(' + excedentes.join(',') + ')');
+    })
+    .catch(function(){});
+}
+
+// Apaga todos os acessos registrados (admin)
+function limparHistoricoAcessos() {
+  if (!confirm('Tem certeza que deseja apagar todos os acessos?')) return;
+  sbReq('DELETE', 'acessos', 'id=not.is.null')
+    .then(function(){ carregarAcessos(); })
+    .catch(function(){ alert('Erro ao limpar os acessos.'); });
 }
 
 // Painel admin: carrega total e últimos 20 acessos (TAREFA 3)
