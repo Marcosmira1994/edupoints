@@ -509,6 +509,15 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <div id="backup-list" style="margin-top:8px"></div>
     </div>
 
+    <div id="acessos-section" style="display:none">
+      <div class="stitle">📊 Acessos ao Site</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+        <div style="font-size:13px;color:var(--text2)">Total: <strong id="acessos-total" style="color:var(--green)">—</strong></div>
+        <button class="btn btn-gh" style="width:auto;padding:8px 14px;margin:0" onclick="carregarAcessos()">🔄 Atualizar</button>
+      </div>
+      <div id="acessos-list"></div>
+    </div>
+
     <div class="stitle">Dados</div>
     <div class="ssi" onclick="exportCSV()">
       <span class="ssic">📊</span>
@@ -1020,7 +1029,9 @@ function updateAdminUI() {
   if (recalcBtn) recalcBtn.style.display = isAdmin ? '' : 'none';
   var cloudBk = document.getElementById('cloud-backup-section');
   if (cloudBk) cloudBk.style.display = isAdmin ? '' : 'none';
-  if (isAdmin && navigator.onLine) backupAutomatico();
+  var acessosSec = document.getElementById('acessos-section');
+  if (acessosSec) acessosSec.style.display = isAdmin ? '' : 'none';
+  if (isAdmin && navigator.onLine) { backupAutomatico(); carregarAcessos(); }
   var fab = document.getElementById('fab');
   if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
   if (!isAdmin && curView !== 'rk' && curView !== 'hs') go('rk');
@@ -1076,11 +1087,82 @@ function checkAdminPwd() {
   }
 }
 
+// ===== LOG DE ACESSOS =====
+function detectDispositivo(ua) {
+  if (/iPad|Tablet|PlayBook|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua))) return 'tablet';
+  if (/Mobi|iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|Opera Mini/i.test(ua)) return 'mobile';
+  return 'desktop';
+}
+function detectNavegador(ua) {
+  if (/Edg\//i.test(ua)) return 'Edge';
+  if (/OPR\/|Opera/i.test(ua)) return 'Opera';
+  if (/SamsungBrowser/i.test(ua)) return 'Samsung Internet';
+  if (/Firefox\//i.test(ua)) return 'Firefox';
+  if (/Chrome\//i.test(ua) && !/Chromium/i.test(ua)) return 'Chrome';
+  if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) return 'Safari';
+  return 'Outro';
+}
+// Registra o acesso ao entrar no app (após senha correta)
+function registrarAcesso() {
+  try {
+    var ua = navigator.userAgent || '';
+    var registro = {
+      dispositivo: detectDispositivo(ua),
+      navegador:   detectNavegador(ua),
+      resolucao:   window.innerWidth + ' x ' + window.innerHeight,
+      ip:          null
+    };
+    fetch('https://api.ipify.org?format=json')
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (d && d.ip) registro.ip = d.ip; })
+      .catch(function(){ /* segue sem IP */ })
+      .then(function(){
+        sbReq('POST', 'acessos', '', registro).catch(function(){});
+      });
+  } catch(e) { /* nunca bloqueia a entrada no app */ }
+}
+
+// Painel admin: carrega total e últimos 20 acessos (TAREFA 3)
+function carregarAcessos() {
+  var listEl  = document.getElementById('acessos-list');
+  var totalEl = document.getElementById('acessos-total');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:10px 0">Carregando...</div>';
+  sbReq('GET', 'acessos', 'select=id')
+    .then(function(rows){ if (totalEl) totalEl.textContent = Array.isArray(rows) ? rows.length : '—'; })
+    .catch(function(){ if (totalEl) totalEl.textContent = '—'; });
+  sbReq('GET', 'acessos', 'select=*&order=criado_em.desc&limit=20')
+    .then(function(rows){
+      if (!Array.isArray(rows) || rows.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:10px 0">Nenhum acesso registrado ainda.</div>';
+        return;
+      }
+      listEl.innerHTML = rows.map(function(a){
+        var d = a.criado_em ? new Date(a.criado_em) : null;
+        var dataStr = d ? d.toLocaleString('pt-BR') : '—';
+        var icon = a.dispositivo === 'mobile' ? '📱' : (a.dispositivo === 'tablet' ? '📲' : '💻');
+        return '<div style="background:#0a0e1a;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px">'
+          +   '<span style="font-weight:600;color:#e8e8f0;font-size:13px">' + icon + ' ' + esc(a.dispositivo || '—') + '</span>'
+          +   '<span style="font-size:12px;color:var(--text2);white-space:nowrap">' + esc(dataStr) + '</span>'
+          + '</div>'
+          + '<div style="font-size:12px;color:var(--text2);line-height:1.6">'
+          +   '🌐 ' + esc(a.navegador || '—') + ' &nbsp;·&nbsp; 📐 ' + esc(a.resolucao || '—') + ' &nbsp;·&nbsp; 🌍 ' + esc(a.ip || '—')
+          + '</div>'
+          + '</div>';
+      }).join('');
+    })
+    .catch(function(){
+      listEl.innerHTML = '<div style="color:var(--red);font-size:13px;padding:10px 0">Erro ao carregar acessos.</div>';
+    });
+}
+
 function checkAccess() {
   var inp = document.getElementById('access-pwd');
   var errEl = document.getElementById('access-err');
   if (inp.value === ACCESS_PWD) {
     sessionStorage.setItem('ep_access', '1');
+    registrarAcesso();
     document.getElementById('access-gate').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     inp.value = '';
