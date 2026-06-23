@@ -493,6 +493,13 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
     <div id="clslist"></div>
     <button class="btn btn-gh btn-bl" onclick="openAddClass()">+ Adicionar Turma</button>
 
+    <div class="stitle">⚡ Hall da Aura</div>
+    <div class="ssi" onclick="openEncerrarBimestre()">
+      <span class="ssic">🏆</span>
+      <div style="flex:1"><div class="ssil">Encerrar Bimestre e Salvar no Hall da Aura</div><div class="ssid">Salva o TOP 10 atual como um bimestre permanente</div></div>
+      <span style="color:var(--gold)">›</span>
+    </div>
+
     <div class="stitle">Backup</div>
     <div class="ssi" onclick="exportBackup()">
       <span class="ssic">💾</span>
@@ -688,6 +695,24 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <input type="password" class="inp" id="admin-pwd" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')checkAdminPwd()">
     </div>
     <button class="btn btn-p btn-bl btn-lg" onclick="checkAdminPwd()">Entrar</button>
+  </div>
+</div>
+
+<!-- MODAL: ENCERRAR BIMESTRE -->
+<div class="ov" id="mov-bimestre">
+  <div class="ep-modal">
+    <div class="mh">
+      <span class="mt">🏆 Encerrar Bimestre</span>
+      <button class="mc" onclick="closeOv('mov-bimestre')">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px">
+      Os <strong style="color:var(--gold)">TOP 10</strong> alunos atuais (por pontos) serão salvos permanentemente no Hall da Aura.
+    </div>
+    <div class="fg">
+      <label class="fl">Nome do bimestre</label>
+      <input type="text" class="inp" id="bim-name" placeholder="Ex: 2º Bimestre 2025" onkeydown="if(event.key==='Enter')salvarHallAura()">
+    </div>
+    <button class="btn btn-p btn-bl btn-lg" id="bim-save-btn" onclick="salvarHallAura()">🏆 Salvar no Hall da Aura</button>
   </div>
 </div>
 
@@ -1776,6 +1801,74 @@ function recalcularPontosDoHistorico() {
     });
 }
 
+// ===== HALL DA AURA =====
+var hallAura = [];     // todos os registros salvos (mais recentes primeiro)
+var bestBadges = {};   // aluno_id -> melhor posição já conquistada (1..10)
+
+function fromSbHall(r) {
+  return { id:r.id, bimestre:r.bimestre, posicao:r.posicao, alunoId:r.aluno_id, alunoNome:r.aluno_nome, pontos:r.pontos, fotoUrl:r.foto_url||null, criadoEm:r.criado_em };
+}
+
+// Recalcula o melhor badge (menor posição) de cada aluno
+function computeBadges() {
+  bestBadges = {};
+  hallAura.forEach(function(r) {
+    var cur = bestBadges[r.alunoId];
+    if (cur === undefined || r.posicao < cur) bestBadges[r.alunoId] = r.posicao;
+  });
+}
+
+// Emoji do melhor badge do aluno (ou '' se nunca entrou no Hall)
+function badgeFor(alunoId) {
+  var p = bestBadges[alunoId];
+  if (p === undefined) return '';
+  if (p === 1) return '🥇';
+  if (p === 2) return '🥈';
+  if (p === 3) return '🥉';
+  return '⚡';
+}
+
+function fetchHallAura() {
+  return sbReq('GET', 'hall_aura', 'select=*&order=criado_em.desc')
+    .then(function(rows) { hallAura = (rows || []).map(fromSbHall); computeBadges(); })
+    .catch(function() { hallAura = []; bestBadges = {}; });
+}
+
+function openEncerrarBimestre() {
+  var top = S.students.slice().sort(function(a,b){ return b.points - a.points; }).slice(0, 10);
+  if (top.length === 0) { alert('Nenhum aluno cadastrado para salvar.'); return; }
+  document.getElementById('bim-name').value = '';
+  openOv('mov-bimestre');
+  setTimeout(function(){ document.getElementById('bim-name').focus(); }, 300);
+}
+
+function salvarHallAura() {
+  var nome = document.getElementById('bim-name').value.trim();
+  if (!nome) { alert('Digite o nome do bimestre.'); return; }
+  var top = S.students.slice().sort(function(a,b){ return b.points - a.points; }).slice(0, 10);
+  if (top.length === 0) { alert('Nenhum aluno para salvar.'); return; }
+  var rows = top.map(function(s, i) {
+    return { bimestre:nome, posicao:i+1, aluno_id:s.id, aluno_nome:s.name, pontos:s.points, foto_url:s.fotoUrl||null };
+  });
+  var btn = document.getElementById('bim-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+  setStatus('syncing');
+  sbReq('POST', 'hall_aura', '', rows)
+    .then(function() { return fetchHallAura(); })
+    .then(function() {
+      setStatus('ok');
+      closeOv('mov-bimestre');
+      if (btn) { btn.disabled = false; btn.textContent = '🏆 Salvar no Hall da Aura'; }
+      render(curView);
+      alert('🏆 Bimestre "' + nome + '" salvo no Hall da Aura com ' + rows.length + ' aluno(s)!');
+    })
+    .catch(function(e) {
+      setStatus('error');
+      if (btn) { btn.disabled = false; btn.textContent = '🏆 Salvar no Hall da Aura'; }
+      alert('Erro ao salvar no Hall da Aura: ' + (e && e.message ? e.message : 'tente novamente'));
+    });
+}
+
 // ===== SCANNER =====
 function renderSc() {
   document.getElementById('scanpts').value = S.settings.scanPts||1;
@@ -2333,6 +2426,7 @@ function initApp() {
       })
       .catch(function() { setStatus('error'); });
     fetchMetaAtiva().then(renderMeta);
+    fetchHallAura().then(function() { render(curView); });
     initRealtime();
     updateAdminUI();
   } else {
