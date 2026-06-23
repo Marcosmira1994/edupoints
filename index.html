@@ -1977,14 +1977,14 @@ function hallClick(alunoId) {
   return '';
 }
 
-function exCard(r) {
-  var rank = r.posicao;
+// tier: 1=ouro, 2=prata, 3=bronze (cor da carta) · rank: ranking de competição (#)
+function exCard(r, tier, rank) {
   var sparkles = '';
   var pos = [[18,16],[26,80],[72,22],[80,70],[50,12]];
   for (var i = 0; i < pos.length; i++) {
     sparkles += '<span class="ex-sparkle" style="top:' + pos[i][0] + '%;left:' + pos[i][1] + '%;animation-delay:' + (i*0.4) + 's"></span>';
   }
-  return '<div class="ex-card ex-' + rank + '"' + hallClick(r.alunoId) + '>'
+  return '<div class="ex-card ex-' + tier + '"' + hallClick(r.alunoId) + '>'
     + '<div class="ex-rays"></div>'
     + sparkles
     + '<div class="ex-shine"></div>'
@@ -1996,9 +1996,9 @@ function exCard(r) {
     + '</div>';
 }
 
-function exMini(r) {
+function exMini(r, rank) {
   return '<div class="ex-mini"' + hallClick(r.alunoId) + '>'
-    + '<div class="ex-mini-pos">' + r.posicao + '</div>'
+    + '<div class="ex-mini-pos">' + rank + '</div>'
     + hallAvatar(r, 'ex-mini-av')
     + '<div class="ex-mini-name">' + esc(r.alunoNome) + ' <span class="em">⚡</span></div>'
     + '<div class="ex-mini-pts">⭐ ' + r.pontos + '</div>'
@@ -2008,15 +2008,34 @@ function exMini(r) {
 function renderBimestre(g) {
   var d = g.criadoEm ? new Date(g.criadoEm) : null;
   var ds = d ? d.toLocaleDateString('pt-BR') : '';
-  var top3 = g.itens.filter(function(r){ return r.posicao <= 3; }).sort(function(a,b){ return a.posicao - b.posicao; });
-  var rest = g.itens.filter(function(r){ return r.posicao >= 4; }).sort(function(a,b){ return a.posicao - b.posicao; });
+  // Ordena por pontos desc (desempate estável pela posição salva)
+  var items = g.itens.slice().sort(function(a,b){ return b.pontos - a.pontos || a.posicao - b.posicao; });
+  // Valores distintos de pontos, em ordem decrescente → definem o tier (cor)
+  var distinct = [];
+  items.forEach(function(r){ if (distinct.indexOf(r.pontos) === -1) distinct.push(r.pontos); });
+  var tierOf = function(pts){ return distinct.indexOf(pts) + 1; };
+  // Ranking de competição: empatados compartilham o mesmo nº (1,1,3,...)
+  var rankOf = function(pts){
+    var first = -1;
+    for (var i = 0; i < items.length; i++) { if (items[i].pontos === pts) { first = i; break; } }
+    return first + 1;
+  };
+
+  var cards = [], minis = [];
+  items.forEach(function(r){
+    var tier = tierOf(r.pontos);
+    var rank = rankOf(r.pontos);
+    if (tier <= 3) cards.push(exCard(r, tier, rank));
+    else minis.push(exMini(r, rank));
+  });
+
   return '<div class="hall-bim">'
     + '<div class="hall-bim-head">'
     +   '<div class="hall-bim-title"><span class="em">⚡</span>' + esc(g.nome) + '</div>'
     +   (ds ? '<div class="hall-bim-date">' + ds + '</div>' : '')
     + '</div>'
-    + '<div class="ex-row">' + top3.map(exCard).join('') + '</div>'
-    + (rest.length ? rest.map(exMini).join('') : '')
+    + '<div class="ex-row">' + cards.join('') + '</div>'
+    + (minis.length ? minis.join('') : '')
     + '</div>';
 }
 
