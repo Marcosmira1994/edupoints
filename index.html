@@ -479,6 +479,14 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 }
 /* Badge de campeão ao lado do nome (ranking + lista de alunos) */
 .champ-badge{font-size:.95em;margin-left:3px;vertical-align:middle;line-height:1;display:inline-block;filter:drop-shadow(0 0 3px rgba(255,215,0,.5))}
+/* Banner de aviso de reset (topo do ranking) */
+.reset-banner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(255,215,0,.16),rgba(255,140,0,.12));border:1px solid rgba(255,215,0,.4);border-radius:12px;padding:11px 14px;margin-bottom:12px;animation:fadeInUp .3s ease-out;box-shadow:0 2px 14px rgba(255,180,0,.1)}
+.rb-icon{font-size:20px;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(255,215,0,.6))}
+.rb-text{flex:1;min-width:0;font-size:13px;line-height:1.45;color:var(--text)}
+.rb-text strong{color:var(--gold)}
+.rb-close{background:rgba(255,255,255,.1);border:none;color:var(--text2);width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.rb-close:hover{background:rgba(255,255,255,.2);color:var(--text)}
+#view-rk>.rk-inner>#reset-banner{flex-shrink:0}
 </style>
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -535,6 +543,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <img src="logo.png" alt="" aria-hidden="true" style="width:80%;max-width:420px;height:auto;object-fit:contain;opacity:0.07;user-select:none;-webkit-user-select:none">
     </div>
     <div class="rk-inner" style="position:relative;z-index:1">
+      <div id="reset-banner"></div>
       <div id="cf-rk" class="chips"></div>
       <div id="meta-bar"></div>
       <div id="rk-layout">
@@ -593,6 +602,11 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <span class="ssic">🏆</span>
       <div style="flex:1"><div class="ssil">Encerrar Bimestre e Salvar no Hall da Aura</div><div class="ssid">Salva o TOP 10 atual como um bimestre permanente</div></div>
       <span style="color:var(--gold)">›</span>
+    </div>
+    <div class="ssi" style="cursor:default">
+      <span class="ssic">📢</span>
+      <div style="flex:1"><div class="ssil">Banner de aviso de reset</div><div class="ssid">Mostra o aviso "pontos serão zerados" para todos</div></div>
+      <div class="tog" id="banner-tog" onclick="toggleResetBanner()"></div>
     </div>
 
     <div class="stitle">Backup</div>
@@ -1595,6 +1609,7 @@ function launchConfetti() {
 
 // ===== RANKING =====
 function renderRk() {
+  renderBanner();
   renderChips('cf-rk', rkFilter, 'setRkFilter');
   var sorted = S.students
     .filter(function(s){ return rkFilter==='all'||s.classId===rkFilter; })
@@ -1801,6 +1816,7 @@ function renderCfg() {
   }
   var tog = document.getElementById('stog');
   if (S.settings.sound) tog.classList.add('on'); else tog.classList.remove('on');
+  updateBannerToggleUI();
   renderCfgMeta();
   if (isAdmin) renderCfgBackups();
 }
@@ -1945,6 +1961,64 @@ function fetchHallAura() {
     .catch(function() { hallAura = []; bestBadges = {}; });
 }
 
+// ===== BANNER DE AVISO DE RESET =====
+// Estado compartilhado (Supabase, tabela config key/value). Degrada se a tabela não existir.
+var bannerCfg = { ativo:false, bimestre:'' };
+
+function fetchBanner() {
+  return sbReq('GET', 'config', 'select=valor&chave=eq.banner_reset')
+    .then(function(rows) {
+      if (rows && rows.length && rows[0].valor) bannerCfg = Object.assign({ ativo:false, bimestre:'' }, rows[0].valor);
+      else bannerCfg = { ativo:false, bimestre:'' };
+    })
+    .catch(function() { /* tabela config pode não existir ainda — ignora */ });
+}
+
+function saveBanner() {
+  return sbReq('POST', 'config', '', { chave:'banner_reset', valor:bannerCfg, atualizado_em:new Date().toISOString() });
+}
+
+function renderBanner() {
+  var el = document.getElementById('reset-banner');
+  if (!el) return;
+  if (!bannerCfg.ativo) { el.innerHTML = ''; return; }
+  var nome = bannerCfg.bimestre || 'Bimestre';
+  el.innerHTML = '<div class="reset-banner">'
+    + '<span class="rb-icon">⚡</span>'
+    + '<span class="rb-text"><strong>' + esc(nome) + ' encerrado!</strong> Os pontos serão zerados em breve. Confira o Hall da Aura!</span>'
+    + (isAdmin ? '<button class="rb-close" onclick="dismissBanner()" title="Ocultar banner">✕</button>' : '')
+    + '</div>';
+}
+
+// Admin fecha o banner pelo X (oculta para todos)
+function dismissBanner() {
+  bannerCfg.ativo = false;
+  renderBanner();
+  updateBannerToggleUI();
+  setStatus('syncing');
+  saveBanner().then(function(){ setStatus('ok'); }).catch(function(){ setStatus('error'); });
+}
+
+// Admin liga/desliga pelo toggle na Config
+function toggleResetBanner() {
+  if (!bannerCfg.ativo) {
+    var nome = bannerCfg.bimestre || (hallAura.length ? hallAura[0].bimestre : '');
+    if (!nome) { alert('Salve um bimestre no Hall da Aura antes de ativar o banner.'); return; }
+    bannerCfg = { ativo:true, bimestre:nome };
+  } else {
+    bannerCfg.ativo = false;
+  }
+  updateBannerToggleUI();
+  renderBanner();
+  setStatus('syncing');
+  saveBanner().then(function(){ setStatus('ok'); }).catch(function(){ setStatus('error'); });
+}
+
+function updateBannerToggleUI() {
+  var tog = document.getElementById('banner-tog');
+  if (tog) tog.classList.toggle('on', !!bannerCfg.ativo);
+}
+
 function openEncerrarBimestre() {
   var top = S.students.slice().sort(function(a,b){ return b.points - a.points; }).slice(0, 10);
   if (top.length === 0) { alert('Nenhum aluno cadastrado para salvar.'); return; }
@@ -1970,6 +2044,9 @@ function salvarHallAura() {
       setStatus('ok');
       closeOv('mov-bimestre');
       if (btn) { btn.disabled = false; btn.textContent = '🏆 Salvar no Hall da Aura'; }
+      // Ativa automaticamente o banner de aviso de reset para este bimestre
+      bannerCfg = { ativo:true, bimestre:nome };
+      saveBanner().catch(function(){});
       render(curView);
       alert('🏆 Bimestre "' + nome + '" salvo no Hall da Aura com ' + rows.length + ' aluno(s)!');
     })
@@ -2631,6 +2708,7 @@ function initApp() {
       .catch(function() { setStatus('error'); });
     fetchMetaAtiva().then(renderMeta);
     fetchHallAura().then(function() { render(curView); });
+    fetchBanner().then(function() { renderBanner(); });
     initRealtime();
     updateAdminUI();
   } else {
