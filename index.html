@@ -608,6 +608,11 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <div style="flex:1"><div class="ssil">Banner de aviso de reset</div><div class="ssid">Mostra o aviso "pontos serão zerados" para todos</div></div>
       <div class="tog" id="banner-tog" onclick="toggleResetBanner()"></div>
     </div>
+    <div class="ssi" id="btn-zerar-bimestre" onclick="zerarPontosNovoBimestre()">
+      <span class="ssic">🔄</span>
+      <div style="flex:1"><div class="ssil">Zerar Pontos para Novo Bimestre</div><div class="ssid">Zera pontos de todos + limpa histórico (mantém o Hall)</div></div>
+      <span style="color:var(--red)">›</span>
+    </div>
 
     <div class="stitle">Backup</div>
     <div class="ssi" onclick="exportBackup()">
@@ -1817,6 +1822,7 @@ function renderCfg() {
   var tog = document.getElementById('stog');
   if (S.settings.sound) tog.classList.add('on'); else tog.classList.remove('on');
   updateBannerToggleUI();
+  updateZerarBtnUI();
   renderCfgMeta();
   if (isAdmin) renderCfgBackups();
 }
@@ -2017,6 +2023,36 @@ function toggleResetBanner() {
 function updateBannerToggleUI() {
   var tog = document.getElementById('banner-tog');
   if (tog) tog.classList.toggle('on', !!bannerCfg.ativo);
+}
+
+// Atualiza o estado visual do botão de zerar (habilitado só se houver bimestre salvo)
+function updateZerarBtnUI() {
+  var btn = document.getElementById('btn-zerar-bimestre');
+  if (btn) btn.style.opacity = hallAura.length ? '' : '.45';
+}
+
+// Zera pontos de TODOS + limpa histórico. Trava: exige ≥1 bimestre salvo. Mantém o Hall da Aura.
+function zerarPontosNovoBimestre() {
+  if (!hallAura.length) {
+    alert('⚠️ Você precisa salvar pelo menos um bimestre no Hall da Aura antes de zerar os pontos.\n\nUse "Encerrar Bimestre e Salvar no Hall da Aura" primeiro.');
+    return;
+  }
+  if (!confirm('Tem certeza? Isso vai zerar os pontos de TODOS os alunos.')) return;
+  if (!confirm('⚠️ Confirmação final\n\nOs pontos de TODOS os alunos serão zerados e o histórico será limpo.\nO Hall da Aura NÃO será apagado.\n\nDeseja realmente continuar?')) return;
+
+  // Aplica localmente primeiro (resposta imediata)
+  S.students.forEach(function(s){ s.points = 0; });
+  S.history = [];
+  save();
+  render(curView);
+
+  setStatus('syncing');
+  Promise.all([
+    sbReq('PATCH', 'alunos', 'pontos=gte.0', { pontos: 0 }),
+    sbReq('DELETE', 'historico', 'id=not.is.null')
+  ])
+    .then(function(){ setStatus('ok'); alert('✅ Pontos zerados e histórico limpo!\n\nO Hall da Aura foi preservado. Bom novo bimestre! 🚀'); })
+    .catch(function(){ setStatus('error'); alert('As alterações foram aplicadas localmente, mas houve erro ao sincronizar com o servidor. Tente novamente quando estiver online.'); });
 }
 
 function openEncerrarBimestre() {
