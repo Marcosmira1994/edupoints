@@ -393,6 +393,90 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 #acessos-list::-webkit-scrollbar-track{background:transparent}
 #acessos-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 #acessos-list::-webkit-scrollbar-thumb:hover{background:var(--text2)}
+/* ===== HALL DA AURA — CARTAS POKÉMON EX ===== */
+@keyframes exRotate{to{transform:rotate(360deg)}}
+@keyframes exGoldPulse{0%,100%{box-shadow:0 0 20px rgba(255,215,0,.6)}50%{box-shadow:0 0 36px rgba(255,215,0,.95),0 0 60px rgba(255,215,0,.3)}}
+@keyframes exShimmer{0%{background-position:-150% 0}100%{background-position:250% 0}}
+@keyframes exSparkle{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.35)}}
+.hall-bim{margin-bottom:30px;animation:fadeInUp .35s ease-out}
+.hall-bim-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.hall-bim-title{font-size:17px;font-weight:900;display:flex;align-items:center;gap:7px;color:var(--text)}
+.hall-bim-title .em{filter:drop-shadow(0 0 6px rgba(255,215,0,.6))}
+.hall-bim-date{font-size:11px;color:var(--text2);white-space:nowrap}
+.ex-row{display:grid;grid-template-columns:repeat(3,minmax(0,200px));gap:12px;justify-content:center;margin-bottom:14px;perspective:900px}
+.ex-card{
+  position:relative;width:100%;max-width:200px;aspect-ratio:5/7;border-radius:12px;padding:16px 10px 14px;
+  overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:transform .3s ease,box-shadow .25s ease;
+  transform-style:preserve-3d;
+}
+.ex-card>*{position:relative;z-index:1}
+.ex-1{
+  --ex-c:#FFD700;
+  background:radial-gradient(ellipse at center,rgba(255,215,0,.15),transparent 70%),linear-gradient(135deg,#1a1200,#3d2b00,#1a1200);
+  border:3px solid #FFD700;box-shadow:0 0 20px rgba(255,215,0,.6);
+  animation:exGoldPulse 2.2s ease-in-out infinite;
+}
+.ex-2{
+  --ex-c:#C0C0C0;
+  background:linear-gradient(135deg,#0d0d0d,#1a1a1a,#0d0d0d);
+  border:3px solid #C0C0C0;box-shadow:0 0 15px rgba(192,192,192,.5);
+}
+.ex-3{
+  --ex-c:#CD7F32;
+  background:linear-gradient(135deg,#1a0a00,#2d1500,#1a0a00);
+  border:3px solid #CD7F32;box-shadow:0 0 15px rgba(205,127,50,.5);
+}
+.ex-card:hover{transform:rotateY(5deg) rotateX(3deg) translateY(-4px)}
+/* Raios de fundo atrás da foto */
+.ex-rays{position:absolute;top:12%;left:50%;width:150px;height:150px;transform:translateX(-50%);z-index:1;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.13),transparent 68%)}
+.ex-sparkle{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 7px #fff,0 0 12px var(--ex-c);z-index:1;animation:exSparkle 2.2s ease-in-out infinite}
+/* Brilho shimmer no hover */
+.ex-shine{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);background-size:250% 100%}
+.ex-card:hover .ex-shine{opacity:1;animation:exShimmer 1.1s linear infinite}
+.ex-ex{position:absolute;top:8px;right:10px;font-size:13px;font-weight:900;color:#FFD700;text-shadow:0 0 8px rgba(255,215,0,.75);letter-spacing:.5px;z-index:3}
+.ex-badge{position:absolute;top:8px;left:9px;font-size:12px;font-weight:900;padding:3px 9px;border-radius:20px;z-index:3}
+.ex-1 .ex-badge{background:#FFD700;color:#000;box-shadow:0 0 12px rgba(255,215,0,.6)}
+.ex-2 .ex-badge{background:#C0C0C0;color:#000}
+.ex-3 .ex-badge{background:#CD7F32;color:#fff}
+.ex-photo{margin:0 0 12px}
+.ex-av{width:88px;height:88px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:32px;overflow:hidden;background:#0a0e1a}
+.ex-av img{width:100%;height:100%;object-fit:cover;display:block}
+.ex-1 .ex-av{border-color:#FFD700;color:#FFD700;box-shadow:0 0 22px rgba(255,215,0,.55)}
+.ex-2 .ex-av{border-color:#C0C0C0;color:#C0C0C0;box-shadow:0 0 16px rgba(192,192,192,.45)}
+.ex-3 .ex-av{border-color:#CD7F32;color:#CD7F32;box-shadow:0 0 16px rgba(205,127,50,.45)}
+.ex-name{font-size:13px;font-weight:800;text-align:center;line-height:1.3;color:#fff;word-break:break-word;margin-bottom:6px;padding:0 4px}
+.ex-pts{font-size:20px;font-weight:900;display:flex;align-items:center;gap:5px}
+.ex-1 .ex-pts{color:#FFD700;text-shadow:0 0 10px rgba(255,215,0,.5)}
+.ex-2 .ex-pts{color:#C0C0C0}
+.ex-3 .ex-pts{color:#CD7F32}
+/* Lista 4º–10º compacta */
+.ex-mini{display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:6px;cursor:pointer;transition:background .15s,border-color .15s}
+.ex-mini:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+.ex-mini-pos{min-width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--text2);flex-shrink:0}
+.ex-mini-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#000;flex-shrink:0;overflow:hidden}
+.ex-mini-av img{width:100%;height:100%;object-fit:cover;display:block}
+.ex-mini-name{flex:1;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-mini-name .em{margin-left:4px}
+.ex-mini-pts{font-weight:900;color:#00ff88;display:flex;gap:4px;align-items:center;font-size:15px;flex-shrink:0}
+@media(max-width:560px){
+  .ex-row{gap:7px}
+  .ex-card{padding:10px 4px 8px;border-width:2px}
+  .ex-av{width:54px;height:54px;font-size:20px}
+  .ex-name{font-size:10px}
+  .ex-pts{font-size:15px}
+  .ex-ex{font-size:9px;top:5px;right:6px}
+  .ex-badge{font-size:10px;padding:2px 6px;top:5px;left:6px}
+  .ex-photo{margin:0 0 8px}
+  .ex-rays{width:90px;height:90px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ex-card,.ex-sparkle,.ex-1{animation:none}
+  .ex-card:hover{transform:translateY(-3px)}
+}
 </style>
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -426,6 +510,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
   <div id="hnav">
     <button class="nb hn on" data-v="rk" onclick="go('rk')" title="Ranking"><span class="ic">🏆</span><span class="hn-lbl">Ranking</span></button>
     <button class="nb hn" data-v="hs" onclick="go('hs')" title="Histórico"><span class="ic">📋</span><span class="hn-lbl">Histórico</span></button>
+    <button class="nb hn" data-v="hall" onclick="go('hall')" title="Hall da Aura"><span class="ic">⚡</span><span class="hn-lbl">Hall</span></button>
     <button class="nb hn" data-v="st" onclick="go('st')" title="Alunos"><span class="ic">👥</span><span class="hn-lbl">Alunos</span></button>
     <button class="nb hn" data-v="sc" onclick="go('sc')" title="Scanner"><span class="ic">📷</span><span class="hn-lbl">Scanner</span></button>
     <button class="nb hn" data-v="cfg" onclick="go('cfg')" title="Config"><span class="ic">⚙️</span><span class="hn-lbl">Config</span></button>
@@ -485,6 +570,14 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
       <button id="hist-clear-btn" class="btn btn-gh btn-sm" onclick="clearHist()">Limpar</button>
     </div>
     <div id="hslist"></div>
+  </div>
+
+  <!-- HALL DA AURA -->
+  <div class="view" id="view-hall">
+    <div class="sh">
+      <span class="st">⚡ Hall da Aura</span>
+    </div>
+    <div id="hall-list"></div>
   </div>
 
   <!-- SETTINGS -->
@@ -1013,7 +1106,7 @@ function uploadFoto(id) {
 
 // ===== NAV =====
 function go(v) {
-  if (!isAdmin && v !== 'rk' && v !== 'hs') return; // visitante acessa ranking e histórico
+  if (!isAdmin && v !== 'rk' && v !== 'hs' && v !== 'hall') return; // visitante acessa ranking, histórico e hall da aura
   if (v !== 'sc' && scanning) stopScan();
   if (v === 'rk') rkAnimDone = false; // reseta animações de entrada ao navegar para ranking
   curView = v;
@@ -1032,6 +1125,7 @@ function render(v) {
   if (v==='rk') renderRk();
   else if (v==='st') renderStudents();
   else if (v==='hs') renderHs();
+  else if (v==='hall') renderHall();
   else if (v==='cfg') renderCfg();
   else if (v==='sc') renderSc();
 }
@@ -1068,7 +1162,7 @@ function updateAdminUI() {
   if (isAdmin && navigator.onLine) { backupAutomatico(); carregarAcessos(); }
   var fab = document.getElementById('fab');
   if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
-  if (!isAdmin && curView !== 'rk' && curView !== 'hs') go('rk');
+  if (!isAdmin && curView !== 'rk' && curView !== 'hs' && curView !== 'hall') go('rk');
   else render(curView);
 }
 
@@ -1867,6 +1961,80 @@ function salvarHallAura() {
       if (btn) { btn.disabled = false; btn.textContent = '🏆 Salvar no Hall da Aura'; }
       alert('Erro ao salvar no Hall da Aura: ' + (e && e.message ? e.message : 'tente novamente'));
     });
+}
+
+// Avatar de um registro do Hall (usa a foto salva no bimestre; senão a atual do aluno; senão inicial)
+function hallAvatar(r, cls) {
+  var foto = r.fotoUrl;
+  if (!foto) { var s = S.students.find(function(x){ return x.id === r.alunoId; }); if (s) foto = s.fotoUrl; }
+  if (foto) return '<div class="' + cls + '"><img src="' + esc(foto) + '" loading="lazy" decoding="async"></div>';
+  return '<div class="' + cls + '">' + initial(r.alunoNome) + '</div>';
+}
+
+// Clica no card → abre perfil se o aluno ainda existe
+function hallClick(alunoId) {
+  if (S.students.find(function(x){ return x.id === alunoId; })) return ' onclick="openProfile(\'' + alunoId + '\')"';
+  return '';
+}
+
+function exCard(r) {
+  var rank = r.posicao;
+  var sparkles = '';
+  var pos = [[18,16],[26,80],[72,22],[80,70],[50,12]];
+  for (var i = 0; i < pos.length; i++) {
+    sparkles += '<span class="ex-sparkle" style="top:' + pos[i][0] + '%;left:' + pos[i][1] + '%;animation-delay:' + (i*0.4) + 's"></span>';
+  }
+  return '<div class="ex-card ex-' + rank + '"' + hallClick(r.alunoId) + '>'
+    + '<div class="ex-rays"></div>'
+    + sparkles
+    + '<div class="ex-shine"></div>'
+    + '<div class="ex-ex">⚡ EX</div>'
+    + '<div class="ex-badge">#' + rank + '</div>'
+    + '<div class="ex-photo">' + hallAvatar(r, 'ex-av') + '</div>'
+    + '<div class="ex-name">' + esc(r.alunoNome) + '</div>'
+    + '<div class="ex-pts">⭐ ' + r.pontos + '</div>'
+    + '</div>';
+}
+
+function exMini(r) {
+  return '<div class="ex-mini"' + hallClick(r.alunoId) + '>'
+    + '<div class="ex-mini-pos">' + r.posicao + '</div>'
+    + hallAvatar(r, 'ex-mini-av')
+    + '<div class="ex-mini-name">' + esc(r.alunoNome) + ' <span class="em">⚡</span></div>'
+    + '<div class="ex-mini-pts">⭐ ' + r.pontos + '</div>'
+    + '</div>';
+}
+
+function renderBimestre(g) {
+  var d = g.criadoEm ? new Date(g.criadoEm) : null;
+  var ds = d ? d.toLocaleDateString('pt-BR') : '';
+  var top3 = g.itens.filter(function(r){ return r.posicao <= 3; }).sort(function(a,b){ return a.posicao - b.posicao; });
+  var rest = g.itens.filter(function(r){ return r.posicao >= 4; }).sort(function(a,b){ return a.posicao - b.posicao; });
+  return '<div class="hall-bim">'
+    + '<div class="hall-bim-head">'
+    +   '<div class="hall-bim-title"><span class="em">⚡</span>' + esc(g.nome) + '</div>'
+    +   (ds ? '<div class="hall-bim-date">' + ds + '</div>' : '')
+    + '</div>'
+    + '<div class="ex-row">' + top3.map(exCard).join('') + '</div>'
+    + (rest.length ? rest.map(exMini).join('') : '')
+    + '</div>';
+}
+
+// ===== HALL DA AURA — RENDER DA ABA =====
+function renderHall() {
+  var el = document.getElementById('hall-list');
+  if (!el) return;
+  if (!hallAura.length) {
+    el.innerHTML = '<div class="es"><div class="ei">⚡</div><h3>Hall da Aura vazio</h3><p>Os bimestres encerrados aparecerão aqui</p></div>';
+    return;
+  }
+  // Agrupa por bimestre, preservando a ordem (mais recente primeiro — hallAura vem em criado_em desc)
+  var groups = [], map = {};
+  hallAura.forEach(function(r) {
+    if (!map[r.bimestre]) { map[r.bimestre] = { nome:r.bimestre, criadoEm:r.criadoEm, itens:[] }; groups.push(map[r.bimestre]); }
+    map[r.bimestre].itens.push(r);
+  });
+  el.innerHTML = groups.map(renderBimestre).join('');
 }
 
 // ===== SCANNER =====
