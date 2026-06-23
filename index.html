@@ -477,6 +477,8 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
   .ex-card,.ex-sparkle,.ex-1{animation:none}
   .ex-card:hover{transform:translateY(-3px)}
 }
+/* Badge de campeão ao lado do nome (ranking + lista de alunos) */
+.champ-badge{font-size:.95em;margin-left:3px;vertical-align:middle;line-height:1;display:inline-block;filter:drop-shadow(0 0 3px rgba(255,215,0,.5))}
 </style>
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -1626,7 +1628,7 @@ function renderRk() {
       +mkAv(s,'podium-av')
       +'<div class="aura-badge">'+rank+'</div>'
       +'</div>'
-      +'<div class="aura-name" data-sid="'+s.id+'">'+esc(s.name)+'</div>'
+      +'<div class="aura-name" data-sid="'+s.id+'">'+esc(s.name)+badgeHtml(s.id)+'</div>'
       +(cn?'<div class="aura-cls">'+esc(cn)+'</div>':'')
       +'<div class="aura-pts" data-pts-podium="'+s.points+'">'+s.points+'</div>'
       +'</div>';
@@ -1662,7 +1664,7 @@ function renderRk() {
     return '<div class="ri rank-card'+aniCls+'" style="'+aniSty+'" onclick="openProfile(\''+s.id+'\')">'
       +mkBadge(rank)
       +mkAvRk(s, rank)
-      +'<div class="rinfo"><div class="rname" data-sid="'+s.id+'">'+esc(s.name)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
+      +'<div class="rinfo"><div class="rname" data-sid="'+s.id+'">'+esc(s.name)+badgeHtml(s.id)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
       +'<div class="rpts" data-pts="'+s.points+'">'+s.points+'</div>'
       +'</div>';
   });
@@ -1722,7 +1724,7 @@ function renderStudents() {
     return '<div class="si">'
       +'<div class="si-row" onclick="toggleExp(\''+s.id+'\')">'
       +mkAv(s,'av')
-      +'<div style="flex:1;min-width:0"><div class="sname">'+esc(s.name)+'</div>'+(cn?'<div class="scls">'+esc(cn)+'</div>':'')+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="sname">'+esc(s.name)+badgeHtml(s.id)+'</div>'+(cn?'<div class="scls">'+esc(cn)+'</div>':'')+'</div>'
       +'<div class="spts">'+s.points+'</div>'
       +'</div>'
       +(exp?
@@ -1903,12 +1905,21 @@ function fromSbHall(r) {
   return { id:r.id, bimestre:r.bimestre, posicao:r.posicao, alunoId:r.aluno_id, alunoNome:r.aluno_nome, pontos:r.pontos, fotoUrl:r.foto_url||null, criadoEm:r.criado_em };
 }
 
-// Recalcula o melhor badge (menor posição) de cada aluno
+// Recalcula o melhor badge de cada aluno (menor ranking de competição entre todos os bimestres).
+// Usa ranking por PONTOS (empatados no topo contam como 1º) — consistente com as cartas do Hall.
 function computeBadges() {
   bestBadges = {};
-  hallAura.forEach(function(r) {
-    var cur = bestBadges[r.alunoId];
-    if (cur === undefined || r.posicao < cur) bestBadges[r.alunoId] = r.posicao;
+  var byBim = {};
+  hallAura.forEach(function(r){ (byBim[r.bimestre] = byBim[r.bimestre] || []).push(r); });
+  Object.keys(byBim).forEach(function(bim) {
+    var items = byBim[bim].slice().sort(function(a,b){ return b.pontos - a.pontos || a.posicao - b.posicao; });
+    items.forEach(function(r) {
+      var first = -1;
+      for (var i = 0; i < items.length; i++) { if (items[i].pontos === r.pontos) { first = i; break; } }
+      var rank = first + 1;
+      var cur = bestBadges[r.alunoId];
+      if (cur === undefined || rank < cur) bestBadges[r.alunoId] = rank;
+    });
   });
 }
 
@@ -1920,6 +1931,12 @@ function badgeFor(alunoId) {
   if (p === 2) return '🥈';
   if (p === 3) return '🥉';
   return '⚡';
+}
+
+// Span pronto pra colar ao lado do nome (vazio se o aluno nunca entrou no Hall)
+function badgeHtml(alunoId) {
+  var b = badgeFor(alunoId);
+  return b ? ' <span class="champ-badge" title="Campeão do Hall da Aura">' + b + '</span>' : '';
 }
 
 function fetchHallAura() {
