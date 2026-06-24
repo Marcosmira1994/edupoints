@@ -554,12 +554,12 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .menu-item .mi-ic{font-size:18px;line-height:1;width:22px;text-align:center;flex-shrink:0}
 .menu-item::after{display:none!important}
 /* ===== BACKGROUND ANIMADO (nebulosa + partículas douradas) ===== */
-.nebula{position:fixed;z-index:0;border-radius:50%;filter:blur(80px);pointer-events:none;animation:nebulaPulse 8s ease-in-out infinite alternate}
+.nebula{position:fixed;z-index:3;border-radius:50%;filter:blur(80px);pointer-events:none;animation:nebulaPulse 8s ease-in-out infinite alternate}
 .nebula-1{top:-12%;left:-12%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(120,40,255,.16),transparent 70%)}
 .nebula-2{top:28%;right:-12%;width:48vw;height:48vw;background:radial-gradient(circle,rgba(255,215,0,.12),transparent 70%);animation-delay:-3s}
 .nebula-3{bottom:-15%;left:18%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(0,120,255,.12),transparent 70%);animation-delay:-5s}
 @keyframes nebulaPulse{0%{opacity:.4;transform:scale(1)}100%{opacity:.85;transform:scale(1.1)}}
-.particle{position:fixed;top:0;z-index:0;border-radius:50%;background:rgba(255,215,0,.85);box-shadow:0 0 8px rgba(255,215,0,.9),0 0 4px rgba(255,255,200,.7);pointer-events:none;animation-name:floatUp;animation-timing-function:linear;animation-iteration-count:infinite}
+.particle{position:fixed;top:0;z-index:3;border-radius:50%;background:rgba(255,215,0,.85);box-shadow:0 0 8px rgba(255,215,0,.9),0 0 4px rgba(255,255,200,.7);pointer-events:none;animation-name:floatUp;animation-timing-function:linear;animation-iteration-count:infinite;animation-fill-mode:both}
 /* scale chega a 1 logo no início, então a partícula fica em tamanho cheio durante toda a subida visível */
 @keyframes floatUp{0%{transform:translateY(100vh) scale(.2);opacity:0}8%{opacity:1;transform:translateY(92vh) scale(1)}90%{opacity:.75}100%{transform:translateY(-100px) scale(1);opacity:0}}
 @media(prefers-reduced-motion:reduce){
@@ -581,7 +581,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 <div class="nebula nebula-3"></div>
 
 <!-- ACCESS GATE -->
-<div id="access-gate" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#0a0e1a 100%);z-index:9999;align-items:center;justify-content:center;padding:20px">
+<div id="access-gate" style="display:none;position:fixed;inset:0;background:transparent;z-index:9999;align-items:center;justify-content:center;padding:20px">
   <div style="width:100%;max-width:340px;text-align:center">
     <div style="font-size:60px;margin-bottom:12px">🏆</div>
     <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#00d4aa,#4a9eff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px">EduPoints</div>
