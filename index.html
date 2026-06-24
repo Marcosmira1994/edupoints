@@ -555,12 +555,13 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .menu-item::after{display:none!important}
 /* ===== BACKGROUND ANIMADO (nebulosa + partículas douradas) ===== */
 .nebula{position:fixed;z-index:0;border-radius:50%;filter:blur(80px);pointer-events:none;animation:nebulaPulse 8s ease-in-out infinite alternate}
-.nebula-1{top:-12%;left:-12%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(100,0,255,.08),transparent 70%)}
-.nebula-2{top:28%;right:-12%;width:48vw;height:48vw;background:radial-gradient(circle,rgba(255,215,0,.06),transparent 70%);animation-delay:-3s}
-.nebula-3{bottom:-15%;left:18%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(0,100,255,.06),transparent 70%);animation-delay:-5s}
-@keyframes nebulaPulse{0%{opacity:.4;transform:scale(1)}100%{opacity:.8;transform:scale(1.1)}}
-.particle{position:fixed;top:0;z-index:0;border-radius:50%;background:rgba(255,215,0,.6);box-shadow:0 0 6px rgba(255,215,0,.8);pointer-events:none;animation-name:floatUp;animation-timing-function:linear;animation-iteration-count:infinite}
-@keyframes floatUp{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:.6}100%{transform:translateY(-100px) scale(1);opacity:0}}
+.nebula-1{top:-12%;left:-12%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(120,40,255,.16),transparent 70%)}
+.nebula-2{top:28%;right:-12%;width:48vw;height:48vw;background:radial-gradient(circle,rgba(255,215,0,.12),transparent 70%);animation-delay:-3s}
+.nebula-3{bottom:-15%;left:18%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(0,120,255,.12),transparent 70%);animation-delay:-5s}
+@keyframes nebulaPulse{0%{opacity:.4;transform:scale(1)}100%{opacity:.85;transform:scale(1.1)}}
+.particle{position:fixed;top:0;z-index:0;border-radius:50%;background:rgba(255,215,0,.85);box-shadow:0 0 8px rgba(255,215,0,.9),0 0 4px rgba(255,255,200,.7);pointer-events:none;animation-name:floatUp;animation-timing-function:linear;animation-iteration-count:infinite}
+/* scale chega a 1 logo no início, então a partícula fica em tamanho cheio durante toda a subida visível */
+@keyframes floatUp{0%{transform:translateY(100vh) scale(.2);opacity:0}8%{opacity:1;transform:translateY(92vh) scale(1)}90%{opacity:.75}100%{transform:translateY(-100px) scale(1);opacity:0}}
 @media(prefers-reduced-motion:reduce){
   .particle{display:none}
   .nebula{animation:none}
@@ -2920,15 +2921,15 @@ function initApp() {
   window.addEventListener('offline', function() { setStatus('offline'); });
 }
 
-// ===== BACKGROUND ANIMADO: cria 20 partículas douradas (CSS puro p/ animação) =====
+// ===== BACKGROUND ANIMADO: cria 30 partículas douradas (CSS puro p/ animação) =====
 function initBackgroundFX() {
   if (document.getElementById('bg-particles')) return;
   var holder = document.createElement('div');
   holder.id = 'bg-particles';
-  for (var i = 0; i < 20; i++) {
+  for (var i = 0; i < 30; i++) {
     var p = document.createElement('div');
     p.className = 'particle';
-    var size = (2 + Math.random() * 3).toFixed(1);             // 2px a 5px
+    var size = (3 + Math.random() * 4).toFixed(1);             // 3px a 7px
     p.style.width = size + 'px';
     p.style.height = size + 'px';
     p.style.left = (Math.random() * 100).toFixed(2) + '%';      // X aleatório
