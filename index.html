@@ -526,6 +526,27 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 @media(prefers-reduced-motion:reduce){
   .ex-card.ex-1, .podium-aura-card.aura-gold, .gold-spark{animation:none}
 }
+/* ===== MENU HAMBÚRGUER ===== */
+@keyframes menuFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+#menu-btn:hover{color:var(--green)}
+.menu-dd{
+  position:absolute;top:calc(100% + 8px);right:0;min-width:200px;z-index:500;
+  background:rgba(13,21,40,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  padding:6px;display:none;flex-direction:column;gap:2px;
+}
+.menu-dd.open{display:flex;animation:menuFade .18s ease-out}
+.menu-item{
+  display:flex!important;flex-direction:row!important;align-items:center;gap:10px;
+  width:100%;min-width:0!important;min-height:0!important;padding:11px 12px!important;margin:0;
+  border:none;background:none;color:var(--text)!important;font-size:14px!important;font-weight:600;
+  cursor:pointer;border-radius:8px;text-align:left;justify-content:flex-start!important;
+  -webkit-tap-highlight-color:transparent;transition:background .15s;white-space:nowrap;
+}
+.menu-item:hover{background:rgba(255,255,255,.08)}
+.menu-item.on{background:rgba(0,212,170,.15);color:var(--green)!important}
+.menu-item .mi-ic{font-size:18px;line-height:1;width:22px;text-align:center;flex-shrink:0}
+.menu-item::after{display:none!important}
 </style>
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -555,16 +576,19 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
     <span class="logo">🏆 EduPoints</span>
     <span class="logo-gaia">Colégio Gaia — 6º Ano</span>
   </div>
-  <div class="hdr-sep"></div>
-  <div id="hnav">
-    <button class="nb hn on" data-v="rk" onclick="go('rk')" title="Ranking"><span class="ic">🏆</span><span class="hn-lbl">Ranking</span></button>
-    <button class="nb hn" data-v="hs" onclick="go('hs')" title="Histórico"><span class="ic">📋</span><span class="hn-lbl">Histórico</span></button>
-    <button class="nb hn" data-v="hall" onclick="go('hall')" title="Hall da Aura"><span class="ic">⚡</span><span class="hn-lbl">Hall</span></button>
-    <button class="nb hn" data-v="st" onclick="go('st')" title="Alunos"><span class="ic">👥</span><span class="hn-lbl">Alunos</span></button>
-    <button class="nb hn" data-v="sc" onclick="go('sc')" title="Scanner"><span class="ic">📷</span><span class="hn-lbl">Scanner</span></button>
-    <button class="nb hn" data-v="cfg" onclick="go('cfg')" title="Config"><span class="ic">⚙️</span><span class="hn-lbl">Config</span></button>
-  </div>
+  <div style="flex:1"></div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <div id="menu-wrap" style="position:relative;flex-shrink:0">
+      <button id="menu-btn" onclick="toggleMenu(event)" title="Menu" aria-label="Menu" style="background:none;border:none;font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;-webkit-tap-highlight-color:transparent;color:var(--text)">☰</button>
+      <div id="menu-dd" class="menu-dd">
+        <button class="nb menu-item on" data-v="rk" onclick="navMenu('rk')"><span class="mi-ic">🏆</span> Ranking</button>
+        <button class="nb menu-item" data-v="hs" onclick="navMenu('hs')"><span class="mi-ic">📋</span> Histórico</button>
+        <button class="nb menu-item" data-v="st" onclick="navMenu('st')"><span class="mi-ic">👥</span> Alunos</button>
+        <button class="nb menu-item" data-v="sc" onclick="navMenu('sc')"><span class="mi-ic">📷</span> Scanner</button>
+        <button class="nb menu-item" data-v="hall" onclick="navMenu('hall')"><span class="mi-ic">⚡</span> Hall da Aura</button>
+        <button class="nb menu-item" data-v="cfg" onclick="navMenu('cfg')"><span class="mi-ic">⚙️</span> Config</button>
+      </div>
+    </div>
     <button id="fs-btn" onclick="toggleFullscreen()" title="Tela cheia" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 6px;line-height:1;-webkit-tap-highlight-color:transparent;color:var(--text2)">⛶</button>
     <button id="lock-btn" onclick="toggleAdmin()" title="Modo Admin" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;-webkit-tap-highlight-color:transparent">🔒</button>
     <div id="sb-badge" onclick="openStatusPanel()" style="display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;user-select:none;position:relative;-webkit-tap-highlight-color:transparent">
@@ -1200,7 +1224,27 @@ document.addEventListener('click', function(e) {
   if (panel && badge && !badge.contains(e.target)) panel.style.display = 'none';
 });
 document.addEventListener('keydown', function(e) {
-  if (e.key==='Escape') document.querySelectorAll('.ov.on').forEach(function(el){el.classList.remove('on');});
+  if (e.key==='Escape') { document.querySelectorAll('.ov.on').forEach(function(el){el.classList.remove('on');}); closeMenu(); }
+});
+
+// ===== MENU HAMBÚRGUER =====
+function toggleMenu(e) {
+  if (e) e.stopPropagation();
+  var dd = document.getElementById('menu-dd');
+  if (dd) dd.classList.toggle('open');
+}
+function closeMenu() {
+  var dd = document.getElementById('menu-dd');
+  if (dd) dd.classList.remove('open');
+}
+function navMenu(v) {
+  closeMenu();
+  go(v);
+}
+// Fecha o menu ao clicar fora dele
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('menu-wrap');
+  if (wrap && !wrap.contains(e.target)) closeMenu();
 });
 
 // ===== ADMIN =====
