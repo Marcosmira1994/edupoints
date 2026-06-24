@@ -1733,7 +1733,6 @@ function renderRk() {
     var aniStyle = rkAnimDone ? '' : ';animation-delay:'+aniDelays[rank];
     return '<div class="podium-aura-card '+rankCls+goldCls+aniCls+'" style="'+aniStyle.slice(1)+'" onclick="openProfile(\''+s.id+'\')">'
       +(isGold ? goldParticles() : '')
-      +'<div class="ex-ex">⚡ EX</div>'
       +'<div class="aura-av-wrap">'
       +mkAv(s,'podium-av')
       +'<div class="aura-badge">'+compRank+'</div>'
@@ -2247,7 +2246,6 @@ function exCard(r, tier, rank) {
   }
   return '<div class="ex-card ex-' + tier + '"' + hallClick(r.alunoId) + '>'
     + fx
-    + '<div class="ex-ex">⚡ EX</div>'
     + '<div class="ex-badge">#' + rank + '</div>'
     + '<div class="ex-photo">' + hallAvatar(r, 'ex-av') + '</div>'
     + '<div class="ex-name">' + esc(r.alunoNome) + '</div>'
