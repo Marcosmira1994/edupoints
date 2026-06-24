@@ -488,12 +488,15 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 @keyframes goldenPulse{0%,100%{box-shadow:0 0 20px rgba(255,215,0,.5),inset 0 0 30px rgba(255,215,0,.1)}50%{box-shadow:0 0 40px rgba(255,215,0,.8),inset 0 0 50px rgba(255,215,0,.2)}}
 @keyframes goldSparkle{0%,100%{opacity:0;transform:translateY(0) scale(0)}50%{opacity:1;transform:translateY(-10px) scale(1)}}
 .ex-card.ex-1, .podium-aura-card.aura-gold{
+  /* Borda dourada em gradiente que RESPEITA o border-radius (padding-box vs border-box).
+     border-image foi removido pois ignora border-radius (cantos ficavam retos). */
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(255,255,150,.4) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(255,200,0,.3) 0%, transparent 50%),
-    linear-gradient(135deg,#2a1f00,#5a3d00,#2a1f00,#4a3200,#1a1200);
-  border:3px solid #FFD700;
-  border-image:linear-gradient(45deg,#FFD700,#FFF5A0,#FFD700,#B8860B) 1;
+    radial-gradient(ellipse at 30% 20%, rgba(255,255,150,.4) 0%, transparent 50%) padding-box,
+    radial-gradient(ellipse at 70% 80%, rgba(255,200,0,.3) 0%, transparent 50%) padding-box,
+    linear-gradient(135deg,#2a1f00,#5a3d00,#2a1f00,#4a3200,#1a1200) padding-box,
+    linear-gradient(45deg,#FFD700,#FFF5A0,#FFD700,#B8860B) border-box;
+  border:3px solid transparent;
+  border-radius:20px;
   box-shadow:0 0 20px rgba(255,215,0,.5),inset 0 0 30px rgba(255,215,0,.1);
   animation:goldenPulse 2.2s ease-in-out infinite;
   position:relative;overflow:hidden;
@@ -501,12 +504,12 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .podium-aura-card.aura-gold>*{position:relative;z-index:1}
 /* Raios diagonais finos */
 .ex-card.ex-1::before, .podium-aura-card.aura-gold::before{
-  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
   background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,215,0,.08) 8px,rgba(255,215,0,.08) 9px);
 }
 /* Brilho holográfico que segue o mouse */
 .ex-card.ex-1::after, .podium-aura-card.aura-gold::after{
-  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .2s;
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .2s;border-radius:inherit;
   background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,200,.32), transparent 60%);
 }
 .ex-card.ex-1.holo-active::after, .podium-aura-card.aura-gold.holo-active::after{opacity:1}
