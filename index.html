@@ -540,7 +540,7 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 }
 .menu-dd.open{display:flex;animation:menuFade .18s ease-out}
 .menu-item{
-  display:flex!important;flex-direction:row!important;align-items:center;gap:10px;
+  display:flex;flex-direction:row!important;align-items:center;gap:10px;
   width:100%;min-width:0!important;min-height:0!important;padding:11px 12px!important;margin:0;
   border:none;background:none;color:var(--text)!important;font-size:14px!important;font-weight:600;
   cursor:pointer;border-radius:8px;text-align:left;justify-content:flex-start!important;
@@ -1272,8 +1272,9 @@ function updateAdminUI() {
   var btn = document.getElementById('lock-btn');
   if (btn) btn.textContent = isAdmin ? '🔓' : '🔒';
   ['st','sc','cfg'].forEach(function(v) {
-    var nb = document.querySelector('.nb[data-v="'+v+'"]');
-    if (nb) nb.style.display = isAdmin ? '' : 'none';
+    document.querySelectorAll('.nb[data-v="'+v+'"]').forEach(function(nb) {
+      nb.style.display = isAdmin ? '' : 'none';
+    });
   });
   var clearBtn = document.getElementById('hist-clear-btn');
   if (clearBtn) clearBtn.style.display = isAdmin ? '' : 'none';
@@ -2871,6 +2872,7 @@ function initApp() {
   if (lsResult === 'empty') seedData();
   document.getElementById('scanpts').value = S.settings.scanPts || 1;
   go('rk');
+  updateAdminUI(); // garante visibilidade correta do menu (admin vs visitante) já no início
 
   // 2. Supabase como fonte de verdade quando online
   if (navigator.onLine) {
