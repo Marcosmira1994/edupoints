@@ -476,6 +476,9 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 }
 /* Badge de campeão ao lado do nome (ranking + lista de alunos) */
 .champ-badge{font-size:.95em;margin-left:3px;vertical-align:middle;line-height:1;display:inline-block;filter:drop-shadow(0 0 3px rgba(255,215,0,.5))}
+/* Primeiros colocados (empate no 1º) na lista do ranking */
+.ri.ri-gold{background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,215,0,.05))!important;border-left:3px solid #FFD700!important;box-shadow:0 0 15px rgba(255,215,0,.2)!important}
+.ri.ri-gold .rpts{color:#FFD700!important;text-shadow:0 0 10px rgba(255,215,0,.45)!important}
 /* Banner de aviso de reset (topo do ranking) */
 .reset-banner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(255,215,0,.16),rgba(255,140,0,.12));border:1px solid rgba(255,215,0,.4);border-radius:12px;padding:11px 14px;margin-bottom:12px;animation:fadeInUp .3s ease-out;box-shadow:0 2px 14px rgba(255,180,0,.1)}
 .rb-icon{font-size:20px;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(255,215,0,.6))}
@@ -1788,13 +1791,15 @@ function renderRk() {
   var listHtml = sorted.map(function(s,i){
     var rank = i+1;
     var cn = clsName(s.classId);
+    var isGold = s.points === maxPts && maxPts > 0; // empate no 1º lugar
     var delay = Math.min(i * 0.055, 0.5).toFixed(2) + 's';
     var aniCls = rkAnimDone ? '' : ' animate__animated animate__fadeInRight';
     var aniSty = rkAnimDone ? '' : 'animation-delay:'+delay+';';
-    return '<div class="ri rank-card'+aniCls+'" style="'+aniSty+'" onclick="openProfile(\''+s.id+'\')">'
-      +mkBadge(rank)
-      +mkAvRk(s, rank)
-      +'<div class="rinfo"><div class="rname" data-sid="'+s.id+'">'+esc(s.name)+badgeHtml(s.id)+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
+    var nameBadge = isGold ? ' <span class="champ-badge">⭐</span>' : badgeHtml(s.id);
+    return '<div class="ri rank-card'+(isGold?' ri-gold':'')+aniCls+'" style="'+aniSty+'" onclick="openProfile(\''+s.id+'\')">'
+      +mkBadge(isGold ? 1 : rank)
+      +mkAvRk(s, isGold ? 1 : rank)
+      +'<div class="rinfo"><div class="rname" data-sid="'+s.id+'">'+esc(s.name)+nameBadge+'</div>'+(cn?'<div class="rcls">'+esc(cn)+'</div>':'')+'</div>'
       +'<div class="rpts" data-pts="'+s.points+'">'+s.points+'</div>'
       +'</div>';
   });
