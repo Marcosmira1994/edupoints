@@ -1966,9 +1966,8 @@ function renderRk() {
     var isLeader = s.points === maxPts && maxPts > 0;
     var compRank = sorted.filter(function(x){ return x.points > s.points; }).length + 1; // empatados compartilham o nº
     var tier = auraTier(rank, isLeader);
-    var aniDelays = ['', '0.1s', '0.25s', '0.4s'];
-    var aniCls = rkAnimDone ? '' : ' animate__animated animate__fadeInUp';
-    var aniStyle = rkAnimDone ? '' : 'animation-delay:'+aniDelays[rank]+';';
+    var aniCls = '';
+    var aniStyle = '';
     var ach = hallTag(s, false);
     return '<div class="aura-card '+tier.cls+' aura-holo'+aniCls+'" style="'+aniStyle+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
       +(isLeader ? goldParticles() : '')
@@ -2023,9 +2022,8 @@ function renderRk() {
     var cn = clsName(s.classId);
     var isLeader = s.points === maxPts && maxPts > 0; // empate no 1º lugar
     var shownRank = isLeader ? 1 : rank;
-    var delay = Math.min(i * 0.055, 0.5).toFixed(2) + 's';
-    var aniCls = rkAnimDone ? '' : ' animate__animated animate__fadeInUp';
-    var aniSty = rkAnimDone ? '' : 'animation-delay:'+delay+';';
+    var aniCls = '';
+    var aniSty = '';
     var badge = isLeader ? '<span class="aura-mini-badge">LÍDER</span>' : hallTag(s, true);
     return '<div class="aura-ranking-item rank-card'+(isLeader?' aura-ranking-item--leader':'')+aniCls+'" style="'+aniSty+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
       +'<div class="aura-ranking-pos">#'+padRank(shownRank)+'</div>'
