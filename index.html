@@ -613,6 +613,30 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .aura-card--rare{--aura-metal:#d58a51;--aura-soft:rgba(213,138,81,.24);--aura-deep:#241107;min-height:246px}
 .aura-card--legendary::after{animation:auraHoloSweep 4.8s ease-in-out infinite}
 .aura-card--epic::after,.aura-card--rare::after{opacity:.12}
+.hall-rarity-rare{--hall-metal:#d58a51;--hall-soft:rgba(213,138,81,.24);--hall-deep:#241107;--hall-border:rgba(213,138,81,.56);--hall-bg:linear-gradient(135deg,rgba(55,27,12,.96),rgba(9,14,27,.92))}
+.hall-rarity-epic{--hall-metal:#bcd7ff;--hall-soft:rgba(100,170,255,.24);--hall-deep:#071329;--hall-border:rgba(188,215,255,.56);--hall-bg:linear-gradient(135deg,rgba(18,37,69,.96),rgba(8,14,28,.92))}
+.hall-rarity-legendary{--hall-metal:#f4c957;--hall-soft:rgba(244,201,87,.32);--hall-deep:#211703;--hall-border:rgba(244,201,87,.64);--hall-bg:linear-gradient(135deg,rgba(58,45,14,.96),rgba(10,15,28,.92))}
+.aura-card.is-hall-champion{
+  --aura-metal:var(--hall-metal);--aura-soft:var(--hall-soft);--aura-deep:var(--hall-deep);
+  border-width:2px;box-shadow:0 16px 34px rgba(0,0,0,.42),0 0 24px var(--hall-soft);
+}
+.aura-card.is-hall-champion::before{
+  background:
+    radial-gradient(circle at 18% 12%,rgba(255,255,255,.18),transparent 28%),
+    radial-gradient(circle at 80% 26%,var(--hall-soft),transparent 34%),
+    linear-gradient(160deg,rgba(7,13,28,.96),rgba(10,18,38,.9) 48%,var(--hall-deep));
+}
+.aura-card.is-hall-champion::after{opacity:.2;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.38) 50%,transparent 60%)}
+.aura-card.is-hall-champion .aura-rarity{color:#fff;border-color:var(--hall-border);box-shadow:0 0 12px var(--hall-soft)}
+.hall-badge{
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;max-width:100%;
+  border:1px solid var(--hall-border,rgba(244,201,87,.35));border-radius:999px;padding:3px 7px;
+  background:rgba(2,8,20,.66);color:#fff;font-size:9px;font-weight:900;letter-spacing:.38px;line-height:1;text-transform:uppercase;
+  box-shadow:0 0 10px var(--hall-soft,rgba(244,201,87,.18));white-space:nowrap;
+}
+.hall-badge--rare{color:#ffe4cd}
+.hall-badge--epic{color:#eaf3ff}
+.hall-badge--legendary{color:#fff2b6}
 .aura-card.holo-active::after{opacity:.38}
 .aura-card__top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
 .aura-rarity{
@@ -678,11 +702,23 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
   box-shadow:0 8px 22px rgba(0,0,0,.28);cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease;
   -webkit-tap-highlight-color:transparent;
 }
+.aura-ranking-item>*{position:relative;z-index:1}
 .aura-ranking-item::before{content:'';position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:999px;background:rgba(255,255,255,.16)}
 .aura-ranking-item:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.18);background:linear-gradient(135deg,rgba(23,34,58,.98),rgba(11,17,32,.94))}
 .aura-ranking-item:active{transform:scale(.99)}
 .aura-ranking-item--leader{border-color:rgba(244,201,87,.34);background:linear-gradient(135deg,rgba(52,43,20,.96),rgba(10,15,28,.93))}
 .aura-ranking-item--leader::before{background:#f4c957;box-shadow:0 0 14px rgba(244,201,87,.45)}
+.aura-ranking-item.is-hall-champion{border-color:var(--hall-border);background:var(--hall-bg);box-shadow:0 10px 26px rgba(0,0,0,.34),0 0 18px var(--hall-soft)}
+.aura-ranking-item.is-hall-champion::before{background:var(--hall-metal);box-shadow:0 0 16px var(--hall-soft)}
+.aura-ranking-item.is-hall-champion::after{
+  content:'';position:absolute;inset:-35% -60%;pointer-events:none;opacity:.13;
+  background:linear-gradient(105deg,transparent 43%,rgba(255,255,255,.34) 50%,transparent 57%);
+  transform:translateX(-18%) rotate(18deg);
+}
+.aura-ranking-item.is-hall-champion:hover{border-color:var(--hall-border);box-shadow:0 12px 30px rgba(0,0,0,.38),0 0 22px var(--hall-soft)}
+.aura-ranking-item.is-hall-champion .aura-ranking-pos{border-color:var(--hall-border);color:#07101f;background:linear-gradient(135deg,var(--hall-metal),rgba(255,255,255,.72))}
+.aura-ranking-item.is-hall-champion .aura-ranking-photo .av{box-shadow:inset 0 0 0 2px var(--hall-metal),0 0 16px var(--hall-soft)}
+.aura-ranking-item.is-hall-champion .aura-ranking-score-value{color:var(--hall-metal);text-shadow:0 0 12px var(--hall-soft)}
 .aura-ranking-pos{
   min-width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
@@ -697,6 +733,9 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
 .aura-ranking-main{min-width:0;display:flex;flex-direction:column;gap:3px}
 .aura-ranking-name{display:flex;align-items:center;gap:5px;min-width:0;color:#f7f9ff;font-size:14px;font-weight:850;line-height:1.18}
 .aura-ranking-name-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aura-ranking-item.is-hall-champion .aura-ranking-name{align-items:flex-start;flex-wrap:wrap;row-gap:4px}
+.aura-ranking-item.is-hall-champion .aura-ranking-name-text{flex-basis:100%;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.aura-ranking-badges{display:inline-flex;align-items:center;gap:4px;max-width:100%;flex-wrap:wrap}
 .aura-ranking-meta{display:flex;align-items:center;gap:6px;min-width:0;color:#9ba8c2;font-size:11px;font-weight:700;line-height:1.2}
 .aura-ranking-class{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aura-mini-badge{flex-shrink:0;border:1px solid rgba(244,201,87,.32);background:rgba(244,201,87,.12);color:#ffe8a6;border-radius:999px;padding:2px 5px;font-size:9px;font-weight:850;letter-spacing:.3px;line-height:1}
@@ -741,6 +780,8 @@ html,body{height:100%;background:linear-gradient(135deg,#0a0e1a 0%,#0d1528 50%,#
   .aura-card--legendary .aura-photo-frame .podium-av{border-radius:18px!important}
   .aura-achievements{min-height:15px}
   .aura-achievement{font-size:8px;padding:2px 5px}
+  .hall-badge{font-size:8px;padding:2px 5px;letter-spacing:.25px}
+  .aura-ranking-badges{gap:3px}
   .aura-power{padding:6px 5px;border-radius:10px}
   .aura-power__label{font-size:8.5px;letter-spacing:.35px}
   .aura-card__foot{font-size:8px}
@@ -1946,16 +1987,18 @@ function renderRk() {
   }
 
   function hallTag(s, compact) {
-    var p = bestBadges && bestBadges[s.id];
-    if (!p) return '';
+    var info = getCardRarity(s);
+    if (!info.isChampion) return '';
+    var p = info.bestRank;
+    var title = ' title="Hall da Aura: ' + info.titles + ' registro' + (info.titles === 1 ? '' : 's') + '"';
     return compact
-      ? '<span class="aura-mini-badge">HALL #' + padRank(p) + '</span>'
-      : '<span class="aura-achievement">HALL #' + padRank(p) + '</span>';
+      ? '<span class="hall-badge ' + info.badgeCls + '"' + title + '>HALL DA AURA</span><span class="hall-badge ' + info.badgeCls + '"' + title + '>' + info.label + '</span>'
+      : '<span class="hall-badge ' + info.badgeCls + '"' + title + '>HALL DA AURA</span><span class="aura-achievement">HALL #' + padRank(p) + '</span>';
   }
 
   function auraTier(rank, isLeader) {
-    if (isLeader) return { cls:'aura-card--legendary', label:'LENDÁRIO', medal:'I' };
-    if (rank === 2) return { cls:'aura-card--epic', label:'ÉPICO', medal:'II' };
+    if (isLeader) return { cls:'aura-card--legendary', label:'LEND&Aacute;RIO', medal:'I' };
+    if (rank === 2) return { cls:'aura-card--epic', label:'&Eacute;PICO', medal:'II' };
     return { cls:'aura-card--rare', label:'RARO', medal:'III' };
   }
 
@@ -1965,11 +2008,15 @@ function renderRk() {
     var cn = clsName(s.classId);
     var isLeader = s.points === maxPts && maxPts > 0;
     var compRank = sorted.filter(function(x){ return x.points > s.points; }).length + 1; // empatados compartilham o nº
-    var tier = auraTier(rank, isLeader);
+    var hallInfo = getCardRarity(s);
+    var tier = hallInfo.isChampion
+      ? { cls:'aura-card--' + hallInfo.rarity, label:hallInfo.label, medal:(hallInfo.titles > 1 ? hallInfo.titles + 'x HALL' : 'HALL') }
+      : auraTier(rank, isLeader);
+    var hallCls = hallInfo.isChampion ? ' ' + hallInfo.cls : '';
     var aniCls = '';
     var aniStyle = '';
     var ach = hallTag(s, false);
-    return '<div class="aura-card '+tier.cls+' aura-holo'+aniCls+'" style="'+aniStyle+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
+    return '<div class="aura-card '+tier.cls+' aura-holo'+hallCls+aniCls+'" style="'+aniStyle+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
       +(isLeader ? goldParticles() : '')
       +'<div class="aura-card__top">'
         +'<div class="aura-rarity">'+tier.label+'</div>'
@@ -2021,11 +2068,14 @@ function renderRk() {
     var rank = i+1;
     var cn = clsName(s.classId);
     var isLeader = s.points === maxPts && maxPts > 0; // empate no 1º lugar
+    var hallInfo = getCardRarity(s);
     var shownRank = isLeader ? 1 : rank;
     var aniCls = '';
     var aniSty = '';
-    var badge = isLeader ? '<span class="aura-mini-badge">LÍDER</span>' : hallTag(s, true);
-    return '<div class="aura-ranking-item rank-card'+(isLeader?' aura-ranking-item--leader':'')+aniCls+'" style="'+aniSty+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
+    var badges = (isLeader ? '<span class="aura-mini-badge">L&Iacute;DER</span>' : '') + (hallInfo.isChampion ? hallTag(s, true) : '');
+    var badge = badges ? '<span class="aura-ranking-badges">' + badges + '</span>' : '';
+    var hallCls = hallInfo.isChampion ? ' ' + hallInfo.cls : '';
+    return '<div class="aura-ranking-item rank-card'+(isLeader?' aura-ranking-item--leader':'')+hallCls+aniCls+'" style="'+aniSty+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
       +'<div class="aura-ranking-pos">#'+padRank(shownRank)+'</div>'
       +'<div class="aura-ranking-photo">'+mkAvRk(s, shownRank)+'</div>'
       +'<div class="aura-ranking-main">'
@@ -2278,6 +2328,7 @@ function recalcularPontosDoHistorico() {
 // ===== HALL DA AURA =====
 var hallAura = [];     // todos os registros salvos (mais recentes primeiro)
 var bestBadges = {};   // aluno_id -> melhor posição já conquistada (1..10)
+var hallTitleCounts = {}; // aluno_id -> bimestres distintos registrados no Hall
 
 function fromSbHall(r) {
   return { id:r.id, bimestre:r.bimestre, posicao:r.posicao, alunoId:r.aluno_id, alunoNome:r.aluno_nome, pontos:r.pontos, fotoUrl:r.foto_url||null, criadoEm:r.criado_em };
@@ -2287,18 +2338,46 @@ function fromSbHall(r) {
 // Usa ranking por PONTOS (empatados no topo contam como 1º) — consistente com as cartas do Hall.
 function computeBadges() {
   bestBadges = {};
+  hallTitleCounts = {};
   var byBim = {};
   hallAura.forEach(function(r){ (byBim[r.bimestre] = byBim[r.bimestre] || []).push(r); });
   Object.keys(byBim).forEach(function(bim) {
     var items = byBim[bim].slice().sort(function(a,b){ return b.pontos - a.pontos || a.posicao - b.posicao; });
+    var seenInBim = {};
     items.forEach(function(r) {
       var first = -1;
       for (var i = 0; i < items.length; i++) { if (items[i].pontos === r.pontos) { first = i; break; } }
       var rank = first + 1;
       var cur = bestBadges[r.alunoId];
       if (cur === undefined || rank < cur) bestBadges[r.alunoId] = rank;
+      if (!seenInBim[r.alunoId]) {
+        seenInBim[r.alunoId] = true;
+        hallTitleCounts[r.alunoId] = (hallTitleCounts[r.alunoId] || 0) + 1;
+      }
     });
   });
+}
+
+function getHallChampionInfo(aluno) {
+  if (!aluno || !bestBadges || bestBadges[aluno.id] === undefined) {
+    return { isChampion:false, titles:0, bestRank:null, rarity:null, label:'', cls:'', badgeCls:'' };
+  }
+  var titles = hallTitleCounts[aluno.id] || 1;
+  var rarity = titles >= 3 ? 'legendary' : (titles === 2 ? 'epic' : 'rare');
+  var labels = { rare:'RARA', epic:'&Eacute;PICA', legendary:'LEND&Aacute;RIA' };
+  return {
+    isChampion:true,
+    titles:titles,
+    bestRank:bestBadges[aluno.id],
+    rarity:rarity,
+    label:labels[rarity],
+    cls:'is-hall-champion hall-rarity-' + rarity,
+    badgeCls:'hall-badge--' + rarity
+  };
+}
+
+function getCardRarity(aluno) {
+  return getHallChampionInfo(aluno);
 }
 
 // Emoji do melhor badge do aluno (ou '' se nunca entrou no Hall)
@@ -2320,7 +2399,7 @@ function badgeHtml(alunoId) {
 function fetchHallAura() {
   return sbReq('GET', 'hall_aura', 'select=*&order=criado_em.desc')
     .then(function(rows) { hallAura = (rows || []).map(fromSbHall); computeBadges(); })
-    .catch(function() { hallAura = []; bestBadges = {}; });
+    .catch(function() { hallAura = []; bestBadges = {}; hallTitleCounts = {}; });
 }
 
 // ===== BANNER DE AVISO DE RESET =====
@@ -2475,7 +2554,7 @@ function goldParticles() {
 
 // Efeito holográfico: tilt 3D + brilho que segue o mouse nas cartas douradas
 function attachHolo() {
-  var cards = document.querySelectorAll('.ex-card.ex-1, .podium-aura-card.aura-gold, .aura-card--legendary');
+  var cards = document.querySelectorAll('.ex-card.ex-1, .podium-aura-card.aura-gold, .aura-card--legendary, .aura-card.is-hall-champion');
   cards.forEach(function(card) {
     if (card._holo) return;
     card._holo = true;
