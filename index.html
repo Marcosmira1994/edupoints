@@ -912,6 +912,7 @@ body::after{
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
 }
 .fab:hover{background:#00f5ff!important;color:#000!important;box-shadow:0 0 26px rgba(0,245,255,.85),0 0 50px rgba(0,245,255,.35)!important}
+#fab-scan{bottom:84px!important;font-size:24px}
 
 /* ---------- INPUTS ---------- */
 .inp,.sel{background:rgba(0,245,255,.04)!important;border:1px solid rgba(0,245,255,.28)!important;color:var(--text)!important;transition:all .3s ease}
@@ -1347,6 +1348,7 @@ body::after{
   <button class="nb" data-v="cfg" onclick="go('cfg')"><span class="ic">⚙️</span>Config</button>
 </nav>
 
+<button class="fab no-print" id="fab-scan" onclick="go('sc')" title="Scanner" style="display:none">📷</button>
 <button class="fab no-print" id="fab" onclick="openAddStudent()">+</button>
 </div>
 
@@ -1786,6 +1788,8 @@ function go(v) {
   if (nb) nb.classList.add('on');
   var fab = document.getElementById('fab');
   fab.style.display = isAdmin && (v==='st'||v==='rk') ? 'flex' : 'none';
+  var fabScan = document.getElementById('fab-scan');
+  if (fabScan) fabScan.style.display = isAdmin && v==='rk' ? 'flex' : 'none';
   render(v);
 }
 
@@ -1851,6 +1855,8 @@ function updateAdminUI() {
   if (isAdmin && navigator.onLine) { backupAutomatico(); carregarAcessos(); }
   var fab = document.getElementById('fab');
   if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
+  var fabScan = document.getElementById('fab-scan');
+  if (fabScan) fabScan.style.display = isAdmin && curView==='rk' ? 'flex' : 'none';
   if (!isAdmin && curView !== 'rk' && curView !== 'hs' && curView !== 'hall') go('rk');
   else render(curView);
 }
