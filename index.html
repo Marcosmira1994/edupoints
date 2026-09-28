@@ -1522,6 +1522,7 @@ var rkAnimDone = false;
 var audioCtx = null;
 var lastScan = { id:'', t:0 };
 var COLORS = ['#00d4aa','#4a9eff','#ff6b6b','#ffd700','#a29bfe','#fd79a8','#fdcb6e','#6c5ce7','#00b894','#e17055'];
+var pendingAlunoId = new URLSearchParams(window.location.search).get('aluno');
 
 // ===== STORAGE =====
 function save() {
@@ -2260,6 +2261,22 @@ function openProfile(id) {
 
   openOv('mov-profile');
   renderProfileChart(id);
+}
+
+function tryHighlightAluno() {
+  if (!pendingAlunoId) return;
+  var s = S.students.find(function(x){ return x.id === pendingAlunoId; });
+  if (!s) return;
+  var id = pendingAlunoId;
+  pendingAlunoId = null;
+  go('rk');
+  setTimeout(function(){
+    var nameEl = document.querySelector('.aura-ranking-name-text[data-sid="'+id+'"]');
+    var card = nameEl ? nameEl.closest('.aura-ranking-item') : null;
+    if (card) card.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 250);
+  setTimeout(function(){ openProfile(id); }, 500);
+  setTimeout(function(){ closeOv('mov-profile'); }, 3500);
 }
 
 function openProfileQP() {
@@ -3029,13 +3046,20 @@ function stopScan() {
   }
 }
 
+function extractAlunoId(text) {
+  var pfx = 'EDUPOINTS:';
+  if (text.indexOf(pfx) === 0) return text.slice(pfx.length);
+  var m = text.match(/[?&]aluno=([^&#]+)/);
+  if (m) { try { return decodeURIComponent(m[1]); } catch(e) { return m[1]; } }
+  return null;
+}
+
 function handleScan(text) {
   var now = Date.now();
   if (text===lastScan.id && now-lastScan.t<3000) return;
   lastScan={id:text, t:now};
-  var pfx = 'EDUPOINTS:';
-  if (!text.startsWith(pfx)) { showScanRes(null,'QR Code não reconhecido',false); return; }
-  var id = text.slice(pfx.length);
+  var id = extractAlunoId(text);
+  if (!id) { showScanRes(null,'QR Code não reconhecido',false); return; }
   var s = S.students.find(function(x){return x.id===id;});
   if (!s) { showScanRes(null,'Aluno não encontrado',false); return; }
   if (qrScanner && scanning) {
@@ -3074,6 +3098,10 @@ function showScanRes(s, msg, ok) {
 }
 
 // ===== QR CODE =====
+function alunoQRUrl(id) {
+  return 'https://marcosmira1994.github.io/edupoints/?aluno=' + encodeURIComponent(id);
+}
+
 function showQR(id) {
   var s = S.students.find(function(x){return x.id===id;});
   if (!s) return;
@@ -3084,7 +3112,7 @@ function showQR(id) {
   openOv('mov-qr');
   setTimeout(function(){
     try {
-      new QRCode(c,{text:'EDUPOINTS:'+s.id,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+      new QRCode(c,{text:alunoQRUrl(s.id),width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
     } catch(e){ c.textContent='Erro ao gerar QR Code'; }
   },150);
 }
@@ -3108,7 +3136,7 @@ function openQRPrint() {
   function genNext(){
     if (i>=S.students.length) { setTimeout(function(){window.print();},200); return; }
     var s=S.students[i++];
-    try{ new QRCode(document.getElementById('qpi-'+s.id),{text:'EDUPOINTS:'+s.id,width:130,height:130,colorDark:'#000000',colorLight:'#ffffff'}); }catch(e){}
+    try{ new QRCode(document.getElementById('qpi-'+s.id),{text:alunoQRUrl(s.id),width:130,height:130,colorDark:'#000000',colorLight:'#ffffff'}); }catch(e){}
     setTimeout(genNext,30);
   }
   genNext();
@@ -3536,6 +3564,7 @@ function initApp() {
   document.getElementById('scanpts').value = S.settings.scanPts || 1;
   go('rk');
   updateAdminUI(); // garante visibilidade correta do menu (admin vs visitante) já no início
+  tryHighlightAluno();
 
   // 2. Supabase como fonte de verdade quando online
   if (navigator.onLine) {
@@ -3547,6 +3576,7 @@ function initApp() {
           S.students = data.students;
           S.history  = data.history;
           save(); render(curView); setStatus('ok');
+          tryHighlightAluno();
         } else {
           // Supabase vazio: sobe dados locais
           return sbPushAll().then(function() { setStatus('ok'); });
