@@ -1412,8 +1412,9 @@ body::after{
   <div class="ep-modal">
     <div class="mh">
       <span class="mt">Pontuar: <span id="pts-name" style="color:var(--green)"></span></span>
-      <button class="mc" onclick="closeOv('mov-pts')">✕</button>
+      <button class="mc" onclick="closeQP()">✕</button>
     </div>
+    <div id="pts-av-wrap" style="display:none;text-align:center;margin-bottom:10px"></div>
     <div class="cat-list">
       <button class="btn btn-success cat-dui" onclick="selectCat(3,'Tarefa de casa entregue')"><span>📚 Tarefa de casa entregue</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+3</span></button>
       <button class="btn btn-success cat-dui" onclick="selectCat(2,'Participação em aula')"><span>🙋 Participação em aula</span><span class="badge badge-sm" style="background:rgba(0,0,0,.22);color:inherit;border:none;font-weight:900;font-size:14px">+2</span></button>
@@ -1514,6 +1515,7 @@ var qrScanner = null;
 var scanning = false;
 var editStId = null;
 var qrPtsId = null;
+var qpScanMode = false;
 var profileId = null;
 var confettiLaunched = false;
 var rkAnimDone = false;
@@ -2141,22 +2143,41 @@ function playSound(pos) {
 }
 
 // ===== QUICK POINTS MODAL =====
-function openQP(id) {
+function openQP(id, fromScan) {
   var s = S.students.find(function(x){return x.id===id;});
   if (!s) return;
   qrPtsId = id;
+  qpScanMode = !!fromScan;
   document.getElementById('pts-name').textContent = s.name;
   document.getElementById('cust-val').value = '';
   document.getElementById('modal-obs').value = '';
+  var avWrap = document.getElementById('pts-av-wrap');
+  if (avWrap) {
+    if (qpScanMode) {
+      avWrap.style.display = 'block';
+      avWrap.innerHTML = mkAv(s, 'av', 'width:72px;height:72px;font-size:28px;margin:0 auto;border:3px solid var(--green)');
+    } else {
+      avWrap.style.display = 'none';
+      avWrap.innerHTML = '';
+    }
+  }
   openOv('mov-pts');
+}
+
+function closeQP() {
+  closeOv('mov-pts');
+  if (qpScanMode) {
+    qpScanMode = false;
+    resumeScanAfterModal();
+  }
 }
 
 function doQP(pts) {
   if (!qrPtsId) return;
   var obsEl = document.getElementById('modal-obs');
   var obs = obsEl ? obsEl.value.trim() : '';
-  addPts(qrPtsId, pts, 'manual', obs);
-  closeOv('mov-pts');
+  addPts(qrPtsId, pts, qpScanMode ? 'qr' : 'manual', obs);
+  closeQP();
 }
 
 function doQPcust() {
@@ -2166,6 +2187,13 @@ function doQPcust() {
 }
 
 function selectCat(pts, label) {
+  if (qpScanMode) {
+    var obsEl = document.getElementById('modal-obs');
+    var obs = obsEl ? obsEl.value.trim() : '';
+    addPts(qrPtsId, pts, 'qr', obs || label);
+    closeQP();
+    return;
+  }
   document.getElementById('cust-val').value = pts;
   document.getElementById('modal-obs').value = label;
   document.getElementById('modal-obs').focus();
@@ -3010,9 +3038,21 @@ function handleScan(text) {
   var id = text.slice(pfx.length);
   var s = S.students.find(function(x){return x.id===id;});
   if (!s) { showScanRes(null,'Aluno não encontrado',false); return; }
-  var pts = S.settings.scanPts||1;
-  addPts(s.id, pts, 'qr');
-  showScanRes(s, '+'+pts+' ponto'+(pts!==1?'s':'')+'!', true);
+  if (qrScanner && scanning) {
+    try { qrScanner.pause(true); } catch(e){}
+    var st = document.getElementById('scanst');
+    if (st) { st.textContent = '⏸️ Selecione a pontuação de ' + s.name + '...'; st.className = 'ss act'; }
+  }
+  openQP(s.id, true);
+}
+
+function resumeScanAfterModal() {
+  lastScan = {id:null, t:0};
+  if (qrScanner && scanning) {
+    try { qrScanner.resume(); } catch(e){}
+    var st = document.getElementById('scanst');
+    if (st) { st.textContent = '📷 Scanner ativo — aproxime o QR Code'; st.className = 'ss act'; }
+  }
 }
 
 function showScanRes(s, msg, ok) {
