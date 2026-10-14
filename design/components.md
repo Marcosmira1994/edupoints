@@ -17,3 +17,5 @@ Autoridade: `index.html` + `design/ui.css`. Valores normativos em `../DESIGN.md`
 Foco geral laranja 2px com afastamento 4px. Botões desabilitados têm opacidade .5. Movimento em `motion.css`/`motion.js`: preenchimento circular de 500ms a partir do ponteiro; pressão 120ms; tilt de até 2° com mouse; entradas WAAPI de 280ms escalonadas; menus 160–180ms e modais 220ms. Navegação interrompe entradas anteriores; teclado e movimento reduzido não recebem deslocamentos de painel. Ícones SVG de traço simples. Fontes Oxanium e Inter são locais e preexistentes; nenhum raster de produção foi gerado nesta adaptação.
 
 Avisos de pontuação: #dui-toast-container centralizado horizontalmente, no topo a 14px abaixo do cabeçalho; não sobrepor o centro do conteúdo.
+
+- **Hall da Aura** (`.hall-toolbar`, `.hall-honor`, `.hall-results`): seletor nativo de período; destaques dos três valores distintos de pontos, preservando empates; classificação histórica completa. Retratos de 88px/72px, inicial em falhas. Botões somente para perfis atuais disponíveis. Estados de carregamento, vazio e erro com nova tentativa e foco preservado. Implementação em `hall.js`/`hall.css`.

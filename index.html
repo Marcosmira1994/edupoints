@@ -792,6 +792,8 @@ html,body{height:100%;background:radial-gradient(ellipse 120% 90% at 50% 45%,#1a
 <link rel="stylesheet" href="design/ui.css">
 <link rel="stylesheet" href="design/motion.css">
 <script src="design/motion.js"></script>
+<link rel="stylesheet" href="design/hall.css">
+<script src="design/hall.js"></script>
 </head>
 <body>
 <div id="app" style="display:none">
@@ -873,6 +875,7 @@ html,body{height:100%;background:radial-gradient(ellipse 120% 90% at 50% 45%,#1a
     <div class="sh">
       <h1 class="st">Hall da Aura</h1>
     </div>
+    <p class="hall-intro">As conquistas da turma, guardadas a cada bimestre.</p>
     <div id="hall-list"></div>
   </div>
 
@@ -1121,7 +1124,7 @@ html,body{height:100%;background:radial-gradient(ellipse 120% 90% at 50% 45%,#1a
     <div style="text-align:center;padding:4px 0 16px">
       <div id="profile-av-wrap" style="margin-bottom:14px"></div>
       <div id="profile-name" style="font-size:19px;font-weight:800"></div>
-      <div id="profile-cls" style="font-size:13px;color:var(--text2);margin-top:4px"></div>
+      <div id="profile-cls" style="font-size:13px;color:var(--text2);margin-top:4px"></div><div id="profile-titles" class="profile-titles"></div>
       <div id="profile-pts-val" style="font-size:40px;font-weight:900;color:var(--green);margin-top:10px;line-height:1"></div>
     </div>
     <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Últimas movimentações</div>
@@ -1951,6 +1954,7 @@ function openProfile(id) {
 
   document.getElementById('profile-name').textContent = s.name;
   document.getElementById('profile-cls').textContent = clsName(s.classId) || '';
+  renderProfileTitles(id);
 
   var ptsEl = document.getElementById('profile-pts-val');
   ptsEl.textContent = '0 pts';
@@ -1980,6 +1984,17 @@ function openProfile(id) {
 
   openOv('mov-profile');
   renderProfileChart(id);
+}
+
+function renderProfileTitles(id) {
+  var el = document.getElementById('profile-titles'); if (!el) return;
+  el.replaceChildren();
+  var t = (window.EPhall && EPhall.titleDetails) ? EPhall.titleDetails(id) : [];
+  if (!t.length) return;
+  var lab = document.createElement('strong'); lab.textContent = 'Títulos de bimestre';
+  el.append(lab, EPhall.stars(t.length));
+  var per = document.createElement('span'); per.textContent = t.map(function(x){ return x.period; }).join(' · ');
+  el.append(per);
 }
 
 function openProfileQP() {
@@ -2025,14 +2040,14 @@ function renderRk() {
   var leaders=document.createElement('section');leaders.className='leader-grid';leaders.setAttribute('aria-label','Destaques da turma');
   sorted.slice(0,3).forEach(function(st,i){
     var r=rank(st), b=document.createElement('button');b.type='button';b.className='leader-card'+(r===1?' leader-first':'');
-    b.setAttribute('aria-label','Abrir perfil de '+st.name+', posição '+r+', '+st.points+' pontos');
-    b.innerHTML='<div class="leader-top"><span class="leader-position">'+epIcon(r===1?'trophy':'award')+r+'º lugar</span><span class="leader-index">'+String(i+1).padStart(2,'0')+'</span></div><div class="leader-person">'+mkAv(st,'leader-avatar')+'<div><h2>'+esc(st.name)+'</h2><p>'+esc(clsName(st.classId)||'Sem turma')+'</p></div></div><div class="leader-bottom"><div><strong>'+st.points.toLocaleString('pt-BR')+'</strong><span>pontos</span></div><span class="profile-link">Ver perfil '+epIcon('arrow')+'</span></div>';
+    b.setAttribute('aria-label','Abrir perfil de '+st.name+', posição '+r+', '+st.points+' pontos'+titleAria(st.id));
+    b.innerHTML='<div class="leader-top"><span class="leader-position">'+epIcon(r===1?'trophy':'award')+r+'º lugar</span><span class="leader-index">'+String(i+1).padStart(2,'0')+'</span></div><div class="leader-person">'+mkAv(st,'leader-avatar')+'<div><h2>'+esc(st.name)+'</h2>'+titleMarkHtml(st.id)+'<p>'+esc(clsName(st.classId)||'Sem turma')+'</p></div></div><div class="leader-bottom"><div><strong>'+st.points.toLocaleString('pt-BR')+'</strong><span>pontos</span></div><span class="profile-link">Ver perfil '+epIcon('arrow')+'</span></div>';
     b.addEventListener('click',function(){openProfile(st.id);});leaders.appendChild(b);
   });pEl.appendChild(leaders);
   lEl.innerHTML='<div class="classification-heading"><h2>Classificação</h2><span>'+sorted.length+' aluno'+(sorted.length===1?'':'s')+'</span></div><div class="ranking-table"><div class="ranking-columns" aria-hidden="true"><span>Posição</span><span>Aluno</span><span>Pontos</span><span></span></div></div>';
   var table=lEl.querySelector('.ranking-table');
-  sorted.forEach(function(st){var b=document.createElement('button'),r=rank(st);b.type='button';b.className='ranking-row';b.setAttribute('aria-label','Abrir perfil de '+st.name+', posição '+r+', '+st.points+' pontos');
-    b.innerHTML='<span class="table-position'+(r===1?' first':'')+'">'+String(r).padStart(2,'0')+'</span><span class="table-student">'+mkAv(st,'table-avatar')+'<span><strong>'+esc(st.name)+'</strong><small>'+esc(clsName(st.classId)||'Sem turma')+'</small></span></span><span class="table-points">'+st.points.toLocaleString('pt-BR')+'</span>'+epIcon('arrow');
+  sorted.forEach(function(st){var b=document.createElement('button'),r=rank(st);b.type='button';b.className='ranking-row';b.setAttribute('aria-label','Abrir perfil de '+st.name+', posição '+r+', '+st.points+' pontos'+titleAria(st.id));
+    b.innerHTML='<span class="table-position'+(r===1?' first':'')+'">'+String(r).padStart(2,'0')+'</span><span class="table-student">'+mkAv(st,'table-avatar')+'<span><strong>'+esc(st.name)+'</strong>'+titleMarkHtml(st.id)+'<small>'+esc(clsName(st.classId)||'Sem turma')+'</small></span></span><span class="table-points">'+st.points.toLocaleString('pt-BR')+'</span>'+epIcon('arrow');
     b.addEventListener('click',function(){openProfile(st.id);});table.appendChild(b);});
   renderMeta();
 }
@@ -2278,6 +2293,7 @@ function recalcularPontosDoHistorico() {
 
 // ===== HALL DA AURA =====
 var hallAura = [];     // todos os registros salvos (mais recentes primeiro)
+var hallState = 'idle';
 var bestBadges = {};   // aluno_id -> melhor posição já conquistada (1..10)
 
 function fromSbHall(r) {
@@ -2319,15 +2335,27 @@ function badgeFor(alunoId) {
 }
 
 // Span pronto pra colar ao lado do nome (vazio se o aluno nunca entrou no Hall)
+// Títulos históricos de bimestre (estrelas do Hall) — distintos da posição atual.
+function titleMarkHtml(id) {
+  if (!window.EPhall || !EPhall.mark) return '';
+  var m = EPhall.mark(id);
+  return m ? m.outerHTML : '';
+}
+function titleAria(id) {
+  var n = (window.EPhall && EPhall.titlesFor) ? EPhall.titlesFor(id) : 0;
+  return n ? ', ' + n + ' título' + (n === 1 ? '' : 's') + ' de bimestre' : '';
+}
+
 function badgeHtml(alunoId) {
   var b = badgeFor(alunoId);
   return b ? ' <span class="champ-badge" title="Campeão do Hall da Aura">' + b + '</span>' : '';
 }
 
 function fetchHallAura() {
+  hallState = 'loading';
   return sbReq('GET', 'hall_aura', 'select=*&order=criado_em.desc')
-    .then(function(rows) { hallAura = (rows || []).map(fromSbHall); computeBadges(); })
-    .catch(function() { hallAura = []; bestBadges = {}; });
+    .then(function(rows) { hallAura = (rows || []).map(fromSbHall); hallState='ready'; computeBadges(); })
+    .catch(function() { hallState='error'; });
 }
 
 // ===== BANNER DE AVISO DE RESET =====
@@ -2456,105 +2484,9 @@ function salvarHallAura() {
     });
 }
 
-// Avatar de um registro do Hall (usa a foto salva no bimestre; senão a atual do aluno; senão inicial)
-function hallAvatar(r, cls) {
-  var foto = r.fotoUrl;
-  if (!foto) { var s = S.students.find(function(x){ return x.id === r.alunoId; }); if (s) foto = s.fotoUrl; }
-  if (foto) return '<div class="' + cls + '"><img src="' + esc(foto) + '" loading="lazy" decoding="async"></div>';
-  return '<div class="' + cls + '">' + initial(r.alunoNome) + '</div>';
-}
-
-// Clica no card → abre perfil se o aluno ainda existe
-function hallClick(alunoId) {
-  if (S.students.find(function(x){ return x.id === alunoId; })) return ' onclick="openProfile(\'' + alunoId + '\')"';
-  return '';
-}
-
-// 6 partículas douradas flutuantes (carta dourada estilo Mew EX)
-function goldParticles() { return ""; }
-
-// Efeito holográfico: tilt 3D + brilho que segue o mouse nas cartas douradas
-function attachHolo() {}
-
-// tier: 1=ouro, 2=prata, 3=bronze (cor da carta) · rank: ranking de competição (#)
-function exCard(r, tier, rank) {
-  var fx;
-  if (tier === 1) {
-    fx = goldParticles();
-  } else {
-    var sparkles = '';
-    var pos = [[18,16],[26,80],[72,22],[80,70],[50,12]];
-    for (var i = 0; i < pos.length; i++) {
-      sparkles += '<span class="ex-sparkle" style="top:' + pos[i][0] + '%;left:' + pos[i][1] + '%;animation-delay:' + (i*0.4) + 's"></span>';
-    }
-    fx = '<div class="ex-rays"></div>' + sparkles + '<div class="ex-shine"></div>';
-  }
-  return '<div class="ex-card ex-' + tier + '"' + hallClick(r.alunoId) + '>'
-    + fx
-    + '<div class="ex-badge">#' + rank + '</div>'
-    + '<div class="ex-photo">' + hallAvatar(r, 'ex-av') + '</div>'
-    + '<div class="ex-name">' + esc(r.alunoNome) + '</div>'
-    + '<div class="ex-pts">⭐ ' + r.pontos + '</div>'
-    + '</div>';
-}
-
-function exMini(r, rank) {
-  return '<div class="ex-mini"' + hallClick(r.alunoId) + '>'
-    + '<div class="ex-mini-pos">' + rank + '</div>'
-    + hallAvatar(r, 'ex-mini-av')
-    + '<div class="ex-mini-name">' + esc(r.alunoNome) + ' <span class="em">⚡</span></div>'
-    + '<div class="ex-mini-pts">⭐ ' + r.pontos + '</div>'
-    + '</div>';
-}
-
-function renderBimestre(g) {
-  var d = g.criadoEm ? new Date(g.criadoEm) : null;
-  var ds = d ? d.toLocaleDateString('pt-BR') : '';
-  // Ordena por pontos desc (desempate estável pela posição salva)
-  var items = g.itens.slice().sort(function(a,b){ return b.pontos - a.pontos || a.posicao - b.posicao; });
-  // Valores distintos de pontos, em ordem decrescente → definem o tier (cor)
-  var distinct = [];
-  items.forEach(function(r){ if (distinct.indexOf(r.pontos) === -1) distinct.push(r.pontos); });
-  var tierOf = function(pts){ return distinct.indexOf(pts) + 1; };
-  // Ranking de competição: empatados compartilham o mesmo nº (1,1,3,...)
-  var rankOf = function(pts){
-    var first = -1;
-    for (var i = 0; i < items.length; i++) { if (items[i].pontos === pts) { first = i; break; } }
-    return first + 1;
-  };
-
-  var cards = [], minis = [];
-  items.forEach(function(r){
-    var tier = tierOf(r.pontos);
-    var rank = rankOf(r.pontos);
-    if (tier <= 3) cards.push(exCard(r, tier, rank));
-    else minis.push(exMini(r, rank));
-  });
-
-  return '<div class="hall-bim">'
-    + '<div class="hall-champs-title">⚡ Campeões do ' + esc(g.nome) + '</div>'
-    + (ds ? '<div class="hall-champs-date">' + ds + '</div>' : '')
-    + '<div class="ex-row">' + cards.join('') + '</div>'
-    + (minis.length ? minis.join('') : '')
-    + '</div>';
-}
-
 // ===== HALL DA AURA — RENDER DA ABA =====
 function renderHall() {
-  var el = document.getElementById('hall-list');
-  if (!el) return;
-  if (!hallAura.length) {
-    el.innerHTML = '<div class="es"><div class="ei">⚡</div><h3>Hall da Aura vazio</h3><p>Os bimestres encerrados aparecerão aqui</p></div>';
-    return;
-  }
-  // Agrupa por bimestre, preservando a ordem (mais recente primeiro — hallAura vem em criado_em desc)
-  var groups = [], map = {};
-  hallAura.forEach(function(r) {
-    if (!map[r.bimestre]) { map[r.bimestre] = { nome:r.bimestre, criadoEm:r.criadoEm, itens:[] }; groups.push(map[r.bimestre]); }
-    map[r.bimestre].itens.push(r);
-  });
-  el.innerHTML = groups.map(renderBimestre).join('');
-  attachHolo();
+  EPhall.render();
 }
 
 // ===== SCANNER =====

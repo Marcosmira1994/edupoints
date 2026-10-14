@@ -183,6 +183,14 @@ Movimento de produção: `design/motion.css` e `design/motion.js`, carregados de
 
 Entradas de navegação usam WAAPI: 280ms, deslocamento de 14px, escalonamento de 35ms limitado a 175ms e curva `cubic-bezier(.23,1,.32,1)`. Nova navegação cancela entradas anteriores. Menus revertem transições de 160–180ms com origem no acionador; modais usam 220ms e curva `cubic-bezier(.32,.72,0,1)`. O movimento é decorativo e localizado, sem reprodução automática dos dados do ranking. Teclado torna mudanças de painel imediatas. Movimento reduzido remove deslocamento, tilt, preenchimento animado e entradas, preservando estado e foco visível. Foco geral usa laranja com afastamento de 4px.
 
+### Hall da Aura
+
+Arquivo histórico em `design/hall.js` e `design/hall.css`. Um seletor nativo de bimestre mantém a escolha durante atualizações e ordena períodos pela data de encerramento. Mostrar nome/data do período, destaques e classificação completa. Preservar nomes/pontos do snapshot; empates usam classificação de competição e os destaques mantêm os três primeiros valores distintos de pontuação.
+
+Fotos: retratos 88px no desktop e 72px no celular, opacidade total e sem filtros; inicial é fallback para ausência/falha. Nomes longos quebram linha. No celular, destaques usam linhas de uma coluna com foto à esquerda. Alunos ainda cadastrados têm botão de perfil atual; registros sem cadastro atual permanecem texto histórico, sem ação falsa. Diferenciar vazio, carregando, offline e erro; falha de atualização preserva dados já carregados. Estados de erro oferecem nova tentativa.
+
+Extensões de escala: corpo 14px, cabeçalho de período 26px/22px, nome de destaque 18px/17px, pontuação 30px/26px. Superfície de campeão reutiliza #221914 com borda #79432b e metadados quentes #c7b4a9. Movimento herda as entradas existentes; hover eleva apenas cartões clicáveis e é desativado com movimento reduzido.
+
 ## Do's and Don'ts
 
 ### Do:

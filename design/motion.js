@@ -32,7 +32,7 @@
     if (!root) return;
     // Cancel an interrupted navigation before starting the next transition.
     entrances.forEach(function(a) { a.cancel(); }); entrances.clear();
-    var targets = Array.from(root.querySelectorAll('.ranking-heading,.page-heading,.sh,.leader-card,.classification-heading,.ranking-table,.st-tools,.scan-cfg,.hall-bim,.es')).slice(0,10);
+    var targets = Array.from(root.querySelectorAll('.ranking-heading,.page-heading,.sh,.leader-card,.classification-heading,.ranking-table,.st-tools,.scan-cfg,.hall-toolbar,.hall-season-heading,.hall-honor,.hall-results,.es')).slice(0,10);
     targets.forEach(function(el, i) {
       var anim = el.animate([
         { opacity: .55, transform: 'translateY(14px)' },
