@@ -181,7 +181,7 @@ Cartões de líderes e linhas de classificação são botões nativos que abrem 
 
 Movimento de produção: `design/motion.css` e `design/motion.js`, carregados depois do sistema visual. Botões recebem preenchimento circular a partir da posição do ponteiro (500ms, inspirado no `.box-style` observado no Gameplex), com feedback de pressão de 120ms. Cartões de líderes inclinam no máximo 2° por eixo e sobem 3px, somente com mouse e ponteiro fino; saídas, rolagem e perda de foco limpam o efeito. O avatar e as setas têm deslocamentos pequenos.
 
-Entradas de navegação usam WAAPI: 280ms, deslocamento de 14px, escalonamento de 35ms limitado a 175ms e curva `cubic-bezier(.23,1,.32,1)`. Nova navegação cancela entradas anteriores. Menus revertem transições de 160–180ms com origem no acionador; modais usam 220ms e curva `cubic-bezier(.32,.72,0,1)`. O movimento é decorativo e localizado, sem reprodução automática dos dados do ranking. Teclado torna mudanças de painel imediatas. Movimento reduzido remove deslocamento, tilt, preenchimento animado e entradas, preservando estado e foco visível. Foco geral usa laranja com afastamento de 4px.
+Entradas de navegação usam WAAPI: 280ms, deslocamento de 24px, escalonamento de 35ms limitado a 175ms e curva `cubic-bezier(.23,1,.32,1)`. Nova navegação cancela entradas anteriores. Menus revertem transições de 160–180ms com origem no acionador; modais usam 220ms e curva `cubic-bezier(.32,.72,0,1)`. O movimento é decorativo e localizado, sem reprodução automática dos dados do ranking. Teclado torna mudanças de painel imediatas. Movimento reduzido remove deslocamento, tilt, preenchimento animado e entradas, preservando estado e foco visível. Foco geral usa laranja com afastamento de 4px.
 
 ### Hall da Aura
 
@@ -205,3 +205,11 @@ Extensões de escala: corpo 14px, cabeçalho de período 26px/22px, nome de dest
 - **Don't** use os estudos históricos como especificação da interface publicada.
 - **Don't** adicione alunos, fotos ou pontuações fictícios ao estado da aplicação.
 
+
+### Movimento do Hall — revisão de 14/10/2026
+
+Entradas aguardam interseção com a área visível, para não terminarem antes de o usuário rolar até os cartões. Navegação desconecta observadores anteriores. Cartões clicáveis do Hall compartilham o tilt de até 2° e a subida de 3px do ranking, com cantoneira laranja que entra no hover; setas deslocam 4px. Fotografias não recebem filtros nem redução de opacidade. Movimento reduzido e teclado preservam acesso imediato.
+
+### Fundo geométrico animado
+
+Por solicitação do usuário, o app tem trama diagonal e faixas laranja discretas em pseudo-elementos fixos de #app. Conteúdo/cabeçalho permanecem em camadas superiores; cartões e fotos são opacos. Movimento lento de transform/opacity (18/24s), pausa em aba oculta, uma camada estática no celular, ambas estáticas com movimento reduzido. Não imprimir o fundo.

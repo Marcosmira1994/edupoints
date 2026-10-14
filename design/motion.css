@@ -37,3 +37,33 @@
  .motion-ready :is(.btn,.qp,.qp1,.chip,.mc,.leader-card,.leader-avatar,.profile-link>.ep-icon,.ranking-row>.ep-icon,.side-link>[data-icon]){transform:none!important}
  .motion-ready .menu-dd{transform:none}.motion-ready .ov>.ep-modal,.motion-ready #mov-profile .ep-modal{transform:none!important}
 }
+
+/* Motion coverage for Hall; artwork remains fully opaque. */
+.motion-ready button.hall-honor{transition:transform 200ms var(--motion-out),border-color 160ms ease;backface-visibility:hidden}
+.motion-ready :is(.leader-card,button.hall-honor)::after{content:"";position:absolute;top:12px;right:12px;width:24px;height:24px;border-top:2px solid var(--ui-accent);border-right:2px solid var(--ui-accent);border-radius:0 5px 0 0;opacity:0;transform:translate(-6px,6px);transition:transform 200ms var(--motion-out),opacity 160ms ease;pointer-events:none}
+.motion-ready .hall-profile-link>.hall-icon,.motion-ready .hall-result>.hall-icon{transition:transform 180ms var(--motion-out)}
+.motion-ready .hall-champion-head{transition:background 150ms ease}
+.motion-ready :is(button.hall-honor,.hall-result,.hall-champion-head):active{transform:scale(.99)}
+@media(hover:hover) and (pointer:fine){
+ .motion-ready :is(.leader-card,button.hall-honor):hover::after{opacity:1;transform:translate(0,0)}
+ .motion-ready button.hall-honor:hover .hall-profile-link>.hall-icon,.motion-ready button.hall-result:hover>.hall-icon{transform:translateX(4px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .motion-ready :is(.leader-card,button.hall-honor)::after{transition:none;transform:none}
+ .motion-ready :is(button.hall-honor,.hall-result,.hall-champion-head,.hall-profile-link>.hall-icon,.hall-result>.hall-icon){transition:none!important;transform:none!important}
+}
+
+/* Ambient angular backdrop: separate from photographs and readable surfaces. */
+:root{--motion-ambient:18s}
+.motion-ready #app{isolation:isolate}
+.motion-ready #app::before,.motion-ready #app::after{content:"";position:fixed;inset:-32px;pointer-events:none;z-index:0}
+.motion-ready #app::before{background:repeating-linear-gradient(125deg,transparent 0 118px,#ff7a4510 119px 120px,transparent 121px 238px),repeating-linear-gradient(35deg,transparent 0 178px,#ffffff06 179px 180px,transparent 181px 358px);animation:ep-background-drift var(--motion-ambient) linear infinite alternate}
+.motion-ready #app::after{background:linear-gradient(125deg,transparent 0 67%,#ff7a4518 67% 67.15%,transparent 67.15% 74%,#ff7a450b 74% 78%,transparent 78%),linear-gradient(305deg,transparent 0 88%,#ff7a4514 88% 88.2%,transparent 88.2%);animation:ep-background-pan 24s ease-in-out infinite alternate}
+.motion-ready #content{position:relative;z-index:1}
+.motion-ready #hdr{position:relative;z-index:3}
+@keyframes ep-background-drift{from{transform:translate3d(-12px,-8px,0)}to{transform:translate3d(12px,8px,0)}}
+@keyframes ep-background-pan{from{transform:translate3d(14px,0,0);opacity:.65}to{transform:translate3d(-14px,12px,0);opacity:1}}
+.motion-ready.motion-paused #app::before,.motion-ready.motion-paused #app::after{animation-play-state:paused}
+@media(max-width:600px){.motion-ready #app::before{animation:none;opacity:.65}.motion-ready #app::after{animation-duration:32s;opacity:.6}}
+@media(prefers-reduced-motion:reduce){.motion-ready #app::before,.motion-ready #app::after{animation:none;transform:none;opacity:.65}}
+@media print{.motion-ready #app::before,.motion-ready #app::after{display:none}}

@@ -4,7 +4,8 @@
   var reduced = matchMedia('(prefers-reduced-motion: reduce)');
   var fine = matchMedia('(hover: hover) and (pointer: fine)');
   var initialized = false, activeCard = null, pendingFrame = 0, lastPointer = null;
-  var entrances = new Set();
+  var entrances = new Set(), revealObserver = null;
+  var cardSelector = '.leader-card,button.hall-honor';
   var interactive = '.btn,.qp,.qp1,.ui-icon-btn,#menu-btn,#fs-btn,#lock-btn,.mc';
 
   function resetCard() {
@@ -27,19 +28,32 @@
   }
 
   function enter(viewId) {
+    if (revealObserver) { revealObserver.disconnect(); revealObserver = null; }
+    entrances.forEach(function(a) { a.cancel(); }); entrances.clear();
     if (reduced.matches || document.body.classList.contains('motion-keyboard')) return;
     var root = document.getElementById('view-' + viewId);
     if (!root) return;
     // Cancel an interrupted navigation before starting the next transition.
     entrances.forEach(function(a) { a.cancel(); }); entrances.clear();
-    var targets = Array.from(root.querySelectorAll('.ranking-heading,.page-heading,.sh,.leader-card,.classification-heading,.ranking-table,.st-tools,.scan-cfg,.hall-toolbar,.hall-season-heading,.hall-honor,.hall-results,.es')).slice(0,10);
-    targets.forEach(function(el, i) {
+    var targets = Array.from(root.querySelectorAll('.ranking-heading,.page-heading,.sh,.leader-card,.classification-heading,.ranking-table,.st-tools,.scan-cfg,.hall-champions-heading,.hall-champions-list,.hall-toolbar,.hall-season-heading,.hall-honor,.hall-results,.es')).slice(0,10);
+    function reveal(el, i) {
       var anim = el.animate([
-        { opacity: .55, transform: 'translateY(14px)' },
+        { opacity: .35, transform: 'translateY(24px)' },
         { opacity: 1, transform: 'translateY(0)' }
       ], { duration: 280, delay: Math.min(i * 35, 175), easing: 'cubic-bezier(.23,1,.32,1)' });
       entrances.add(anim); anim.onfinish = anim.oncancel = function() { entrances.delete(anim); };
-    });
+    }
+    if (typeof IntersectionObserver === 'undefined') { targets.forEach(reveal); return; }
+    // Do not spend the Hall entrance while its cards are below the fold.
+    revealObserver = new IntersectionObserver(function(entries) {
+      var batch=0;
+      entries.forEach(function(entry) {
+        if (!entry.isIntersecting || !revealObserver) return;
+        revealObserver.unobserve(entry.target);
+        if (!reduced.matches && !document.body.classList.contains('motion-keyboard')) reveal(entry.target,batch++);
+      });
+    }, {threshold:.08});
+    targets.forEach(function(el) { revealObserver.observe(el); });
   }
 
   function init() {
@@ -59,9 +73,11 @@
         button.style.setProperty('--pointer-x', (e.clientX - box.left) + 'px');
         button.style.setProperty('--pointer-y', (e.clientY - box.top) + 'px');
       }
-      var card = e.target.closest('.leader-card');
+      var card = e.target.closest(cardSelector);
       if (card && card !== activeCard) {
         resetCard(); activeCard = card; card.classList.add('motion-tracking');
+        lastPointer = {x:e.clientX,y:e.clientY};
+        if (!pendingFrame) pendingFrame = requestAnimationFrame(pointerFrame);
       }
     });
     document.addEventListener('pointermove', function(e) {
@@ -74,10 +90,13 @@
     });
     document.addEventListener('scroll', resetCard, true);
     window.addEventListener('blur', resetCard);
-    document.addEventListener('visibilitychange', function() { if (document.hidden) resetCard(); });
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) { resetCard(); document.documentElement.classList.add('motion-paused'); }
+      else document.documentElement.classList.remove('motion-paused');
+    });
     function preferenceChanged() {
       resetCard();
-      if (reduced.matches) { entrances.forEach(function(a) { a.cancel(); }); entrances.clear(); }
+      if (reduced.matches) { if(revealObserver){revealObserver.disconnect();revealObserver=null;} entrances.forEach(function(a) { a.cancel(); }); entrances.clear(); }
     }
     reduced.addEventListener('change', preferenceChanged);
     fine.addEventListener('change', resetCard);
