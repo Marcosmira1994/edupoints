@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a0e1a">
@@ -390,12 +390,6 @@ html,body{height:100%;background:radial-gradient(ellipse 120% 90% at 50% 45%,#1a
 .cat-dui-sep{height:1px;background:rgba(255,255,255,.1);margin:6px 0}
 /* DaisyUI btn integration — garante space-between sobrescreve justify-content:center do .btn */
 .btn.cat-dui{justify-content:space-between}
-/* Lista de acessos: altura máxima com rolagem interna estilizada */
-#acessos-list{max-height:300px;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-#acessos-list::-webkit-scrollbar{width:8px}
-#acessos-list::-webkit-scrollbar-track{background:transparent}
-#acessos-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-#acessos-list::-webkit-scrollbar-thumb:hover{background:var(--text2)}
 /* ===== HALL DA AURA — CARTAS POKÉMON EX ===== */
 @keyframes exRotate{to{transform:rotate(360deg)}}
 @keyframes exGoldPulse{0%,100%{box-shadow:0 0 20px rgba(255,215,0,.6)}50%{box-shadow:0 0 36px rgba(255,215,0,.95),0 0 60px rgba(255,215,0,.3)}}
@@ -1114,14 +1108,6 @@ body::after{
   body::before,body::after{display:none!important}
 }
 
-/* ---------- TELA DE SENHA (access gate) ---------- */
-.gate-logo{animation:neonTextPulse 2.8s ease-in-out infinite}
-.gate-inp::placeholder{color:#6a6a8c;letter-spacing:1px}
-.gate-inp:focus{border-color:#00f5ff!important;box-shadow:0 0 16px rgba(0,245,255,.45),inset 0 0 12px rgba(0,245,255,.08)}
-.gate-btn{text-shadow:0 0 8px rgba(0,245,255,.5)}
-.gate-btn:hover{background:#00f5ff!important;color:#000!important;text-shadow:none;box-shadow:0 0 22px rgba(0,245,255,.8),0 0 44px rgba(0,245,255,.35)}
-.gate-btn:active{transform:scale(.97)}
-@media(prefers-reduced-motion:reduce){.gate-logo{animation:none}}
 </style>
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -1129,26 +1115,14 @@ body::after{
 <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="design/ui.css">
 </head>
 <body>
-<!-- BACKGROUND ANIMADO: nebulosa (partículas são injetadas via JS antes do #access-gate) -->
+<!-- BACKGROUND ANIMADO: nebulosa (partículas são injetadas via JS antes do #app) -->
 <div class="nebula nebula-1"></div>
 <div class="nebula nebula-2"></div>
 <div class="nebula nebula-3"></div>
 
-<!-- ACCESS GATE -->
-<div id="access-gate" style="display:none;position:fixed;inset:0;background:transparent;z-index:9999;align-items:center;justify-content:center;padding:20px">
-  <div style="width:100%;max-width:340px;text-align:center">
-    <div style="font-size:60px;margin-bottom:12px;filter:drop-shadow(0 0 14px rgba(255,215,0,.75)) drop-shadow(0 0 28px rgba(0,245,255,.4))">🏆</div>
-    <div class="gate-logo" style="font-size:36px;font-weight:900;color:#00f5ff;letter-spacing:2px;margin-bottom:6px">EduPoints</div>
-    <div style="font-size:13px;color:#ff6fe0;letter-spacing:1.2px;margin-bottom:36px;text-shadow:0 0 10px rgba(255,0,255,.5)">Colégio Gaia — 6º Ano</div>
-    <div style="margin-bottom:10px">
-      <input type="password" id="access-pwd" class="gate-inp" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')checkAccess()" style="width:100%;padding:14px 16px;background:rgba(0,245,255,.05);border:2px solid rgba(0,245,255,.35);border-radius:12px;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:4px;transition:all .3s ease">
-    </div>
-    <div id="access-err" style="display:none;color:#ff2d6f;font-size:13px;font-weight:700;margin-bottom:12px;text-shadow:0 0 10px rgba(255,45,111,.6)">Senha incorreta</div>
-    <button class="gate-btn" onclick="checkAccess()" style="width:100%;padding:14px;background:transparent;border:2px solid #00f5ff;border-radius:12px;color:#00f5ff;font-size:16px;font-weight:800;letter-spacing:2px;cursor:pointer;min-height:52px;transition:all .3s ease">ENTRAR</button>
-  </div>
-</div>
 
 <div id="app" style="display:none">
 <header id="hdr">
@@ -1277,18 +1251,6 @@ body::after{
         <span style="color:var(--green)">›</span>
       </div>
       <div id="backup-list" style="margin-top:8px"></div>
-    </div>
-
-    <div id="acessos-section" style="display:none">
-      <div class="stitle">📊 Acessos ao Site</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
-        <div style="font-size:13px;color:var(--text2)">Total: <strong id="acessos-total" style="color:var(--green)">—</strong></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-gh" style="width:auto;padding:8px 14px;margin:0" onclick="carregarAcessos()">🔄 Atualizar</button>
-          <button class="btn btn-gh" style="width:auto;padding:8px 14px;margin:0;color:var(--red)" onclick="limparHistoricoAcessos()">🗑️ Limpar Histórico</button>
-        </div>
-      </div>
-      <div id="acessos-list"></div>
     </div>
 
     <div class="stitle">Dados</div>
@@ -1446,14 +1408,19 @@ body::after{
 <div class="ov" id="mov-admin">
   <div class="ep-modal">
     <div class="mh">
-      <span class="mt">🔒 Modo Admin</span>
+      <span class="mt">🔒 Acesso do Professor</span>
       <button class="mc" onclick="closeOv('mov-admin')">✕</button>
     </div>
     <div class="fg">
-      <label class="fl">Senha</label>
-      <input type="password" class="inp" id="admin-pwd" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')checkAdminPwd()">
+      <label class="fl">E-mail</label>
+      <input type="email" class="inp" id="admin-email" placeholder="seu@email.com" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('admin-pwd').focus()">
     </div>
-    <button class="btn btn-p btn-bl btn-lg" onclick="checkAdminPwd()">Entrar</button>
+    <div class="fg">
+      <label class="fl">Senha</label>
+      <input type="password" class="inp" id="admin-pwd" placeholder="Digite a senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="admin-err" role="alert" style="display:none;color:var(--red);font-size:13px;font-weight:700;margin-bottom:10px"></div>
+    <button class="btn btn-p btn-bl btn-lg" id="admin-login-btn" onclick="doLogin()">Entrar</button>
   </div>
 </div>
 
@@ -1506,9 +1473,7 @@ body::after{
 <script>
 // ===== STATE =====
 var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true } };
-var isAdmin   = sessionStorage.getItem('ep_admin') === '1';
-var ADMIN_PWD = 'admin4585';
-var ACCESS_PWD = 'gaia6ano';
+var isAdmin   = false; // só vira true após login real (Supabase Auth) e checagem de professor
 var curView = 'rk';
 var rkFilter = 'all';
 var stFilter = 'all';
@@ -1559,16 +1524,100 @@ function load() {
 }
 
 // ===== SUPABASE =====
-var SB_URL  = 'https://bzjwfwonelhxfphwrnyn.supabase.co/rest/v1';
+var SB_HOST = 'https://bzjwfwonelhxfphwrnyn.supabase.co';
+var SB_URL  = SB_HOST + '/rest/v1';
 var SB_KEY  = 'sb_publishable_ISja6zEAXGd6iSO_zxFl1g_0CxLGdRh';
 var sbStatus   = 'offline';
 var sbLastSync = null;
+
+// ===== AUTENTICAÇÃO DO PROFESSOR (Supabase Auth) =====
+// Nenhuma senha fica no código. Quem pode escrever é decidido NO SERVIDOR (RLS);
+// aqui o app só mantém a sessão, envia o token e libera a interface do professor.
+var sbAuth  = null;
+var sbToken = null;
+try {
+  if (typeof supabase !== 'undefined') {
+    sbAuth = supabase.createClient(SB_HOST, SB_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, storageKey: 'ep-auth' }
+    });
+    sbAuth.auth.onAuthStateChange(function(evt, session) {
+      sbToken = session ? session.access_token : null;
+      // não chamar o Supabase direto dentro do callback (evita deadlock): adia um tick
+      if (evt === 'INITIAL_SESSION' || evt === 'SIGNED_IN') setTimeout(function(){ verificarProfessor(session); }, 0);
+      if (evt === 'SIGNED_OUT') setAdmin(false);
+    });
+  }
+} catch (e) { sbAuth = null; }
+
+function setAdmin(v) {
+  if (isAdmin === v) return;
+  isAdmin = v;
+  updateAdminUI();
+}
+
+// Confirma no banco que a conta logada é de professor (tabela professores, protegida por RLS).
+// Reaproveita a verificação em andamento para não consultar nem deslogar duas vezes.
+var _verifP = null;
+function verificarProfessor(session) {
+  if (!session || !session.user) { setAdmin(false); return Promise.resolve(false); }
+  if (_verifP && _verifP.uid === session.user.id) return _verifP.p;
+  var p = sbReq('GET', 'professores', 'select=id&id=eq.' + encodeURIComponent(session.user.id))
+    .then(function(rows) {
+      var ok = Array.isArray(rows) && rows.length === 1;
+      setAdmin(ok);
+      if (!ok && sbAuth) sbAuth.auth.signOut();
+      return ok;
+    })
+    .catch(function() { setAdmin(false); return false; });
+  _verifP = { uid: session.user.id, p: p };
+  p.then(function() { setTimeout(function() { if (_verifP && _verifP.p === p) _verifP = null; }, 1500); });
+  return p;
+}
+
+function toggleAdmin() {
+  if (isAdmin) {
+    if (confirm('Sair do modo professor?')) {
+      if (sbAuth) sbAuth.auth.signOut(); else setAdmin(false);
+    }
+  } else {
+    var e = document.getElementById('admin-err');
+    if (e) e.style.display = 'none';
+    document.getElementById('admin-pwd').value = '';
+    openOv('mov-admin');
+    setTimeout(function(){ var el = document.getElementById('admin-email'); if (el) el.focus(); }, 300);
+  }
+}
+
+function doLogin() {
+  var email = document.getElementById('admin-email').value.trim();
+  var pwd   = document.getElementById('admin-pwd').value;
+  var errEl = document.getElementById('admin-err');
+  var btn   = document.getElementById('admin-login-btn');
+  function fail(msg) {
+    errEl.textContent = msg; errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+  if (!sbAuth) return fail('Não foi possível carregar o login. Verifique a conexão e recarregue a página.');
+  if (!email || !pwd) return fail('Informe e-mail e senha.');
+  btn.disabled = true; btn.textContent = 'Entrando...'; errEl.style.display = 'none';
+  sbAuth.auth.signInWithPassword({ email: email, password: pwd })
+    .then(function(res) {
+      if (res.error || !res.data || !res.data.session) return fail('E-mail ou senha incorretos.');
+      document.getElementById('admin-pwd').value = '';
+      return verificarProfessor(res.data.session).then(function(ok) {
+        if (!ok) return fail('Esta conta não tem permissão de professor.');
+        btn.disabled = false; btn.textContent = 'Entrar';
+        closeOv('mov-admin');
+      });
+    })
+    .catch(function() { fail('Erro de conexão. Tente novamente.'); });
+}
 
 function sbReq(method, table, qs, body) {
   var url = SB_URL + '/' + table + (qs ? '?' + qs : '');
   var h = {
     'apikey': SB_KEY,
-    'Authorization': 'Bearer ' + SB_KEY,
+    'Authorization': 'Bearer ' + (sbToken || SB_KEY),
     'Content-Type': 'application/json'
   };
   if (method === 'POST') h['Prefer'] = 'resolution=merge-duplicates,return=minimal';
@@ -1671,11 +1720,9 @@ function flashBadge() {
 }
 
 function initRealtime() {
-  if (typeof supabase === 'undefined') return;
-  var client = supabase.createClient(
-    'https://bzjwfwonelhxfphwrnyn.supabase.co',
-    'sb_publishable_ISja6zEAXGd6iSO_zxFl1g_0CxLGdRh'
-  );
+  if (!sbAuth || window._epRt) return;
+  window._epRt = true;
+  var client = sbAuth;
   client.channel('ep-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'alunos' },    onRtAluno)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, onRtHistorico)
@@ -1759,7 +1806,7 @@ function uploadFoto(id) {
     var path = 'fotos-alunos/' + id;
     fetch(base + '/storage/v1/object/' + path, {
       method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + (sbToken || SB_KEY), 'Content-Type': file.type, 'x-upsert': 'true' },
       body: file
     })
     .then(function(r) {
@@ -1839,7 +1886,7 @@ document.addEventListener('click', function(e) {
 function updateAdminUI() {
   var btn = document.getElementById('lock-btn');
   if (btn) btn.textContent = isAdmin ? '🔓' : '🔒';
-  ['st','sc','cfg'].forEach(function(v) {
+  ['st','sc','cfg','hs'].forEach(function(v) {
     document.querySelectorAll('.nb[data-v="'+v+'"]').forEach(function(nb) {
       nb.style.display = isAdmin ? '' : 'none';
     });
@@ -1850,14 +1897,12 @@ function updateAdminUI() {
   if (recalcBtn) recalcBtn.style.display = isAdmin ? '' : 'none';
   var cloudBk = document.getElementById('cloud-backup-section');
   if (cloudBk) cloudBk.style.display = isAdmin ? '' : 'none';
-  var acessosSec = document.getElementById('acessos-section');
-  if (acessosSec) acessosSec.style.display = isAdmin ? '' : 'none';
-  if (isAdmin && navigator.onLine) { backupAutomatico(); carregarAcessos(); }
+  if (isAdmin && navigator.onLine) { backupAutomatico(); }
   var fab = document.getElementById('fab');
   if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
   var fabScan = document.getElementById('fab-scan');
   if (fabScan) fabScan.style.display = isAdmin && curView==='rk' ? 'flex' : 'none';
-  if (!isAdmin && curView !== 'rk' && curView !== 'hs' && curView !== 'hall') go('rk');
+  if (!isAdmin && curView !== 'rk' && curView !== 'hall') go('rk');
   else render(curView);
 }
 
@@ -1882,142 +1927,6 @@ document.addEventListener('fullscreenchange', function() {
     btn.style.color = 'var(--text2)';
   }
 });
-
-function toggleAdmin() {
-  if (isAdmin) {
-    if (confirm('Sair do modo admin?')) {
-      isAdmin = false;
-      sessionStorage.removeItem('ep_admin');
-      updateAdminUI();
-    }
-  } else {
-    document.getElementById('admin-pwd').value = '';
-    openOv('mov-admin');
-    setTimeout(function(){ document.getElementById('admin-pwd').focus(); }, 300);
-  }
-}
-
-function checkAdminPwd() {
-  if (document.getElementById('admin-pwd').value === ADMIN_PWD) {
-    isAdmin = true;
-    sessionStorage.setItem('ep_admin', '1');
-    closeOv('mov-admin');
-    updateAdminUI();
-  } else {
-    alert('Senha incorreta.');
-    document.getElementById('admin-pwd').value = '';
-    document.getElementById('admin-pwd').focus();
-  }
-}
-
-// ===== LOG DE ACESSOS =====
-function detectDispositivo(ua) {
-  if (/iPad|Tablet|PlayBook|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua))) return 'tablet';
-  if (/Mobi|iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|Opera Mini/i.test(ua)) return 'mobile';
-  return 'desktop';
-}
-function detectNavegador(ua) {
-  if (/Edg\//i.test(ua)) return 'Edge';
-  if (/OPR\/|Opera/i.test(ua)) return 'Opera';
-  if (/SamsungBrowser/i.test(ua)) return 'Samsung Internet';
-  if (/Firefox\//i.test(ua)) return 'Firefox';
-  if (/Chrome\//i.test(ua) && !/Chromium/i.test(ua)) return 'Chrome';
-  if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) return 'Safari';
-  return 'Outro';
-}
-// Registra o acesso ao entrar no app (após senha correta)
-function registrarAcesso() {
-  try {
-    var ua = navigator.userAgent || '';
-    var registro = {
-      dispositivo: detectDispositivo(ua),
-      navegador:   detectNavegador(ua),
-      resolucao:   window.innerWidth + ' x ' + window.innerHeight,
-      ip:          null
-    };
-    fetch('https://api.ipify.org?format=json')
-      .then(function(r){ return r.json(); })
-      .then(function(d){ if (d && d.ip) registro.ip = d.ip; })
-      .catch(function(){ /* segue sem IP */ })
-      .then(function(){
-        sbReq('POST', 'acessos', '', registro)
-          .then(function(){ limparAcessosAntigos(); })
-          .catch(function(){});
-      });
-  } catch(e) { /* nunca bloqueia a entrada no app */ }
-}
-
-// Mantém somente os 30 acessos mais recentes, removendo os mais antigos
-function limparAcessosAntigos() {
-  sbReq('GET', 'acessos', 'select=id&order=criado_em.asc')
-    .then(function(rows){
-      if (!Array.isArray(rows) || rows.length <= 30) return;
-      var excedentes = rows.slice(0, rows.length - 30).map(function(r){ return r.id; });
-      if (!excedentes.length) return;
-      return sbReq('DELETE', 'acessos', 'id=in.(' + excedentes.join(',') + ')');
-    })
-    .catch(function(){});
-}
-
-// Apaga todos os acessos registrados (admin)
-function limparHistoricoAcessos() {
-  if (!confirm('Tem certeza que deseja apagar todos os acessos?')) return;
-  sbReq('DELETE', 'acessos', 'id=not.is.null')
-    .then(function(){ carregarAcessos(); })
-    .catch(function(){ alert('Erro ao limpar os acessos.'); });
-}
-
-// Painel admin: carrega total e últimos 20 acessos (TAREFA 3)
-function carregarAcessos() {
-  var listEl  = document.getElementById('acessos-list');
-  var totalEl = document.getElementById('acessos-total');
-  if (!listEl) return;
-  listEl.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:10px 0">Carregando...</div>';
-  sbReq('GET', 'acessos', 'select=id')
-    .then(function(rows){ if (totalEl) totalEl.textContent = Array.isArray(rows) ? rows.length : '—'; })
-    .catch(function(){ if (totalEl) totalEl.textContent = '—'; });
-  sbReq('GET', 'acessos', 'select=*&order=criado_em.desc&limit=20')
-    .then(function(rows){
-      if (!Array.isArray(rows) || rows.length === 0) {
-        listEl.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:10px 0">Nenhum acesso registrado ainda.</div>';
-        return;
-      }
-      listEl.innerHTML = rows.map(function(a){
-        var d = a.criado_em ? new Date(a.criado_em) : null;
-        var dataStr = d ? d.toLocaleString('pt-BR') : '—';
-        var icon = a.dispositivo === 'mobile' ? '📱' : (a.dispositivo === 'tablet' ? '📲' : '💻');
-        return '<div style="background:#0a0e1a;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
-          + '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px">'
-          +   '<span style="font-weight:600;color:#e8e8f0;font-size:13px">' + icon + ' ' + esc(a.dispositivo || '—') + '</span>'
-          +   '<span style="font-size:12px;color:var(--text2);white-space:nowrap">' + esc(dataStr) + '</span>'
-          + '</div>'
-          + '<div style="font-size:12px;color:var(--text2);line-height:1.6">'
-          +   '🌐 ' + esc(a.navegador || '—') + ' &nbsp;·&nbsp; 📐 ' + esc(a.resolucao || '—') + ' &nbsp;·&nbsp; 🌍 ' + esc(a.ip || '—')
-          + '</div>'
-          + '</div>';
-      }).join('');
-    })
-    .catch(function(){
-      listEl.innerHTML = '<div style="color:var(--red);font-size:13px;padding:10px 0">Erro ao carregar acessos.</div>';
-    });
-}
-
-function checkAccess() {
-  var inp = document.getElementById('access-pwd');
-  var errEl = document.getElementById('access-err');
-  if (inp.value === ACCESS_PWD) {
-    sessionStorage.setItem('ep_access', '1');
-    registrarAcesso();
-    document.getElementById('access-gate').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    inp.value = '';
-    initApp();
-  } else {
-    errEl.style.display = 'block';
-    inp.value = '';
-    inp.focus();
-  }
-}
 
 // ===== STUDENTS =====
 function openAddStudent() {
@@ -2390,76 +2299,73 @@ function renderRk() {
       +'</div>';
   }
 
+  // ── Novo ranking: carrossel 3D + pódio + lista ──
   var top = sorted.slice(0,3);
-  var auraHTML = auraCard(top[1]||null, 2)
-    + auraCard(top[0], 1)
-    + auraCard(top[2]||null, 3);
+  var COLS = ['','c2','c3','c4'];
+  function rkRank(s){ return sorted.filter(function(x){ return x.points > s.points; }).length + 1; }
+  function pctLeader(s){ return maxPts > 0 ? Math.round(Math.max(0,s.points) / maxPts * 100) : 0; }
+  var cfList = sorted.slice(0, 7);
+  var cards = cfList.map(function(s, i){
+    var r = rkRank(s), cn = clsName(s.classId), lead = r === 1 && maxPts > 0;
+    return '<article class="ep-card aluno '+COLS[i%4]+'" role="button" tabindex="0" data-i="'+i+'" aria-label="Abrir perfil de '+esc(s.name)+'">'
+      +'<div class="ep-art">'+(lead?'<span class="crown" aria-hidden="true">👑</span>':'')+'<span class="ep-badge">#'+r+'</span>'+mkAv(s,'ep-avatar')+'</div>'
+      +'<div class="ep-body"><span class="ep-lvl">'+(cn?esc(cn):'Sem turma')+'</span><h3 class="ep-title">'+esc(s.name)+'</h3>'
+      +'<div class="ui-bar ep-bar" aria-hidden="true"><i style="width:'+Math.max(s.points>0?6:0,pctLeader(s))+'%"></i></div>'
+      +'<div class="ep-stats"><div><b>'+s.points+'</b><span>Aura</span></div><div><b>'+r+'º</b><span>Posição</span></div><div><b>'+pctLeader(s)+'%</b><span>do líder</span></div></div></div></article>';
+  }).join('');
+  var order = [1,0,2].filter(function(i){ return top[i]; });
+  var pod = order.map(function(i){ var s = top[i];
+    return '<div class="ep-pd p'+(i+1)+'" role="button" tabindex="0" data-id="'+s.id+'"><div class="nm">'+esc(s.name)+'</div><div class="xp" data-v="'+s.points+'">0</div><div class="bar">'+(i+1)+'º</div></div>'; }).join('');
+  pEl.innerHTML = '<div class="ep-rk"><div class="ep-ring a ep-spin"></div><div class="ep-ring b ep-spin"></div>'
+    +'<h1 class="ep-h1">Ranking</h1><p class="ep-lead">Quem mais brilhou na turma</p>'
+    +'<section class="ep-cf" id="ep-cf" aria-label="Destaques"><div class="ep-cf-track">'+cards+'</div></section>'
+    +'<div class="ep-cf-nav"><button class="ui-icon-btn" id="ep-prev" aria-label="Anterior">‹</button><button class="ui-icon-btn" id="ep-next" aria-label="Próximo">›</button></div>'
+    +'<div class="ep-podium" aria-label="Pódio">'+pod+'</div></div>';
 
-  pEl.innerHTML = '<div class="podium-wrap"><div class="aura-podium aura-podium--count-' + top.length + '">' + auraHTML + '</div></div>';
-
-  // Build position badge for list
-  function mkBadge(rank) {
-    var cfg = rank===1 ? {bg:'#FFD700',c:'#000'} : rank===2 ? {bg:'#C0C0C0',c:'#000'} : rank===3 ? {bg:'#CD7F32',c:'#000'} : {bg:'rgba(255,255,255,.12)',c:'var(--text2)'};
-    return '<div style="min-width:28px;height:28px;border-radius:50%;background:'+cfg.bg+';color:'+cfg.c+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0">'+rank+'</div>';
-  }
-
-  // Avatar com borda colorida para top 3 na lista
-  function mkAvRk(s, rank) {
-    var borderColor = rank===1 ? 'rgba(255,215,0,.7)' : rank===2 ? 'rgba(192,192,192,.6)' : rank===3 ? 'rgba(205,127,50,.6)' : '';
-    var extra = rank<=3 ? 'border:2px solid '+borderColor+';box-sizing:border-box' : '';
-    return mkAv(s, 'av av2', extra);
-  }
-
-  function progressPct(s) {
-    if (maxPts <= 0) return 0;
-    var pct = Math.round(Math.max(0, s.points) / maxPts * 100);
-    return Math.max(s.points > 0 ? 8 : 0, Math.min(100, pct));
-  }
-
-  // Lista completa (todas as posições)
-  var listHtml = sorted.map(function(s,i){
-    var rank = i+1;
-    var cn = clsName(s.classId);
-    var isLeader = s.points === maxPts && maxPts > 0; // empate no 1º lugar
-    var hallInfo = getHallTop3Info(s);
-    var shownRank = isLeader ? 1 : rank;
-    var aniCls = '';
-    var aniSty = '';
-    var badges = (isLeader ? '<span class="aura-mini-badge">L&Iacute;DER</span>' : '') + (hallInfo.isTop3 ? hallTag(s, true) : '');
-    var badge = badges ? '<span class="aura-ranking-badges">' + badges + '</span>' : '';
-    var hallCls = hallInfo.isTop3 ? ' ' + hallInfo.cls : '';
-    return '<div class="aura-ranking-item rank-card'+(isLeader?' aura-ranking-item--leader':'')+hallCls+aniCls+'" style="'+aniSty+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
-      +'<div class="aura-ranking-pos">#'+padRank(shownRank)+'</div>'
-      +'<div class="aura-ranking-photo">'+mkAvRk(s, shownRank)+'</div>'
-      +'<div class="aura-ranking-main">'
-        +'<div class="aura-ranking-name"><span class="aura-ranking-name-text" data-sid="'+s.id+'">'+esc(s.name)+'</span>'+badge+'</div>'
-        +'<div class="aura-ranking-meta">'+(cn?'<span class="aura-ranking-class">'+esc(cn)+'</span>':'<span class="aura-ranking-class">Sem turma</span>')+'</div>'
-        +'<div class="aura-progress" aria-hidden="true"><span class="aura-progress__bar" style="--aura-progress:'+progressPct(s)+'%"></span></div>'
-      +'</div>'
-      +'<div class="aura-ranking-score">'
-        +'<div class="aura-ranking-score-label">Aura</div>'
-        +'<div class="aura-ranking-score-value" data-pts="'+s.points+'">'+s.points+'</div>'
-      +'</div>'
-      +'</div>';
+  var listHtml = sorted.slice(3).map(function(s, i){
+    var r = rkRank(s), cn = clsName(s.classId);
+    return '<div class="ep-row reveal" role="button" tabindex="0" data-id="'+s.id+'" style="transition-delay:'+(i*60)+'ms"><span class="pos">'+r+'</span><span class="ep-av">'+(s.fotoUrl?'<img src="'+esc(s.fotoUrl)+'" alt="" loading="lazy">':esc(initial(s.name)))+'</span>'
+      +'<div><div class="n">'+esc(s.name)+'</div><div class="t">'+(cn?esc(cn):'Sem turma')+'</div></div><div class="v">'+s.points+'<small>Aura</small></div></div>';
   });
+  lEl.innerHTML = listHtml.length ? '<div class="ep-sep"><span class="ui-eyebrow">Demais posições</span></div><div class="ep-list">'+listHtml.join('')+'</div>' : '';
+  setTimeout(function(){ lEl.querySelectorAll('.reveal').forEach(function(e){ e.classList.add('in'); }); }, 60);
 
-  var sep = sorted.length > 3
-    ? '<div class="rk-sep"><span>Demais posições</span></div>'
-    : '';
-
-  lEl.innerHTML = '<div class="ranking-area"><div class="ranking-track">'
-    + listHtml.slice(0,3).join('') + sep + listHtml.slice(3).join('')
-    + '</div></div>';
-
-  // Animate point counts
-  lEl.querySelectorAll('.aura-ranking-score-value[data-pts]').forEach(function(el){
-    var target = parseInt(el.getAttribute('data-pts')) || 0;
-    animateCount(el, target, 850);
+  // contagem animada do pódio
+  pEl.querySelectorAll('.ep-pd .xp').forEach(function(el){ animateCount(el, parseInt(el.getAttribute('data-v'))||0, 1200); });
+  // abrir perfil
+  pEl.querySelectorAll('.ep-pd').forEach(function(el){ el.onclick = function(){ openProfile(el.getAttribute('data-id')); }; });
+  lEl.querySelectorAll('.ep-row').forEach(function(el){ el.onclick = function(){ openProfile(el.getAttribute('data-id')); }; });
+  // carrossel 3D
+  var cfN = cfList.length, cfEls = pEl.querySelectorAll('.ep-cf .ep-card');
+  if (typeof window.epCfCur !== 'number' || window.epCfCur >= cfN) window.epCfCur = 0;
+  function cfPlace(){
+    var w = window.innerWidth < 560 ? 150 : 230;
+    Array.prototype.forEach.call(cfEls, function(c, i){
+      var d = i - window.epCfCur, ad = Math.abs(d);
+      c.classList.toggle('active', d === 0);
+      c.style.transform = 'translateX('+(d*w)+'px) translateZ('+(-ad*140)+'px) rotateY('+(-(d>0?1:d<0?-1:0)*Math.min(ad,2)*26)+'deg) scale('+(d===0?1.04:.92)+')';
+      c.style.opacity = ad > 2 ? 0 : 1 - ad*.22; c.style.zIndex = 10 - ad; c.style.pointerEvents = ad > 2 ? 'none' : 'auto';
+    });
+  }
+  function cfGo(i){ window.epCfCur = (i + cfN) % cfN; cfPlace(); }
+  function cfAuto(){
+    clearInterval(window.epCfTimer);
+    if (!window.matchMedia('(prefers-reduced-motion:reduce)').matches && cfN > 1)
+      window.epCfTimer = setInterval(function(){
+        if (!document.getElementById('ep-cf')) { clearInterval(window.epCfTimer); return; }
+        cfGo(window.epCfCur + 1);
+      }, 3500);
+  }
+  Array.prototype.forEach.call(cfEls, function(c, i){
+    c.onclick = function(){ if (i === window.epCfCur) openProfile(cfList[i].id); else { cfGo(i); cfAuto(); } };
+    c.onkeydown = function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.onclick(); } };
   });
-  pEl.querySelectorAll('.aura-power__value[data-pts-podium]').forEach(function(el){
-    var target = parseInt(el.getAttribute('data-pts-podium')) || 0;
-    animateCount(el, target, 850);
-  });
+  document.getElementById('ep-next').onclick = function(){ cfGo(window.epCfCur + 1); cfAuto(); };
+  document.getElementById('ep-prev').onclick = function(){ cfGo(window.epCfCur - 1); cfAuto(); };
+  var cfBox = document.getElementById('ep-cf'), sx = null;
+  cfBox.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, {passive:true});
+  cfBox.addEventListener('touchend', function(e){ if (sx === null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40) { cfGo(window.epCfCur + (dx < 0 ? 1 : -1)); cfAuto(); } sx = null; });
+  cfPlace(); cfAuto();
 
   // Remove classes de animação de entrada via animationend (once:true)
   if (!rkAnimDone) {
@@ -3142,43 +3048,6 @@ function exportCSV() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-// ===== SEED DATA =====
-function seedData() {
-  var clsId = uid();
-  S.classes.push({ id: clsId, name: '6º Ano', color: '#4a9eff' });
-  var alunos = [
-    { name: 'ANA LUIZA ROMÃO DA SILVA',           points: 1 },
-    { name: 'ARTHUR OLIVEIRA ANJOS',               points: 5 },
-    { name: 'BERNARDO CALISTA DE JESUS VALENTE',   points: 5 },
-    { name: 'BERNARDO LARANJEIRA SILVA',           points: 4 },
-    { name: 'DAVI RODRIGUES CAGLIARI DE DEUS',     points: 2 },
-    { name: 'EDUARDO SANCHES RIBEIRO',             points: 6 },
-    { name: 'FELIPE TEIXEIRA DOS SANTOS',          points: 3 },
-    { name: 'GABRIELLA OLIVEIRA PINTOR DE BARROS', points: 0 },
-    { name: 'LEONARDO GOMES DOS SANTOS',           points: 5 },
-    { name: 'LUARA MAGALHAES DE OLIVEIRA',         points: 1 },
-    { name: 'MAITÊ NASCIMENTO DE MACÊDO',          points: 5 },
-    { name: 'MANUELA NICOLUCCI ROCHA',             points: 6 },
-    { name: 'MARCELA CUNHA RANDI',                 points: 5 },
-    { name: 'MARIA EDUARDA MOREYRA NASCIMENTO',    points: 6 },
-    { name: 'MARIA LUIZA SILVA ROCHA',             points: 4 },
-    { name: 'MATHEUS HENRIQUE BARRETO SANTANA',    points: 1 },
-    { name: 'MIGUEL ALVES DE SOUZA COSTA',         points: 1 },
-    { name: 'MIGUEL DOS SANTOS SOUZA',             points: 3 },
-    { name: 'NICOLAS MARTINS GUERRA',              points: 3 },
-    { name: 'PEDRO LELLIS LEITE DA CUNHA ROCHA',   points: 2 },
-    { name: 'RICARDO NASCIMENTO OLIVEIRA',         points: 1 },
-    { name: 'SAMUEL VICTOR HUGO CARVALHO MARTINS', points: 3 },
-    { name: 'YAN LUCCA MACHADO DOS SANTOS INÁCIO', points: 2 },
-    { name: 'YASMIN SOUZA FELIX DA SILVA',         points: 5 }
-  ];
-  alunos.forEach(function(a) {
-    S.students.push({ id: uid(), name: a.name, classId: clsId, points: a.points, createdAt: Date.now() });
-  });
-  S.settings.seedVersion = 2;
-  save();
-}
-
 // ===== BACKUP =====
 function exportBackup() {
   var json = JSON.stringify(S, null, 2);
@@ -3545,7 +3414,6 @@ function initApp() {
 
   // 1. Render imediato com localStorage (ou seed se vazio)
   var lsResult = load();
-  if (lsResult === 'empty') seedData();
   document.getElementById('scanpts').value = S.settings.scanPts || 1;
   go('rk');
   updateAdminUI(); // garante visibilidade correta do menu (admin vs visitante) já no início
@@ -3561,8 +3429,8 @@ function initApp() {
           S.history  = data.history;
           save(); render(curView); setStatus('ok');
         } else {
-          // Supabase vazio: sobe dados locais
-          return sbPushAll().then(function() { setStatus('ok'); });
+          // Banco vazio: nunca apagar nem sobrescrever automaticamente. Só informa.
+          setStatus('ok');
         }
       })
       .catch(function() { setStatus('error'); });
@@ -3611,22 +3479,13 @@ function initBackgroundFX() {
     p.style.animationDelay = (Math.random() * 10).toFixed(2) + 's';       // 0s a 10s
     holder.appendChild(p);
   }
-  var gate = document.getElementById('access-gate');           // insere antes do #access-gate
+  var gate = document.getElementById('app');                   // insere antes do #app
   if (gate && gate.parentNode) gate.parentNode.insertBefore(holder, gate);
   else document.body.appendChild(holder);
 }
 
 (function() {
   initBackgroundFX();
-  if (sessionStorage.getItem('ep_access') !== '1') {
-    var gate = document.getElementById('access-gate');
-    gate.style.display = 'flex';
-    setTimeout(function() {
-      var el = document.getElementById('access-pwd');
-      if (el) el.focus();
-    }, 100);
-    return;
-  }
   document.getElementById('app').style.display = 'flex';
   initApp();
 })();

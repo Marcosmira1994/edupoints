@@ -1,0 +1,27 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EduPoints — Design System</title>
+<link rel="stylesheet" href="ui.css">
+<style>body{margin:0;background:var(--ui-bg);color:var(--ui-text);padding:24px;max-width:960px;margin-inline:auto}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:12px 0 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.btn{padding:10px 20px;border:0;cursor:pointer;color:var(--ui-on-accent);background:var(--ui-accent)}
+.btn.g{background:transparent;color:var(--ui-accent);border:1px solid var(--ui-accent)}
+.inp{padding:10px 14px;width:240px}h2{margin:28px 0 4px}</style></head><body>
+<div class="ui-eyebrow">Design system</div><h1 style="font-size:40px;margin:4px 0 8px">EduPoints UI</h1>
+<p style="color:var(--ui-muted)">Cartões hairline, pílulas, chips e botões circulares. Paleta e fontes próprias.</p>
+<h2>Botões</h2><div class="row"><button class="btn">Ganhar XP</button><button class="btn g">Ver missão</button><button class="btn" disabled style="opacity:.5">Indisponível</button><button class="ui-icon-btn" aria-label="Favoritar">★</button></div>
+<h2>Status e chips</h2><div class="row"><span class="ui-pill ok">Ativa</span><span class="ui-pill warn">Pendente</span><span class="ui-pill off">Encerrada</span><span class="ui-pill bad">Atrasada</span><span class="ui-chip">Nível <b>3</b></span><span class="ui-chip">XP <b>1.240</b></span><span class="ui-chip">Moedas <b>85</b></span></div>
+<h2>Campo</h2><div class="row"><label style="display:grid;gap:6px;font-size:14px;color:var(--ui-muted)">Código do aluno<input class="inp" placeholder="ex.: A1B2C3"></label></div>
+<h2>Cartões</h2><div class="grid">
+<div class="ui-card"><div class="ui-eyebrow">Missão da semana</div><h3 style="margin:6px 0">Plano cartesiano</h3><p style="color:var(--ui-muted);font-size:14px;margin:0 0 12px">Complete 3 desafios e destrave a trilha.</p><div class="ui-bar"><i style="width:66%"></i></div><p style="font-size:13px;color:var(--ui-muted);margin:6px 0 0">2 de 3 concluídos</p></div>
+<div class="ui-card"><span class="ui-pill ok">Em andamento</span><h3 style="margin:10px 0 6px">Trilha Aventura</h3><span class="ui-chip">Etapa <b>4/10</b></span></div>
+<div class="ui-card"><div class="ui-eyebrow">Ranking</div><h3 style="margin:6px 0">Mais evoluíram</h3><span class="ui-chip">Esta semana</span></div></div>
+<h2>Cards do EduPoints</h2><p style="color:var(--ui-muted);margin:0 0 16px">Aluno · Missão · Trilha · Prêmio</p>
+<div class="ep-grid">
+<article class="ep-card aluno"><div class="ep-art"><span class="ep-badge">#1</span><div class="ep-avatar">A</div></div><div class="ep-body"><span class="ep-lvl">Nível 4 · Explorador</span><h3 class="ep-title">Ana Souza</h3><p class="ep-sub">6º Ano A</p><div class="ui-bar ep-bar"><i style="width:72%"></i></div><div class="ep-stats"><div><b>1.240</b><span>XP</span></div><div><b>85</b><span>Moedas</span></div><div><b>5</b><span>Semanas</span></div></div></div></article>
+<article class="ep-card c2 aluno"><div class="ep-art"><span class="ep-badge">#2</span><div class="ep-avatar">B</div></div><div class="ep-body"><span class="ep-lvl">Nível 3 · Aventureiro</span><h3 class="ep-title">Bruno Lima</h3><p class="ep-sub">6º Ano A</p><div class="ui-bar ep-bar"><i style="width:45%"></i></div><div class="ep-stats"><div><b>980</b><span>XP</span></div><div><b>40</b><span>Moedas</span></div><div><b>3</b><span>Semanas</span></div></div></div></article>
+<article class="ep-card c3"><div class="ep-art"><span class="ui-pill ok">Aberta</span></div><div class="ep-body"><h3 class="ep-title">Plano cartesiano</h3><p class="ep-sub">Localize pontos e descubra o tesouro no mapa.</p><div class="ep-chips"><span class="ui-chip">Prazo <b>sex</b></span><span class="ui-chip">XP <b>+50</b></span><span class="ui-chip">Moedas <b>+10</b></span></div><div class="ui-bar"><i style="width:66%"></i></div><div class="ep-foot"><span class="ep-sub">2 de 3 desafios</span><button class="btn">Continuar</button></div></div></article>
+<article class="ep-card c2"><div class="ep-art"><span class="ui-pill warn">Em andamento</span></div><div class="ep-body"><span class="ui-eyebrow">Trilha</span><h3 class="ep-title">Números e frações</h3><div class="ep-steps"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div><div class="ep-chips"><span class="ui-chip">Etapa <b>4/8</b></span><span class="ui-chip">Recompensa <b>Badge</b></span></div><div class="ep-foot"><span class="ep-sub">Próxima: Frações</span><button class="btn">Abrir</button></div></div></article>
+<article class="ep-card c4"><div class="ep-art"><span class="ui-pill ok">Disponível</span><span style="font-size:48px" aria-hidden="true">🎟️</span></div><div class="ep-body"><h3 class="ep-title">Escolher o lugar na sala</h3><p class="ep-sub">Vale por uma semana.</p><div class="ep-foot"><span class="ep-price">60 ◈</span><button class="btn">Resgatar</button></div></div></article>
+<article class="ep-card c4 lock"><div class="ep-art"><span class="ui-pill off">Bloqueado</span><span style="font-size:48px" aria-hidden="true">🔒</span></div><div class="ep-body"><h3 class="ep-title">Dia sem lição extra</h3><p class="ep-sub">Faltam 120 moedas.</p><div class="ep-foot"><span class="ep-price">200 ◈</span><button class="btn" disabled>Resgatar</button></div></div></article>
+</div>
+</body></html>

@@ -28,33 +28,24 @@ tablet e celular.
 
 ## Acesso e Segurança
 
-### Senha de acesso geral
-Ao abrir o app, é exibida uma tela de bloqueio ("access gate"). É necessário
-digitar a **senha de acesso geral** para entrar:
+> Nenhuma senha é guardada neste repositório nem no código do app.
 
-- **Senha de acesso:** `gaia6ano`
+### Visitantes (alunos)
+Podem ver o **Ranking** e o **Hall da Aura**. O **Histórico** de pontuação não é
+público (contém observações do professor). Na próxima fase, cada aluno terá login
+individual e o ranking passará a exigir login.
 
-Sem essa senha ninguém visualiza o conteúdo. Após digitá-la corretamente, o
-acesso fica registrado na sessão (`sessionStorage`) e o app é liberado.
+### Professor (admin)
+O acesso do professor usa **Supabase Auth** (e-mail + senha individuais). Só quem
+está cadastrado na tabela `professores` tem permissão de escrita, e essa regra é
+aplicada **no banco de dados (RLS)**, não apenas na tela.
 
-### Modo admin vs visitante
-Existem dois perfis:
+Como ativar o acesso do professor e fechar o acesso público ao banco: veja
+`supabase/README.md`.
 
-| Perfil | Como entra | O que pode fazer |
-|--------|-----------|------------------|
-| **Visitante** (padrão) | Apenas a senha de acesso geral | Visualizar Ranking, Histórico e Hall da Aura |
-| **Admin** (professor) | Senha de acesso geral **+** senha de admin | Tudo: pontuar, gerenciar alunos/turmas, scanner, metas, config, backups |
-
-- **Senha de admin:** `admin4585`
-
-O estado de admin fica guardado em `sessionStorage` (`ep_admin`). Ao ativar o
-modo admin, a interface revela os menus e botões restritos (FAB de pontuar,
-abas Alunos, Scanner e Config).
-
-### O que cada perfil pode ver/fazer
-- **Visitante:** menu reduzido — somente **Ranking**, **Histórico** e **Hall da Aura**.
-  As fotos de perfil dos alunos ficam visíveis após a senha de acesso.
-- **Admin:** acesso completo a todas as abas e ações de escrita.
+### Dados pessoais
+- Nomes de alunos **não** ficam no código-fonte (somente no banco).
+- O app **não registra mais IP** nem log de acessos.
 
 ---
 
@@ -97,7 +88,7 @@ abas Alunos, Scanner e Config).
 - Lista das **últimas movimentações** de pontos (mais recentes primeiro).
 - Exibe pontos ganhos/perdidos, aluno, data e a **observação registrada**.
 - Ícones ✅ (ganho) / ❌ (perda) e origem (Manual ou QR Code).
-- **Visível para visitantes**.
+- Visível **somente para o professor** (contém observações).
 - Admin pode limpar o histórico.
 
 ### Hall da Aura
@@ -121,9 +112,6 @@ abas Alunos, Scanner e Config).
 - **Exportar CSV** dos dados e **backup em JSON**.
 - **Backup automático no Supabase** (tabela `backups`).
 - **Restaurar backup** a partir de um JSON salvo (com relatório de alunos atualizados).
-- **Log de acessos ao site**: total de acessos e os últimos registros (dispositivo,
-  navegador, resolução, IP e data). Mantém os **30 acessos mais recentes** e
-  permite limpar o histórico de acessos.
 - **Encerrar bimestre e salvar Hall da Aura** (eterniza os campeões).
 - **Zerar pontos para novo bimestre** (dupla confirmação; limpa pontos e
   histórico, mas **preserva o Hall da Aura**).
@@ -150,21 +138,21 @@ publishable no front-end).
 - `metas` — metas do período (alvo, datas).
 - `backups` — snapshots automáticos/manuais em JSON.
 - `hall_aura` — campeões eternizados por bimestre.
-- `acessos` — log de acessos ao site (dispositivo, navegador, resolução, IP).
+- `acessos` — descontinuada (o app não registra mais acessos).
 - `config` — estado compartilhado (ex.: banner de aviso de reset).
 
 **Outros recursos:**
-- **RLS** (Row Level Security) configurado nas tabelas.
+- **RLS** (Row Level Security) ligado em todas as tabelas. Políticas restritivas: ver `supabase/README.md`.
 - **Storage** do Supabase para as **fotos de perfil** dos alunos.
-- **Realtime** habilitado para `alunos`, `historico` e `turmas`.
+- **Realtime**: o app se inscreve nas mudanças; a publicação das tabelas no Supabase precisa estar habilitada (ver `supabase/README.md`).
 
 ---
 
 ## Como Usar
 
 ### Passo a passo para o professor (admin)
-1. Abra o app e digite a **senha de acesso geral** (`gaia6ano`).
-2. Toque no botão/menu de **admin** e digite a **senha de admin** (`admin4585`).
+1. Abra o app e toque no cadeado 🔒 do cabeçalho.
+2. Entre com seu **e-mail e senha de professor**.
 3. Na aba **Config**, crie as **turmas** e, na aba **Alunos**, cadastre os alunos
    (e opcionalmente envie a foto de cada um).
 4. Para pontuar: abra um aluno e escolha uma **categoria** rápida ou um valor
@@ -176,7 +164,7 @@ publishable no front-end).
 8. Faça/baixe **backups** periodicamente (CSV ou JSON).
 
 ### Passo a passo para os alunos (visitantes)
-1. Abra o app e digite a **senha de acesso geral** (`gaia6ano`).
+1. Abra o app.
 2. Veja o **Ranking** e descubra quem está liderando (pódio com cartas douradas).
 3. Confira o **Histórico** das pontuações recentes.
 4. Visite o **Hall da Aura** para ver os campeões dos bimestres anteriores.
