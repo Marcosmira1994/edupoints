@@ -1565,6 +1565,7 @@ function verificarProfessor(session) {
     .then(function(rows) {
       var ok = Array.isArray(rows) && rows.length === 1;
       setAdmin(ok);
+      if (ok) setTimeout(qFlush, 300);
       if (!ok && sbAuth) sbAuth.auth.signOut();
       return ok;
     })
@@ -1613,7 +1614,7 @@ function doLogin() {
     .catch(function() { fail('Erro de conexão. Tente novamente.'); });
 }
 
-function sbReq(method, table, qs, body) {
+function sbReq(method, table, qs, body, prefer) {
   var url = SB_URL + '/' + table + (qs ? '?' + qs : '');
   var h = {
     'apikey': SB_KEY,
@@ -1621,6 +1622,7 @@ function sbReq(method, table, qs, body) {
     'Content-Type': 'application/json'
   };
   if (method === 'POST') h['Prefer'] = 'resolution=merge-duplicates,return=minimal';
+  if (prefer) h['Prefer'] = prefer;
   var opts = { method: method, headers: h };
   if (body !== undefined) opts.body = JSON.stringify(body);
   return fetch(url, opts).then(function(r) {
@@ -1653,10 +1655,12 @@ function setStatus(st) {
   var cfg = map[st] || map.offline;
   icon.textContent  = cfg.i;
   label.textContent = cfg.l;
+  var _pend = qLoad().length;
+  if (_pend && st !== 'syncing') label.textContent = _pend + (_pend > 1 ? ' PENDENTES' : ' PENDENTE');
   label.style.color = cfg.c;
   label.style.textShadow = cfg.g;
   var badge = document.getElementById('sb-badge');
-  if (badge) badge.setAttribute('data-st', map[st] ? st : 'offline');
+  if (badge) { badge.setAttribute('data-st', map[st] ? st : 'offline'); badge.setAttribute('data-pend', _pend ? '1' : '0'); badge.title = label.textContent; }
 }
 
 function openStatusPanel() {
@@ -1676,10 +1680,10 @@ function openStatusPanel() {
 
 // --- REST helper ---
 function sbWrite(fn) {
-  if (!navigator.onLine) return;
+  if (!navigator.onLine) { epToast('Sem conexão: esta alteração ficou só neste aparelho'); return; }
   setStatus('syncing');
   fn().then(function() { setStatus('ok'); })
-      .catch(function() { setStatus('error'); });
+      .catch(function() { setStatus('error'); epToast('Não foi possível salvar na nuvem. Confira a conexão e o login.'); });
 }
 
 // --- Carregar todas as tabelas ---
@@ -1704,6 +1708,97 @@ function sbPushAll() {
     .then(function() { return S.classes.length  ? sbReq('POST', 'turmas',    '', S.classes.map(toSbClass))    : null; })
     .then(function() { return S.students.length ? sbReq('POST', 'alunos',    '', S.students.map(toSbStudent)) : null; })
     .then(function() { return S.history.length  ? sbReq('POST', 'historico', '', S.history.map(toSbHistory))  : null; });
+}
+
+// ===== FILA DE PONTUAÇÃO (não perde pontos sem internet e evita um aparelho sobrescrever o outro) =====
+var EP_Q_KEY = 'ep_queue';
+var _qBusy = false, _qInflight = null;
+function qLoad() { try { return JSON.parse(localStorage.getItem(EP_Q_KEY) || '[]'); } catch (e) { return []; } }
+function qSave(q) { try { localStorage.setItem(EP_Q_KEY, JSON.stringify(q)); } catch (e) {} setStatus(sbStatus); }
+function qAdd(op) { var q = qLoad(); q.push(op); qSave(q); qFlush(); }
+function pendingDelta(sid) { return qLoad().reduce(function(a, o) { return a + (o.sid === sid ? o.delta : 0); }, 0); }
+// Soma o delta no banco com checagem do valor anterior (se outro aparelho mexeu no meio, tenta de novo)
+function qBump(sid, delta, tries) {
+  tries = tries || 0;
+  return sbReq('GET', 'alunos', 'select=pontos&id=eq.' + encodeURIComponent(sid)).then(function(rows) {
+    if (!rows || !rows.length) return null; // aluno removido
+    var cur = rows[0].pontos || 0, next = Math.max(0, cur + delta);
+    if (next === cur) return null;
+    return sbReq('PATCH', 'alunos', 'id=eq.' + encodeURIComponent(sid) + '&pontos=eq.' + cur, { pontos: next }, 'return=representation').then(function(res) {
+      if (Array.isArray(res) && res.length) return null;
+      if (tries >= 5) throw new Error('conflito de pontos');
+      return qBump(sid, delta, tries + 1);
+    });
+  });
+}
+function qRun(op) {
+  if (op.kind === 'pts')  return sbReq('POST', 'historico', '', toSbHistory(op.hist)).then(function() { return qBump(op.sid, op.delta); });
+  if (op.kind === 'undo') return sbReq('DELETE', 'historico', 'id=eq.' + encodeURIComponent(op.hid)).then(function() { return qBump(op.sid, op.delta); });
+  return Promise.resolve();
+}
+function qFlush() {
+  if (_qBusy || !navigator.onLine || !sbToken || !isAdmin) return Promise.resolve();
+  if (!qLoad().length) return Promise.resolve();
+  _qBusy = true; setStatus('syncing');
+  function next() {
+    var q = qLoad();
+    if (!q.length) { _qBusy = false; _qInflight = null; setStatus('ok'); return Promise.resolve(); }
+    var op = q[0]; _qInflight = op.qid;
+    return qRun(op).then(function() {
+      var cur = qLoad().filter(function(o) { return o.qid !== op.qid; });
+      qSave(cur); return next();
+    });
+  }
+  return next().catch(function() { _qBusy = false; _qInflight = null; setStatus('error'); });
+}
+setInterval(function() { qFlush(); }, 15000);
+window.addEventListener('online', function() { setTimeout(qFlush, 800); });
+// Dados vindos do banco + o que ainda está na fila deste aparelho
+function applyRemote(data) {
+  var q = qLoad();
+  S.classes = data.classes;
+  S.students = data.students.map(function(st) { var d = pendingDelta(st.id); if (d) st.points = Math.max(0, st.points + d); return st; });
+  var undone = {}; q.forEach(function(o) { if (o.kind === 'undo') undone[o.hid] = 1; });
+  var have = {}; data.history.forEach(function(h) { have[h.id] = 1; });
+  var pend = q.filter(function(o) { return o.kind === 'pts' && !have[o.hist.id]; }).map(function(o) { return o.hist; }).reverse();
+  S.history = pend.concat(data.history.filter(function(h) { return !undone[h.id]; }));
+}
+
+// ===== AVISOS e DESFAZER =====
+function epToast(msg) {
+  var box = document.getElementById('ep-msg');
+  if (!box) { box = document.createElement('div'); box.id = 'ep-msg'; box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite'); document.body.appendChild(box); }
+  var el = document.createElement('div'); el.className = 'ep-msg-item'; el.textContent = msg; box.appendChild(el);
+  setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
+}
+var _undoTimer = null;
+function epUndo(hids, label) {
+  var bar = document.getElementById('ep-undo');
+  if (!bar) { bar = document.createElement('div'); bar.id = 'ep-undo'; document.body.appendChild(bar); }
+  bar.innerHTML = '<span class="u-t"></span><button type="button" class="btn u-b">Desfazer</button>';
+  bar.querySelector('.u-t').textContent = label;
+  bar.querySelector('.u-b').onclick = function() { undoPts(hids); };
+  bar.className = 'on';
+  clearTimeout(_undoTimer);
+  _undoTimer = setTimeout(function() { bar.className = ''; }, 7000);
+}
+function undoPts(hids, ask) {
+  if (ask && !confirm('Desfazer este lançamento? Os pontos voltam ao valor anterior.')) return;
+  var bar = document.getElementById('ep-undo'); if (bar) bar.className = '';
+  var n = 0;
+  hids.forEach(function(hid) {
+    var i = S.history.findIndex(function(h) { return h.id === hid; });
+    if (i < 0) return;
+    var h = S.history[i]; S.history.splice(i, 1);
+    var st = S.students.find(function(x) { return x.id === h.studentId; });
+    if (st) st.points = Math.max(0, st.points - h.points);
+    var q = qLoad(), j = q.findIndex(function(o) { return o.kind === 'pts' && o.hist.id === hid; });
+    if (j >= 0 && q[j].qid !== _qInflight) { q.splice(j, 1); qSave(q); }
+    else qAdd({ qid: uid(), kind: 'undo', sid: h.studentId, delta: -h.points, hid: hid });
+    n++;
+  });
+  if (!n) return;
+  save(); render(curView); epToast(n > 1 ? 'Desfeito (' + n + ' lançamentos)' : 'Desfeito');
 }
 
 // ===== REALTIME =====
@@ -1738,7 +1833,8 @@ function onRtAluno(payload) {
   } else if (payload.eventType === 'UPDATE') {
     var idx = -1;
     S.students.forEach(function(s, i){ if (s.id === r.id) idx = i; });
-    if (idx >= 0) S.students[idx] = fromSbStudent(r); else S.students.push(fromSbStudent(r));
+    var _ns = fromSbStudent(r); var _pd = pendingDelta(_ns.id); if (_pd) _ns.points = Math.max(0, _ns.points + _pd);
+    if (idx >= 0) S.students[idx] = _ns; else S.students.push(_ns);
   } else if (payload.eventType === 'DELETE' && old && old.id) {
     S.students = S.students.filter(function(s){ return s.id !== old.id; });
     S.history  = S.history.filter(function(h){ return h.studentId !== old.id; });
@@ -1823,6 +1919,7 @@ function uploadFoto(id) {
 
 // ===== NAV =====
 function go(v) {
+  if (v !== 'st' && selMode) { selMode = false; selIds = {}; }
   if (!isAdmin && v !== 'rk' && v !== 'hs' && v !== 'hall') return; // visitante acessa ranking, histórico e hall da aura
   if (v !== 'sc' && scanning) stopScan();
   if (v === 'rk') rkAnimDone = false; // reseta animações de entrada ao navegar para ranking
@@ -1838,6 +1935,7 @@ function go(v) {
   var fabScan = document.getElementById('fab-scan');
   if (fabScan) fabScan.style.display = isAdmin && v==='rk' ? 'flex' : 'none';
   render(v);
+  if (v !== 'st') renderSelBar();
 }
 
 function render(v) {
@@ -1847,6 +1945,7 @@ function render(v) {
   else if (v==='hall') renderHall();
   else if (v==='cfg') renderCfg();
   else if (v==='sc') renderSc();
+  fixLabels();
 }
 
 // ===== MODAL =====
@@ -1985,39 +2084,52 @@ function delSt(id) {
 }
 
 // ===== POINTS =====
-function addPts(id, pts, src, obs) {
-  src = src||'manual';
-  if (obs === undefined) {
-    var obsEl = document.getElementById('obs-' + id);
-    obs = obsEl ? obsEl.value.trim() : '';
-  }
-  var s = S.students.find(function(x){return x.id===id;});
-  if (!s) return;
-  s.points = Math.max(0, s.points + pts);
-  var h = { id:uid(), studentId:id, studentName:s.name, points:pts, source:src, timestamp:Date.now(), obs: obs };
-  S.history.unshift(h);
-  if (S.history.length > 500) S.history.length = 500;
-  save();
-  showToast(pts);
-  if (S.settings.sound) playSound(pts>0);
-  render(curView);
-  // Pulse no nome do aluno após render
-  var _pulseId = id;
+function afterScore(id) {
   setTimeout(function() {
-    document.querySelectorAll('[data-sid="' + _pulseId + '"]').forEach(function(el) {
+    document.querySelectorAll('[data-sid="' + id + '"]').forEach(function(el) {
       el.classList.remove('animate__animated', 'animate__pulse');
       void el.offsetWidth;
       el.classList.add('animate__animated', 'animate__pulse');
       setTimeout(function() { el.classList.remove('animate__animated', 'animate__pulse'); }, 1000);
     });
   }, 60);
-  var newPts = s.points;
-  sbWrite(function() {
-    return Promise.all([
-      sbReq('PATCH', 'alunos',    'id=eq.' + id, { pontos: newPts }),
-      sbReq('POST',  'historico', '',             toSbHistory(h))
-    ]);
-  });
+}
+// Aplica os pontos neste aparelho e põe na fila de envio. silent=true: sem aviso/render (usado no lote).
+function addPts(id, pts, src, obs, silent) {
+  src = src || 'manual';
+  if (obs === undefined) {
+    var obsEl = document.getElementById('obs-' + id);
+    obs = obsEl ? obsEl.value.trim() : '';
+  }
+  var s = S.students.find(function(x){ return x.id === id; });
+  if (!s) return null;
+  var before = s.points, after = Math.max(0, before + pts), delta = after - before;
+  if (delta === 0) { if (!silent) epToast(s.name + ' já está com 0 pontos'); return null; }
+  s.points = after;
+  var h = { id: uid(), studentId: id, studentName: s.name, points: delta, source: src, timestamp: Date.now(), obs: obs };
+  S.history.unshift(h);
+  if (S.history.length > 500) S.history.length = 500;
+  save();
+  qAdd({ qid: uid(), kind: 'pts', sid: id, delta: delta, hist: h });
+  if (!silent) {
+    showToast(delta);
+    if (S.settings.sound) playSound(delta > 0);
+    render(curView);
+    afterScore(id);
+    epUndo([h.id], (delta > 0 ? '+' : '') + delta + ' para ' + s.name);
+  }
+  return h;
+}
+
+// Pontua vários alunos de uma vez
+function addPtsBatch(ids, pts, obs) {
+  var hs = [];
+  ids.forEach(function(id) { var h = addPts(id, pts, 'manual', obs || '', true); if (h) hs.push(h); });
+  if (!hs.length) { epToast('Nenhum aluno pontuado'); return; }
+  showToast(pts);
+  if (S.settings.sound) playSound(pts > 0);
+  render(curView);
+  epUndo(hs.map(function(h){ return h.id; }), (pts > 0 ? '+' : '') + pts + ' para ' + hs.length + (hs.length > 1 ? ' alunos' : ' aluno'));
 }
 
 function showToast(pts) {
@@ -2097,21 +2209,15 @@ function doQP(pts) {
 
 function doQPcust() {
   var v = parseInt(document.getElementById('cust-val').value);
-  if (isNaN(v)||v===0) { alert('Digite um valor válido'); return; }
+  if (isNaN(v)||v===0) { epToast('Digite um valor válido (ex.: 3 ou -3)'); document.getElementById('cust-val').focus(); return; }
   doQP(v);
 }
 
 function selectCat(pts, label) {
-  if (qpScanMode) {
-    var obsEl = document.getElementById('modal-obs');
-    var obs = obsEl ? obsEl.value.trim() : '';
-    addPts(qrPtsId, pts, 'qr', obs || label);
-    closeQP();
-    return;
-  }
-  document.getElementById('cust-val').value = pts;
-  document.getElementById('modal-obs').value = label;
-  document.getElementById('modal-obs').focus();
+  var obsEl = document.getElementById('modal-obs');
+  var extra = obsEl ? obsEl.value.trim() : '';
+  addPts(qrPtsId, pts, qpScanMode ? 'qr' : 'manual', extra ? label + ' — ' + extra : label);
+  closeQP();
 }
 
 // ===== FILTER CHIPS =====
@@ -2390,50 +2496,92 @@ function renderRk() {
 }
 
 // ===== STUDENTS =====
-function renderStudents() {
-  renderChips('cf-st', stFilter, 'setStFilter');
-  var q = (document.getElementById('ssearch')||{}).value||'';
-  q = q.toLowerCase();
-  var filtered = S.students.filter(function(s){
+var selMode = false, selIds = {};
+function selCount() { return Object.keys(selIds).length; }
+function toggleSelMode() { selMode = !selMode; selIds = {}; expSt = null; renderStudents(); }
+function toggleSel(id) { if (selIds[id]) delete selIds[id]; else selIds[id] = 1; renderStudents(); }
+function visibleStudents() {
+  var q = ((document.getElementById('ssearch')||{}).value||'').toLowerCase();
+  return S.students.filter(function(s){
     return (stFilter==='all'||s.classId===stFilter) && (!q||s.name.toLowerCase().includes(q));
   }).slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
-
+}
+function selAllVisible() {
+  var vis = visibleStudents(), all = vis.every(function(s){ return selIds[s.id]; });
+  vis.forEach(function(s){ if (all) delete selIds[s.id]; else selIds[s.id] = 1; });
+  renderStudents();
+}
+function applySel(pts) {
+  var ids = Object.keys(selIds); if (!ids.length) return;
+  var o = document.getElementById('sel-obs'); var obs = o ? o.value.trim() : '';
+  addPtsBatch(ids, pts, obs);
+  selMode = false; selIds = {}; renderStudents();
+}
+function applySelCustom() {
+  var v = parseInt((document.getElementById('sel-val')||{}).value);
+  if (isNaN(v) || v === 0) { epToast('Digite um valor válido (ex.: 3 ou -3)'); return; }
+  applySel(v);
+}
+function renderSelBar() {
+  var bar = document.getElementById('ep-selbar');
+  if (!selMode || curView !== 'st') { if (bar) bar.className = ''; return; }
+  if (!bar) { bar = document.createElement('div'); bar.id = 'ep-selbar'; document.body.appendChild(bar); }
+  var n = selCount();
+  bar.innerHTML = '<div class="sb-top"><b>' + n + ' selecionado' + (n === 1 ? '' : 's') + '</b>'
+    + '<input id="sel-obs" class="inp" placeholder="Motivo (opcional)" aria-label="Motivo da pontuação">'
+    + '<button type="button" class="btn btn-gh btn-sm" onclick="toggleSelMode()">Cancelar</button></div>'
+    + '<div class="sb-btns">'
+    + [1,2,3,5,10].map(function(v){ return '<button type="button" class="qp qpa" ' + (n?'':'disabled ') + 'onclick="applySel(' + v + ')">+' + v + '</button>'; }).join('')
+    + [-1,-2,-5].map(function(v){ return '<button type="button" class="qp qpr" ' + (n?'':'disabled ') + 'onclick="applySel(' + v + ')">' + v + '</button>'; }).join('')
+    + '</div><div class="sb-cust"><input id="sel-val" type="number" class="inp" placeholder="Outro valor (ex.: 4 ou -4)" aria-label="Outro valor" onkeydown="if(event.key===\'Enter\')applySelCustom()"><button type="button" class="btn btn-p btn-sm" ' + (n?'':'disabled ') + 'onclick="applySelCustom()">OK</button></div>';
+  bar.className = 'on';
+}
+function renderStudents() {
+  renderChips('cf-st', stFilter, 'setStFilter');
+  var filtered = visibleStudents();
   var el = document.getElementById('stlist');
+  var keepObs = document.getElementById('sel-obs') ? document.getElementById('sel-obs').value : '';
+  var tools = '<div class="st-tools"><button type="button" class="btn btn-gh btn-sm' + (selMode ? ' on' : '') + '" onclick="toggleSelMode()" aria-pressed="' + selMode + '">☑ ' + (selMode ? 'Sair da seleção' : 'Pontuar vários') + '</button>'
+    + (selMode ? '<button type="button" class="btn btn-gh btn-sm" onclick="selAllVisible()">Selecionar todos</button>' : '')
+    + '<span class="st-count">' + filtered.length + ' aluno' + (filtered.length === 1 ? '' : 's') + '</span></div>';
   if (filtered.length===0) {
-    el.innerHTML='<div class="es"><div class="ei">👥</div><h3>Nenhum aluno encontrado</h3><p>Toque em + para adicionar</p></div>';
+    el.innerHTML = tools + '<div class="es"><div class="ei">👥</div><h3>Nenhum aluno encontrado</h3><p>Toque em + para adicionar</p></div>';
+    renderSelBar(); fixLabels();
     return;
   }
-  el.innerHTML = filtered.map(function(s){
+  el.innerHTML = tools + filtered.map(function(s){
     var cn = clsName(s.classId);
-    var exp = expSt===s.id;
-    return '<div class="si">'
-      +'<div class="si-row" onclick="toggleExp(\''+s.id+'\')">'
+    var exp = !selMode && expSt===s.id;
+    var chosen = !!selIds[s.id];
+    return '<div class="si' + (chosen ? ' sel' : '') + '">'
+      +'<div class="si-row" role="button" tabindex="0" onclick="' + (selMode ? 'toggleSel(\''+s.id+'\')' : 'toggleExp(\''+s.id+'\')') + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}">'
+      +(selMode ? '<span class="chk" aria-hidden="true">' + (chosen ? '✔' : '') + '</span>' : '')
       +mkAv(s,'av')
       +'<div style="flex:1;min-width:0"><div class="sname">'+esc(s.name)+badgeHtml(s.id)+'</div>'+(cn?'<div class="scls">'+esc(cn)+'</div>':'')+'</div>'
-      +'<div class="spts">'+s.points+'</div>'
+      +'<div class="spts" data-sid="'+s.id+'">'+s.points+'</div>'
+      +(selMode ? '' : '<button type="button" class="qp1" aria-label="Dar 1 ponto para '+esc(s.name)+'" onclick="addPts(\''+s.id+'\',1,\'manual\',\'\');event.stopPropagation()">+1</button>')
       +'</div>'
       +(exp?
         '<div class="sx">'
         +'<div class="qps">'
-        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',1);event.stopPropagation()">+1</button>'
-        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',2);event.stopPropagation()">+2</button>'
-        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',5);event.stopPropagation()">+5</button>'
-        +'<button class="qp qpa" onclick="addPts(\''+s.id+'\',10);event.stopPropagation()">+10</button>'
-        +'<button class="qp qpr" onclick="addPts(\''+s.id+'\',-1);event.stopPropagation()">-1</button>'
-        +'<button class="qp qpr" onclick="addPts(\''+s.id+'\',-5);event.stopPropagation()">-5</button>'
-        +'<button class="qp qpc" onclick="openQP(\''+s.id+'\');event.stopPropagation()">✏️</button>'
+        +[1,2,5,10].map(function(v){ return '<button type="button" class="qp qpa" onclick="addPts(\''+s.id+'\','+v+');event.stopPropagation()">+'+v+'</button>'; }).join('')
+        +[-1,-2,-5].map(function(v){ return '<button type="button" class="qp qpr" onclick="addPts(\''+s.id+'\','+v+');event.stopPropagation()">'+v+'</button>'; }).join('')
+        +'<button type="button" class="qp qpc" aria-label="Outras opções de pontuação" onclick="openQP(\''+s.id+'\');event.stopPropagation()">✏️</button>'
         +'</div>'
-        +'<textarea id="obs-'+s.id+'" class="inp" rows="2" placeholder="Observação (opcional)..." style="font-size:13px;resize:none;margin-bottom:10px" onclick="event.stopPropagation()"></textarea>'
+        +'<textarea id="obs-'+s.id+'" class="inp" rows="2" placeholder="Observação (opcional)..." aria-label="Observação" style="font-size:13px;resize:none;margin-bottom:10px" onclick="event.stopPropagation()"></textarea>'
         +'<div style="display:flex;gap:8px">'
-        +(isAdmin?'<button class="btn btn-gh btn-sm" onclick="uploadFoto(\''+s.id+'\');event.stopPropagation()">📷 Foto</button>':'')
-        +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="showQR(\''+s.id+'\');event.stopPropagation()">📱 QR</button>'
-        +'<button class="btn btn-gh btn-sm" style="flex:1" onclick="openEditSt(\''+s.id+'\');event.stopPropagation()">✏️ Editar</button>'
-        +'<button class="btn btn-r btn-sm" onclick="delSt(\''+s.id+'\');event.stopPropagation()">🗑️</button>'
+        +(isAdmin?'<button type="button" class="btn btn-gh btn-sm" onclick="uploadFoto(\''+s.id+'\');event.stopPropagation()">📷 Foto</button>':'')
+        +'<button type="button" class="btn btn-gh btn-sm" style="flex:1" onclick="showQR(\''+s.id+'\');event.stopPropagation()">📱 QR</button>'
+        +'<button type="button" class="btn btn-gh btn-sm" style="flex:1" onclick="openEditSt(\''+s.id+'\');event.stopPropagation()">✏️ Editar</button>'
+        +'<button type="button" class="btn btn-r btn-sm" aria-label="Excluir aluno" onclick="delSt(\''+s.id+'\');event.stopPropagation()">🗑️</button>'
         +'</div>'
         +'</div>'
       :'')
       +'</div>';
   }).join('');
+  renderSelBar();
+  var so = document.getElementById('sel-obs'); if (so && keepObs) so.value = keepObs;
+  fixLabels();
 }
 
 function toggleExp(id) { expSt = expSt===id ? null : id; renderStudents(); }
@@ -2458,6 +2606,7 @@ function renderHs() {
         +(h.obs ? '<div style="font-size:12px;color:var(--text2);font-style:italic;margin-top:3px">💬 '+esc(h.obs)+'</div>' : '')
       +'</div>'
       +'<div class="hpts '+(h.points>=0?'pos':'neg')+'">'+(h.points>0?'+':'')+h.points+'</div>'
+      +(isAdmin ? '<button type="button" class="hundo" aria-label="Desfazer lançamento de '+esc(h.studentName)+'" title="Desfazer" onclick="undoPts([\''+h.id+'\'],true)">↩</button>' : '')
       +'</div>';
   }).join('');
 }
@@ -3405,6 +3554,20 @@ function renderProfileChart(id) {
 }
 
 // ===== INIT =====
+
+// Acessibilidade: dá nome a campos sem <label> (leitor de tela)
+function fixLabels() {
+  var names = { 'ssearch':'Buscar aluno', 'st-name':'Nome do aluno', 'st-cls':'Turma do aluno', 'cls-name':'Nome da turma', 'cust-val':'Valor personalizado', 'modal-obs':'Observação', 'admin-email':'E-mail do professor', 'admin-pwd':'Senha', 'bim-name':'Nome do bimestre', 'scanpts':'Pontos por leitura do QR' };
+  document.querySelectorAll('input,select,textarea').forEach(function(e) {
+    if (e.type === 'hidden' || e.getAttribute('aria-label')) return;
+    if (e.id && document.querySelector('label[for="' + e.id + '"]')) return;
+    if (e.closest('label')) return;
+    var n = names[e.id] || e.getAttribute('placeholder') || e.title || '';
+    if (!n && e.id) n = e.id.replace(/-/g, ' ');
+    if (n) e.setAttribute('aria-label', n);
+  });
+}
+
 function initApp() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(regs) {
@@ -3416,6 +3579,7 @@ function initApp() {
   var lsResult = load();
   document.getElementById('scanpts').value = S.settings.scanPts || 1;
   go('rk');
+  fixLabels();
   updateAdminUI(); // garante visibilidade correta do menu (admin vs visitante) já no início
 
   // 2. Supabase como fonte de verdade quando online
@@ -3424,9 +3588,7 @@ function initApp() {
     sbLoadAll()
       .then(function(data) {
         if (data.students.length > 0 || data.classes.length > 0) {
-          S.classes  = data.classes;
-          S.students = data.students;
-          S.history  = data.history;
+          applyRemote(data);
           save(); render(curView); setStatus('ok');
         } else {
           // Banco vazio: nunca apagar nem sobrescrever automaticamente. Só informa.
@@ -3448,7 +3610,7 @@ function initApp() {
     sbLoadAll()
       .then(function(data) {
         if (data.students.length > 0 || data.classes.length > 0) {
-          S.classes = data.classes; S.students = data.students; S.history = data.history;
+          applyRemote(data);
           save(); render(curView);
         }
         setStatus('ok');
