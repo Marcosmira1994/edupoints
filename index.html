@@ -783,331 +783,6 @@ html,body{height:100%;background:radial-gradient(ellipse 120% 90% at 50% 45%,#1a
   .aura-card,.aura-card--first,.aura-card::after,.aura-progress__bar,.podium-wrap,.aura-ranking-item{animation:none!important;transition:none!important}
   .aura-card:hover,.aura-ranking-item:hover{transform:none}
 }
-/* ==================================================================
-   ===== REDESIGN NEON / CYBERPUNK — EduPoints =====================
-   Paleta: #00f5ff (ciano) - #ff00ff (magenta) - #7fff00 (verde limao)
-   Dourado #FFD700 preservado para os campeoes.
-   ================================================================== */
-
-/* ---------- Animacoes base ---------- */
-@keyframes neonTextPulse{
-  0%,100%{text-shadow:0 0 10px #00f5ff,0 0 20px #00f5ff,0 0 40px #00f5ff}
-  50%{text-shadow:0 0 6px #00f5ff,0 0 13px #00f5ff,0 0 26px rgba(0,245,255,.55)}
-}
-@keyframes neonBorderPulse{
-  0%,100%{box-shadow:0 0 8px rgba(127,255,0,.22);border-color:rgba(127,255,0,.38)}
-  50%{box-shadow:0 0 18px rgba(127,255,0,.55);border-color:rgba(127,255,0,.9)}
-}
-@keyframes gridScroll{from{background-position:0 0,0 0}to{background-position:0 0,0 84px}}
-@keyframes neonFadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes avatarNeonPulse{
-  0%,100%{box-shadow:0 0 14px rgba(0,245,255,.45),0 0 4px rgba(0,245,255,.3)}
-  50%{box-shadow:0 0 32px rgba(0,245,255,.85),0 0 60px rgba(0,245,255,.3)}
-}
-@keyframes auraNeonEdge{
-  0%,100%{box-shadow:0 14px 30px rgba(0,0,0,.5),0 0 18px rgba(255,215,0,.45),0 0 34px rgba(0,245,255,.26)}
-  50%{box-shadow:0 16px 36px rgba(0,0,0,.55),0 0 28px rgba(255,215,0,.7),0 0 46px rgba(255,0,255,.3)}
-}
-@keyframes metaGlow{0%,100%{box-shadow:0 0 10px rgba(0,245,255,.35)}50%{box-shadow:0 0 22px rgba(255,0,255,.5)}}
-
-/* ---------- FUNDO: grade cyberpunk + piso em perspectiva ---------- */
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    linear-gradient(rgba(0,245,255,.05) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,245,255,.05) 1px,transparent 1px);
-  background-size:54px 54px;
-  -webkit-mask-image:radial-gradient(ellipse 88% 78% at 50% 42%,#000 25%,transparent 100%);
-  mask-image:radial-gradient(ellipse 88% 78% at 50% 42%,#000 25%,transparent 100%);
-}
-body::after{
-  content:'';position:fixed;left:-60%;right:-60%;bottom:-6%;height:52vh;z-index:0;pointer-events:none;
-  background-image:
-    repeating-linear-gradient(90deg,rgba(0,245,255,.13) 0 1px,transparent 1px 84px),
-    repeating-linear-gradient(0deg,rgba(255,0,255,.11) 0 1px,transparent 1px 84px);
-  transform:perspective(300px) rotateX(70deg);transform-origin:bottom center;
-  -webkit-mask-image:linear-gradient(to top,#000 4%,transparent 78%);
-  mask-image:linear-gradient(to top,#000 4%,transparent 78%);
-  animation:gridScroll 7s linear infinite;
-}
-/* Nebulosas recoloridas (roxo / magenta / ciano) */
-.nebula-1{background:radial-gradient(circle,rgba(140,0,255,.22),transparent 70%)}
-.nebula-2{background:radial-gradient(circle,rgba(255,0,255,.14),transparent 70%)}
-.nebula-3{background:radial-gradient(circle,rgba(0,245,255,.14),transparent 70%)}
-
-/* ---------- HEADER ---------- */
-#hdr{
-  position:relative;z-index:50;
-  background:rgba(10,10,18,.72)!important;border-bottom:none!important;
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-}
-#hdr::after{
-  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,#00f5ff 20%,#ff00ff 80%,transparent);
-  box-shadow:0 0 12px rgba(0,245,255,.55),0 0 20px rgba(255,0,255,.3);
-}
-.logo{
-  background:none!important;-webkit-text-fill-color:#00f5ff!important;color:#00f5ff!important;
-  letter-spacing:1.4px;animation:neonTextPulse 2.8s ease-in-out infinite;
-}
-.logo-gaia{color:#ff6fe0!important;letter-spacing:.8px;text-shadow:0 0 8px rgba(255,0,255,.45)}
-#menu-btn{color:#00f5ff!important;text-shadow:0 0 10px rgba(0,245,255,.7);transition:all .3s ease}
-#menu-btn:hover{color:#fff!important;text-shadow:0 0 14px #00f5ff,0 0 26px #00f5ff}
-#fs-btn{color:#ff00ff!important;text-shadow:0 0 9px rgba(255,0,255,.6);transition:all .3s ease}
-#fs-btn:hover{color:#fff!important;text-shadow:0 0 14px #ff00ff,0 0 26px #ff00ff}
-#lock-btn{filter:drop-shadow(0 0 6px rgba(127,255,0,.55));transition:filter .3s ease}
-#lock-btn:hover{filter:drop-shadow(0 0 12px rgba(127,255,0,.95))}
-/* Badge de status - verde neon pulsante quando ONLINE */
-#sb-badge{
-  background:rgba(0,245,255,.06)!important;border:1px solid rgba(0,245,255,.3)!important;
-  transition:box-shadow .3s ease,border-color .3s ease;
-}
-#sb-badge[data-st="ok"]{background:rgba(127,255,0,.07)!important;animation:neonBorderPulse 2.4s ease-in-out infinite}
-#sb-badge[data-st="offline"],#sb-badge[data-st="error"]{border-color:rgba(255,45,111,.55)!important;box-shadow:0 0 12px rgba(255,45,111,.3)}
-#sb-panel{background:rgba(10,10,18,.96)!important;border:1px solid #00f5ff!important;box-shadow:0 8px 30px rgba(0,0,0,.7),0 0 22px rgba(0,245,255,.2)!important}
-
-/* ---------- VIEWS / TIPOGRAFIA ---------- */
-.view.on{animation:neonFadeIn .4s ease-out}
-.st,.stitle,.mt,.hall-bim-title,.hall-champs-title{letter-spacing:1px}
-.rpts,.spts,.hpts,.aura-ranking-score-value,.aura-power__value,#profile-pts-val,.ex-pts{font-weight:900!important}
-
-/* ---------- BOTOES NEON ---------- */
-.btn{letter-spacing:.5px;transition:all .3s ease}
-.btn-p,.btn-g,.btn-gh{
-  background:transparent!important;border:2px solid #00f5ff!important;color:#00f5ff!important;
-  text-shadow:0 0 8px rgba(0,245,255,.4);
-}
-.btn-p:hover,.btn-g:hover,.btn-gh:hover{
-  background:#00f5ff!important;color:#000!important;text-shadow:none;
-  box-shadow:0 0 18px rgba(0,245,255,.75),0 0 36px rgba(0,245,255,.32);
-}
-.btn-b{background:transparent!important;border:2px solid #ff00ff!important;color:#ff00ff!important;text-shadow:0 0 8px rgba(255,0,255,.4)}
-.btn-b:hover{background:#ff00ff!important;color:#000!important;text-shadow:none;box-shadow:0 0 18px rgba(255,0,255,.7),0 0 36px rgba(255,0,255,.3)}
-.btn-r{background:transparent!important;border:2px solid var(--red)!important;color:var(--red)!important;text-shadow:0 0 8px rgba(255,45,111,.4)}
-.btn-r:hover{background:var(--red)!important;color:#000!important;text-shadow:none;box-shadow:0 0 18px rgba(255,45,111,.7),0 0 34px rgba(255,45,111,.28)}
-/* Botoes de categoria (DaisyUI) */
-.btn-success.cat-dui{background:rgba(127,255,0,.08)!important;border:1px solid rgba(127,255,0,.45)!important;color:#b9ff5c!important}
-.btn-success.cat-dui:hover{background:rgba(127,255,0,.2)!important;border-color:#7fff00!important;box-shadow:0 0 16px rgba(127,255,0,.4)!important}
-.btn-error.cat-dui{background:rgba(255,45,111,.08)!important;border:1px solid rgba(255,45,111,.45)!important;color:#ff7aa6!important}
-.btn-error.cat-dui:hover{background:rgba(255,45,111,.2)!important;border-color:var(--red)!important;box-shadow:0 0 16px rgba(255,45,111,.4)!important}
-.cat-dui-sep{background:linear-gradient(90deg,transparent,rgba(0,245,255,.4),transparent)}
-/* Botoes rapidos de pontos */
-.qp{transition:all .25s ease}
-.qpa{background:transparent!important;border:1.5px solid #7fff00!important;color:#7fff00!important}
-.qpa:hover{background:#7fff00!important;color:#000!important;box-shadow:0 0 14px rgba(127,255,0,.6)}
-.qpr{background:transparent!important;border:1.5px solid var(--red)!important;color:var(--red)!important}
-.qpr:hover{background:var(--red)!important;color:#000!important;box-shadow:0 0 14px rgba(255,45,111,.6)}
-.qpc{background:transparent!important;border:1.5px solid rgba(0,245,255,.45)!important;color:#00f5ff!important}
-.qpc:hover{background:#00f5ff!important;color:#000!important;box-shadow:0 0 14px rgba(0,245,255,.6)}
-/* FAB */
-.fab{
-  background:transparent!important;border:2px solid #00f5ff!important;color:#00f5ff!important;
-  box-shadow:0 0 16px rgba(0,245,255,.45),inset 0 0 16px rgba(0,245,255,.12)!important;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-}
-.fab:hover{background:#00f5ff!important;color:#000!important;box-shadow:0 0 26px rgba(0,245,255,.85),0 0 50px rgba(0,245,255,.35)!important}
-#fab-scan{bottom:84px!important;font-size:24px}
-
-/* ---------- INPUTS ---------- */
-.inp,.sel{background:rgba(0,245,255,.04)!important;border:1px solid rgba(0,245,255,.28)!important;color:var(--text)!important;transition:all .3s ease}
-.inp::placeholder{color:#6a6a8c}
-.inp:focus,.sel:focus{border-color:#00f5ff!important;box-shadow:0 0 12px rgba(0,245,255,.35),inset 0 0 10px rgba(0,245,255,.06)!important}
-.fl{color:#00f5ff!important;letter-spacing:.5px;opacity:.85}
-
-/* ---------- FILTROS (chips) ---------- */
-.chip{
-  background:transparent!important;border:1px solid rgba(0,245,255,.35)!important;color:#9fd8e6!important;
-  transition:all .3s ease;letter-spacing:.4px;
-}
-.chip:hover{border-color:#00f5ff!important;color:#00f5ff!important;box-shadow:0 0 12px rgba(0,245,255,.3)}
-.chip.on{
-  background:#00f5ff!important;border-color:#00f5ff!important;color:#000!important;font-weight:700;
-  box-shadow:0 0 16px rgba(0,245,255,.6),0 0 30px rgba(0,245,255,.25);
-}
-
-/* ---------- BARRA DE META ---------- */
-.meta-track{background:rgba(0,245,255,.1)!important;border:1px solid rgba(0,245,255,.2)}
-.meta-fill{box-shadow:0 0 14px rgba(0,245,255,.55),0 0 26px rgba(255,0,255,.3)}
-.meta-fill.is-full{animation:metaGlow 1.4s ease-in-out infinite}
-
-/* ---------- RANKING: lista ---------- */
-#view-rk{background:
-  radial-gradient(circle at 50% 0,rgba(140,0,255,.22),transparent 42%),
-  radial-gradient(circle at 12% 28%,rgba(0,245,255,.1),transparent 30%),
-  radial-gradient(circle at 86% 18%,rgba(255,0,255,.1),transparent 30%)!important}
-.aura-ranking-item{
-  background:rgba(0,245,255,.05)!important;border:1px solid rgba(0,245,255,.2)!important;
-  box-shadow:0 4px 18px rgba(0,0,0,.45)!important;transition:all .3s ease!important;
-}
-.aura-ranking-item:hover{
-  background:rgba(0,245,255,.1)!important;border-color:#00f5ff!important;transform:translateY(-2px)!important;
-  box-shadow:0 8px 26px rgba(0,0,0,.5),0 0 18px rgba(0,245,255,.35)!important;
-}
-.aura-ranking-item::before{background:rgba(0,245,255,.35)}
-.aura-ranking-pos{background:rgba(0,245,255,.08)!important;border:1px solid rgba(0,245,255,.3)!important}
-.aura-ranking-item:nth-child(3n+1) .aura-ranking-pos{color:#00f5ff;text-shadow:0 0 9px rgba(0,245,255,.7)}
-.aura-ranking-item:nth-child(3n+2) .aura-ranking-pos{color:#ff5cf5;text-shadow:0 0 9px rgba(255,0,255,.7)}
-.aura-ranking-item:nth-child(3n)   .aura-ranking-pos{color:#a6ff4d;text-shadow:0 0 9px rgba(127,255,0,.7)}
-.aura-ranking-score-value{color:#7fff00!important;text-shadow:0 0 12px rgba(127,255,0,.6)!important}
-.aura-ranking-score-label,.aura-power__label{color:#7f8da8!important;letter-spacing:.8px}
-.aura-ranking-name{color:#fff!important}
-.aura-ranking-photo .av{background:linear-gradient(135deg,#0d2733,#2a0b33)!important;color:#00f5ff!important;box-shadow:inset 0 0 0 1px rgba(0,245,255,.25),0 4px 14px rgba(0,0,0,.4)!important}
-.aura-progress{background:rgba(0,245,255,.1)!important}
-.aura-progress__bar{background:linear-gradient(90deg,#00f5ff,#ff00ff)!important;box-shadow:0 0 8px rgba(0,245,255,.55)}
-/* Lider / campeoes do Hall mantem identidade dourada */
-.aura-ranking-item--leader,.aura-ranking-item.is-hall-top3{
-  background:linear-gradient(135deg,rgba(60,48,8,.9),rgba(20,8,32,.9))!important;
-  border-color:rgba(255,215,0,.5)!important;
-  box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(255,215,0,.3)!important;
-}
-.aura-ranking-item--leader:hover,.aura-ranking-item.is-hall-top3:hover{
-  border-color:#ffd700!important;box-shadow:0 10px 30px rgba(0,0,0,.55),0 0 24px rgba(255,215,0,.5),0 0 40px rgba(0,245,255,.2)!important;
-}
-.aura-ranking-item--leader .aura-ranking-pos,.aura-ranking-item.is-hall-top3 .aura-ranking-pos{
-  background:linear-gradient(135deg,#ffd700,#fff1a8)!important;color:#07101f!important;text-shadow:none!important;border-color:rgba(255,215,0,.6)!important;
-}
-.aura-ranking-item--leader .aura-ranking-score-value,.aura-ranking-item.is-hall-top3 .aura-ranking-score-value{color:#ffd700!important;text-shadow:0 0 14px rgba(255,215,0,.6)!important}
-.rank-divider::before,.rank-divider::after,.rk-sep::before,.rk-sep::after{background:linear-gradient(90deg,transparent,rgba(0,245,255,.35),transparent)!important}
-.rank-divider span,.rk-sep span{color:#00f5ff!important;text-shadow:0 0 8px rgba(0,245,255,.4)}
-#rk-right{background:rgba(0,245,255,.03)!important;border:1px solid rgba(0,245,255,.18)!important;box-shadow:inset 0 0 30px rgba(0,245,255,.04)}
-
-/* ---------- RANKING: cartas do podio ---------- */
-.aura-card::before{
-  background:
-    radial-gradient(circle at 20% 12%,rgba(255,255,255,.14),transparent 28%),
-    radial-gradient(circle at 78% 28%,var(--aura-soft),transparent 32%),
-    linear-gradient(160deg,rgba(12,8,24,.95),rgba(16,10,34,.92) 48%,var(--aura-deep))!important;
-}
-.aura-card--second{--aura-metal:#00f5ff;--aura-soft:rgba(0,245,255,.3);--aura-deep:#04202b}
-.aura-card--third{--aura-metal:#ff4df0;--aura-soft:rgba(255,0,255,.26);--aura-deep:#22062b}
-.aura-card--second .aura-power__value{color:#00f5ff;text-shadow:0 0 14px rgba(0,245,255,.6)}
-.aura-card--third .aura-power__value{color:#ff5cf5;text-shadow:0 0 14px rgba(255,0,255,.6)}
-.aura-card--first{animation:auraNeonEdge 3s ease-in-out infinite}
-.aura-card--first .aura-power__value{color:#ffd700;text-shadow:0 0 16px rgba(255,215,0,.7)}
-.aura-card:hover{box-shadow:0 18px 38px rgba(0,0,0,.5),0 0 26px var(--aura-soft),0 0 44px rgba(0,245,255,.18)!important}
-.aura-power{background:rgba(0,0,0,.35)!important;border:1px solid rgba(0,245,255,.16)!important}
-.aura-achievement{background:rgba(0,245,255,.08)!important;border-color:rgba(0,245,255,.24)!important;color:#bfe9f5!important}
-.hall-rank-chip{background:rgba(255,0,255,.1)!important;border-color:rgba(255,0,255,.28)!important;color:#ffbdf7!important}
-.aura-card__foot{color:#7d8ba6!important;letter-spacing:1.1px}
-/* Carta dourada (campeao / empate) - energia neon nas bordas */
-.podium-aura-card.aura-gold,.ex-card.ex-1{animation:auraNeonEdge 3s ease-in-out infinite!important}
-
-/* ---------- HALL DA AURA - cartas EX ---------- */
-.ex-2{--ex-c:#00f5ff;background:linear-gradient(135deg,#050b12,#0a1a24,#050b12)!important;border-color:#00f5ff!important;box-shadow:0 0 15px rgba(0,245,255,.45),0 0 30px rgba(0,245,255,.15)!important}
-.ex-3{--ex-c:#ff00ff;background:linear-gradient(135deg,#130418,#24062b,#130418)!important;border-color:#ff00ff!important;box-shadow:0 0 15px rgba(255,0,255,.45),0 0 30px rgba(255,0,255,.15)!important}
-.ex-2 .ex-badge{background:#00f5ff;color:#000;box-shadow:0 0 12px rgba(0,245,255,.65)}
-.ex-3 .ex-badge{background:#ff00ff;color:#000;box-shadow:0 0 12px rgba(255,0,255,.65)}
-.ex-2 .ex-av{border-color:#00f5ff!important;color:#00f5ff!important;box-shadow:0 0 18px rgba(0,245,255,.55)!important;background:#07121a!important}
-.ex-3 .ex-av{border-color:#ff00ff!important;color:#ff5cf5!important;box-shadow:0 0 18px rgba(255,0,255,.55)!important;background:#160620!important}
-.ex-2 .ex-pts{color:#00f5ff!important;text-shadow:0 0 10px rgba(0,245,255,.55)}
-.ex-3 .ex-pts{color:#ff5cf5!important;text-shadow:0 0 10px rgba(255,0,255,.55)}
-.ex-ex{box-shadow:0 0 12px rgba(255,215,0,.8),0 0 24px rgba(0,245,255,.35),0 1px 2px rgba(0,0,0,.3)!important}
-.ex-1 .ex-av{box-shadow:0 0 22px rgba(255,215,0,.6),0 0 38px rgba(0,245,255,.25)!important}
-.hall-champs-title{text-shadow:0 0 20px rgba(255,215,0,.8),0 0 40px rgba(0,245,255,.3)!important}
-.hall-bim-head{border-bottom:1px solid rgba(0,245,255,.22)!important}
-.hall-bim-title{color:#fff!important}
-.ex-mini{background:rgba(0,245,255,.05)!important;border-color:rgba(0,245,255,.18)!important;transition:all .3s ease}
-.ex-mini:hover{background:rgba(0,245,255,.1)!important;border-color:#00f5ff!important;transform:translateY(-2px);box-shadow:0 0 16px rgba(0,245,255,.28)}
-.ex-mini-pos{background:rgba(0,245,255,.1)!important;color:#00f5ff!important}
-.ex-mini-av{background:linear-gradient(135deg,#0d2733,#2a0b33)!important;color:#00f5ff!important}
-.ex-mini-pts{color:#7fff00!important;text-shadow:0 0 10px rgba(127,255,0,.5)}
-
-/* ---------- CARDS GENERICOS (alunos, historico, config, turmas) ---------- */
-.si,.hi,.ssi,.cli,.scan-cfg,.sr{
-  background:rgba(0,245,255,.05)!important;border:1px solid rgba(0,245,255,.2)!important;
-  transition:all .3s ease;
-}
-.si:hover,.hi:hover,.ssi:hover,.cli:hover{
-  border-color:#00f5ff!important;background:rgba(0,245,255,.1)!important;
-  transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.45),0 0 16px rgba(0,245,255,.28);
-}
-.spts{color:#7fff00!important;text-shadow:0 0 10px rgba(127,255,0,.5)}
-.hpts.pos{color:#7fff00!important;text-shadow:0 0 10px rgba(127,255,0,.45)}
-.hpts.neg{color:var(--red)!important;text-shadow:0 0 10px rgba(255,45,111,.45)}
-.sx{border-top:1px solid rgba(0,245,255,.2)}
-.stitle{color:#00f5ff!important;text-shadow:0 0 8px rgba(0,245,255,.35)}
-.st{color:#fff}
-.ssic{filter:drop-shadow(0 0 5px rgba(0,245,255,.5))}
-.tog{background:rgba(0,245,255,.15)}
-.tog.on{background:#00f5ff;box-shadow:0 0 14px rgba(0,245,255,.6)}
-.ss.act{background:rgba(127,255,0,.12)!important;color:#7fff00!important;border:1px solid #7fff00!important;box-shadow:0 0 16px rgba(127,255,0,.25)}
-.ss.off{background:rgba(0,245,255,.05)!important;border:1px solid rgba(0,245,255,.2)!important}
-#reader{border:2px solid rgba(0,245,255,.35)!important;box-shadow:0 0 22px rgba(0,245,255,.2)}
-.av{box-shadow:0 0 14px rgba(0,245,255,.25),0 3px 10px rgba(0,0,0,.45)}
-.es .ei{filter:drop-shadow(0 0 10px rgba(0,245,255,.5))}
-.cldot{box-shadow:0 0 10px currentColor}
-
-/* ---------- MENU HAMBURGUER ---------- */
-.menu-dd{
-  background:rgba(10,10,18,.95)!important;border:1px solid #00f5ff!important;
-  box-shadow:0 8px 32px rgba(0,0,0,.65),0 0 26px rgba(0,245,255,.25)!important;
-}
-.menu-item{transition:all .25s ease}
-.menu-item .mi-ic{transition:filter .25s ease}
-.menu-item[data-v="rk"]   .mi-ic{filter:drop-shadow(0 0 6px rgba(255,215,0,.75))}
-.menu-item[data-v="hs"]   .mi-ic{filter:drop-shadow(0 0 6px rgba(0,245,255,.8))}
-.menu-item[data-v="st"]   .mi-ic{filter:drop-shadow(0 0 6px rgba(255,0,255,.8))}
-.menu-item[data-v="sc"]   .mi-ic{filter:drop-shadow(0 0 6px rgba(127,255,0,.8))}
-.menu-item[data-v="hall"] .mi-ic{filter:drop-shadow(0 0 6px rgba(255,215,0,.75))}
-.menu-item[data-v="cfg"]  .mi-ic{filter:drop-shadow(0 0 6px rgba(160,160,192,.8))}
-.menu-item[data-v="rk"]:hover  {background:rgba(255,215,0,.12)!important;box-shadow:inset 0 0 16px rgba(255,215,0,.16)}
-.menu-item[data-v="hs"]:hover  {background:rgba(0,245,255,.12)!important;box-shadow:inset 0 0 16px rgba(0,245,255,.18)}
-.menu-item[data-v="st"]:hover  {background:rgba(255,0,255,.12)!important;box-shadow:inset 0 0 16px rgba(255,0,255,.18)}
-.menu-item[data-v="sc"]:hover  {background:rgba(127,255,0,.12)!important;box-shadow:inset 0 0 16px rgba(127,255,0,.18)}
-.menu-item[data-v="hall"]:hover{background:rgba(255,215,0,.12)!important;box-shadow:inset 0 0 16px rgba(255,215,0,.16)}
-.menu-item[data-v="cfg"]:hover {background:rgba(160,160,192,.12)!important;box-shadow:inset 0 0 16px rgba(160,160,192,.16)}
-.menu-item.on{background:rgba(0,245,255,.16)!important;color:#00f5ff!important;box-shadow:inset 0 0 14px rgba(0,245,255,.22)!important}
-
-/* ---------- MODAIS ---------- */
-.ov{background:rgba(3,3,8,.82)}
-.ep-modal{
-  background:rgba(10,10,15,.95)!important;border:1px solid #00f5ff!important;
-  box-shadow:0 -8px 44px rgba(0,0,0,.75),0 0 34px rgba(0,245,255,.2)!important;
-}
-#mov-profile .ep-modal{background:rgba(10,10,15,.95)!important}
-.mh{padding-bottom:12px;border-bottom:1px solid rgba(0,245,255,.22)}
-.mt{text-shadow:0 0 10px rgba(0,245,255,.35)}
-.mc{background:rgba(255,0,255,.1)!important;border:1px solid rgba(255,0,255,.3)!important;color:#ff5cf5!important;transition:all .25s ease}
-.mc:hover{background:#ff00ff!important;color:#000!important;box-shadow:0 0 14px rgba(255,0,255,.6)}
-/* Perfil: avatar com pulso ciano + secoes separadas por linhas neon */
-#profile-av-wrap .av{animation:avatarNeonPulse 2.6s ease-in-out infinite}
-#profile-pts-val{color:#7fff00!important;text-shadow:0 0 18px rgba(127,255,0,.55)}
-#profile-hist{border-top:1px solid rgba(0,245,255,.18);padding-top:10px}
-#profile-chart-wrap{border-top:1px solid rgba(255,0,255,.2);padding-top:14px}
-
-/* ---------- BANNER DE RESET ---------- */
-.reset-banner{
-  background:linear-gradient(135deg,rgba(255,215,0,.14),rgba(255,0,255,.1))!important;
-  border:1px solid rgba(255,215,0,.45)!important;box-shadow:0 0 18px rgba(255,215,0,.18),0 0 34px rgba(0,245,255,.1)!important;
-}
-
-/* ---------- SCROLLBARS ---------- */
-#content::-webkit-scrollbar,#rk-right::-webkit-scrollbar{width:8px}
-#content::-webkit-scrollbar-thumb,#rk-right::-webkit-scrollbar-thumb{background:rgba(0,245,255,.3);border-radius:4px}
-#content::-webkit-scrollbar-thumb:hover,#rk-right::-webkit-scrollbar-thumb:hover{background:#00f5ff}
-#content{scrollbar-color:rgba(0,245,255,.35) transparent}
-
-/* ---------- MOBILE ---------- */
-@media(max-width:767px){
-  body::before{background-size:40px 40px}
-  body::after{height:38vh;animation-duration:9s}
-  .logo{letter-spacing:.3px}
-  .btn-p,.btn-g,.btn-gh,.btn-b,.btn-r{border-width:1.5px!important}
-  .aura-card--first{animation:none}
-}
-/* Hover so onde existe ponteiro fino (evita estado preso no toque) */
-@media(hover:none){
-  .si:hover,.hi:hover,.ssi:hover,.cli:hover,.aura-ranking-item:hover,.ex-mini:hover{transform:none}
-}
-@media(prefers-reduced-motion:reduce){
-  body::after,.logo,#sb-badge,#profile-av-wrap .av,.aura-card--first,
-  .podium-aura-card.aura-gold,.ex-card.ex-1,.meta-fill.is-full{animation:none!important}
-  .view.on{animation:none}
-}
-@media print{
-  body::before,body::after{display:none!important}
-}
-
 </style>
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -1116,18 +791,14 @@ body::after{
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="design/ui.css">
+<link rel="stylesheet" href="design/motion.css">
+<script src="design/motion.js"></script>
 </head>
 <body>
-<!-- BACKGROUND ANIMADO: nebulosa (partículas são injetadas via JS antes do #app) -->
-<div class="nebula nebula-1"></div>
-<div class="nebula nebula-2"></div>
-<div class="nebula nebula-3"></div>
-
-
 <div id="app" style="display:none">
 <header id="hdr">
   <div style="display:flex;flex-direction:column;flex-shrink:0">
-    <span class="logo">🏆 EduPoints</span>
+    <span class="logo"><span class="brand-mark" aria-hidden="true">E<span>p</span></span>EduPoints<span class="brand-dot">.</span></span>
     <span class="logo-gaia">Colégio Gaia — 6º Ano</span>
   </div>
   <div style="flex:1"></div>
@@ -1153,12 +824,10 @@ body::after{
   </div>
 </header>
 
+<aside id="workspace-nav" aria-label="Navegação principal"><div class="nav-label">SUA TURMA</div><button type="button" class="nb side-link on" data-v="rk" onclick="go('rk')"><span data-icon="trophy" aria-hidden="true"></span><span>Ranking</span></button><button type="button" class="nb side-link" data-v="st" onclick="go('st')"><span data-icon="users" aria-hidden="true"></span><span>Alunos</span></button><button type="button" class="nb side-link" data-v="sc" onclick="go('sc')"><span data-icon="scan" aria-hidden="true"></span><span>Scanner</span></button><button type="button" class="nb side-link" data-v="hs" onclick="go('hs')"><span data-icon="history" aria-hidden="true"></span><span>Histórico</span></button><button type="button" class="nb side-link" data-v="hall" onclick="go('hall')"><span data-icon="award" aria-hidden="true"></span><span>Hall da Aura</span></button><button type="button" class="nb side-link" data-v="cfg" onclick="go('cfg')"><span data-icon="settings" aria-hidden="true"></span><span>Configurações</span></button><div class="nav-footer"><span class="school-monogram">G</span><div><strong>Colégio Gaia</strong><span>6º Ano · EduPoints</span></div></div></aside>
 <main id="content">
   <!-- RANKING -->
-  <div class="view on" id="view-rk" style="position:relative">
-    <div style="position:fixed;top:var(--head);left:0;right:0;bottom:var(--nav);pointer-events:none;z-index:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
-      <img src="logo.png" alt="" aria-hidden="true" style="width:80%;max-width:420px;height:auto;object-fit:contain;opacity:0.07;user-select:none;-webkit-user-select:none">
-    </div>
+  <div class="view on" id="view-rk">
     <div class="rk-inner" style="position:relative;z-index:1">
       <div id="reset-banner"></div>
       <div id="cf-rk" class="chips"></div>
@@ -1194,7 +863,7 @@ body::after{
   <!-- HISTORY -->
   <div class="view" id="view-hs">
     <div class="sh">
-      <span class="st">Histórico</span>
+      <h1 class="st">Histórico</h1>
       <button id="hist-clear-btn" class="btn btn-gh btn-sm" onclick="clearHist()">Limpar</button>
     </div>
     <div id="hslist"></div>
@@ -1203,7 +872,7 @@ body::after{
   <!-- HALL DA AURA -->
   <div class="view" id="view-hall">
     <div class="sh">
-      <span class="st">⚡ Hall da Aura</span>
+      <h1 class="st">Hall da Aura</h1>
     </div>
     <div id="hall-list"></div>
   </div>
@@ -1471,6 +1140,25 @@ body::after{
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+
+// Shared interface presentation; business operations remain in the existing handlers.
+var EP_ICONS={"trophy":"M8 3h8v6a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v5m-4 3h8m-10 0h12","users":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8m7-7.87a4 4 0 0 1 0 7.75","scan":"M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5m-1-3h18","history":"M3 11a9 9 0 1 1 2.6 7M3 4v7h7m2-4v5l3 2","award":"M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12m-4-1-1 8 5-3 5 3-1-8","settings":"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8m-2-5h4l1 3 3 1 3 1v4l-3 1-1 3-1 3h-4l-1-3-3-1-3-1v-4l3-1 1-3Z","arrow":"M5 12h14m-6-6 6 6-6 6","menu":"M4 6h16M4 12h16M4 18h16","maximize":"M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5","minimize":"M3 8h5V3m13 5h-5V3M8 21v-5H3m13 5v-5h5","lock":"M5 11h14v10H5Zm3 0V7a4 4 0 0 1 8 0v4","unlock":"M5 11h14v10H5Zm3 0V7a4 4 0 0 1 7-2","close":"m6 6 12 12M6 18 18 6","plus":"M12 5v14M5 12h14","download":"M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5","upload":"M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5","trash":"M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7","sound":"m11 4-6 5H2v6h3l6 5V4Zm4 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14","bell":"M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-12 9a3 3 0 0 0 6 0","refresh":"M3 11a9 9 0 0 1 16-5l2 3m0-6v6h-6M21 13A9 9 0 0 1 5 19l-2-3m0 6v-6h6","cloud":"M5 18a4 4 0 0 1-1-8 7 7 0 0 1 13-3 5 5 0 1 1 2 11H5","print":"M6 8V3h12v5M6 17H3V8h18v9h-3M6 14h12v7H6Z","chart":"M4 3v18h17M8 16v-5m5 5V7m5 9V4"};
+function epIcon(name){return '<svg class="ep-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(EP_ICONS[name]||EP_ICONS.award)+'"/></svg>';}
+function initProfessionalUI(){
+  if(window.EPmotion)EPmotion.init();
+  document.querySelectorAll('[data-icon]').forEach(function(e){e.innerHTML=epIcon(e.dataset.icon);});
+  var icons={'menu-btn':'menu','fs-btn':'maximize','lock-btn':'lock','fab':'plus','fab-scan':'scan'};
+  Object.keys(icons).forEach(function(id){var e=document.getElementById(id);if(e){e.innerHTML=epIcon(icons[id]);if(!e.getAttribute('aria-label'))e.setAttribute('aria-label',e.title||'Adicionar aluno');}});
+  document.querySelectorAll('.mc').forEach(function(e){e.innerHTML=epIcon('close');e.setAttribute('aria-label','Fechar');});
+  document.querySelectorAll('#menu-dd .menu-item').forEach(function(e){var names={rk:'trophy',st:'users',sc:'scan',hs:'history',hall:'award',cfg:'settings'};e.querySelector('.mi-ic').innerHTML=epIcon(names[e.dataset.v]);});
+  var actionIcons=['award','bell','refresh','download','upload','cloud','chart','print','refresh','refresh','sound'];
+  document.querySelectorAll('#view-cfg .ssic').forEach(function(e,i){e.innerHTML=epIcon(actionIcons[i]);});
+  document.querySelectorAll('#view-cfg .stitle').forEach(function(e){e.textContent=e.textContent.replace('⚡ ','');});
+  ['st','sc','cfg'].forEach(function(id){var v=document.getElementById('view-'+id),head=document.createElement('div');head.className='page-heading';var text={st:['Alunos','Acompanhe e reconheça cada participação.'],sc:['Scanner','Leia o QR Code para pontuar um aluno.'],cfg:['Configurações','Organize sua turma e os dados do EduPoints.']}[id];head.innerHTML='<h1>'+text[0]+'</h1><p>'+text[1]+'</p>';v.prepend(head);});
+  var menu=document.getElementById('menu-btn');menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-controls','menu-dd');
+  new MutationObserver(function(){menu.setAttribute('aria-expanded',String(document.getElementById('menu-dd').classList.contains('open')));}).observe(document.getElementById('menu-dd'),{attributes:true,attributeFilter:['class']});
+}
+
 // ===== STATE =====
 var S = { classes:[], students:[], history:[], settings:{ scanPts:1, sound:true } };
 var isAdmin   = false; // só vira true após login real (Supabase Auth) e checagem de professor
@@ -1874,7 +1562,7 @@ function onRtTurma(payload) {
 
 // ===== UTILS =====
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function esc(s) { if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { if(s == null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function clsName(id) { if(!id) return ''; var c = S.classes.find(function(x){return x.id===id;}); return c ? c.name : ''; }
 function clsColor(id) { if(!id) return 'var(--green)'; var c = S.classes.find(function(x){return x.id===id;}); return c ? c.color : 'var(--green)'; }
 function initial(name) { return name ? name.charAt(0).toUpperCase() : '?'; }
@@ -1885,7 +1573,7 @@ function mkAv(s, cls, extraStyle) {
     var ws = 'padding:0' + (extraStyle ? ';' + extraStyle : '');
     return '<div class="' + cls + '" style="' + ws + '"><img src="' + esc(s.fotoUrl) + '" alt="' + esc(s.name) + '" loading="lazy" decoding="async"></div>';
   }
-  return '<div class="' + cls + '"' + sty + '>' + (s ? initial(s.name) : '?') + '</div>';
+  return '<div class="' + cls + '"' + sty + '>' + (s ? esc(initial(s.name)) : '?') + '</div>';
 }
 
 function uploadFoto(id) {
@@ -1919,6 +1607,7 @@ function uploadFoto(id) {
 
 // ===== NAV =====
 function go(v) {
+  var previousView=curView;
   if (v !== 'st' && selMode) { selMode = false; selIds = {}; }
   if (!isAdmin && v !== 'rk' && v !== 'hs' && v !== 'hall') return; // visitante acessa ranking, histórico e hall da aura
   if (v !== 'sc' && scanning) stopScan();
@@ -1928,13 +1617,14 @@ function go(v) {
   document.querySelectorAll('.nb').forEach(function(el){el.classList.remove('on');});
   var ve = document.getElementById('view-'+v);
   if (ve) ve.classList.add('on');
-  var nb = document.querySelector('.nb[data-v="'+v+'"]');
-  if (nb) nb.classList.add('on');
+  document.querySelectorAll('.nb[data-v="'+v+'"]').forEach(function(nb){nb.classList.add('on');});
   var fab = document.getElementById('fab');
-  fab.style.display = isAdmin && (v==='st'||v==='rk') ? 'flex' : 'none';
+  fab.style.display = 'none';
   var fabScan = document.getElementById('fab-scan');
-  if (fabScan) fabScan.style.display = isAdmin && v==='rk' ? 'flex' : 'none';
+  if (fabScan) fabScan.style.display = 'none';
   render(v);
+  if(window.EPmotion)EPmotion.enter(v);
+  if(previousView!==v)document.getElementById('content').scrollTop=0;
   if (v !== 'st') renderSelBar();
 }
 
@@ -1949,16 +1639,29 @@ function render(v) {
 }
 
 // ===== MODAL =====
-function openOv(id) { document.getElementById(id).classList.add('on'); }
-function closeOv(id) { document.getElementById(id).classList.remove('on'); }
+var modalReturnFocus = null;
+function openOv(id) {
+  var el=document.getElementById(id); modalReturnFocus=document.activeElement;
+  el.classList.add('on'); el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true');
+  var title=id==='mov-profile'?el.querySelector('#profile-name'):el.querySelector('.mt');if(title){if(!title.id)title.id=id+'-title';el.setAttribute('aria-labelledby',title.id);}
+  var focus=el.querySelector('input,select,textarea,button');if(focus)focus.focus();
+}
+function closeOv(id) { document.getElementById(id).classList.remove('on'); if(modalReturnFocus&&modalReturnFocus.isConnected)modalReturnFocus.focus(); }
 document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('ov')) e.target.classList.remove('on');
+  if (e.target.classList.contains('ov')) closeOv(e.target.id);
   var panel = document.getElementById('sb-panel');
   var badge = document.getElementById('sb-badge');
   if (panel && badge && !badge.contains(e.target)) panel.style.display = 'none';
 });
 document.addEventListener('keydown', function(e) {
-  if (e.key==='Escape') { document.querySelectorAll('.ov.on').forEach(function(el){el.classList.remove('on');}); closeMenu(); }
+  if (e.key==='Escape') { document.querySelectorAll('.ov.on').forEach(function(el){closeOv(el.id);}); closeMenu(); }
+  if(e.key==='Tab'){
+    var modal=document.querySelector('.ov.on');if(!modal)return;
+    var fields=Array.from(modal.querySelectorAll('button,input,select,textarea,[tabindex="0"]')).filter(function(el){return !el.disabled&&el.getClientRects().length;});
+    if(!fields.length)return;var first=fields[0],last=fields[fields.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
 });
 
 // ===== MENU HAMBÚRGUER =====
@@ -1984,7 +1687,7 @@ document.addEventListener('click', function(e) {
 // ===== ADMIN =====
 function updateAdminUI() {
   var btn = document.getElementById('lock-btn');
-  if (btn) btn.textContent = isAdmin ? '🔓' : '🔒';
+  if (btn) btn.innerHTML = epIcon(isAdmin ? 'unlock' : 'lock'); btn.setAttribute('aria-label', isAdmin ? 'Sair do modo professor' : 'Entrar como professor');
   ['st','sc','cfg','hs'].forEach(function(v) {
     document.querySelectorAll('.nb[data-v="'+v+'"]').forEach(function(nb) {
       nb.style.display = isAdmin ? '' : 'none';
@@ -1998,9 +1701,9 @@ function updateAdminUI() {
   if (cloudBk) cloudBk.style.display = isAdmin ? '' : 'none';
   if (isAdmin && navigator.onLine) { backupAutomatico(); }
   var fab = document.getElementById('fab');
-  if (fab) fab.style.display = isAdmin && (curView==='st'||curView==='rk') ? 'flex' : 'none';
+  if (fab) fab.style.display = 'none';
   var fabScan = document.getElementById('fab-scan');
-  if (fabScan) fabScan.style.display = isAdmin && curView==='rk' ? 'flex' : 'none';
+  if (fabScan) fabScan.style.display = 'none';
   if (!isAdmin && curView !== 'rk' && curView !== 'hall') go('rk');
   else render(curView);
 }
@@ -2017,11 +1720,11 @@ document.addEventListener('fullscreenchange', function() {
   var btn = document.getElementById('fs-btn');
   if (!btn) return;
   if (document.fullscreenElement) {
-    btn.textContent = '✕';
+    btn.innerHTML = epIcon('minimize');
     btn.title = 'Sair da tela cheia';
     btn.style.color = 'var(--green)';
   } else {
-    btn.textContent = '⛶';
+    btn.innerHTML = epIcon('maximize');
     btn.title = 'Tela cheia';
     btn.style.color = 'var(--text2)';
   }
@@ -2222,11 +1925,9 @@ function selectCat(pts, label) {
 
 // ===== FILTER CHIPS =====
 function renderChips(elId, current, onClickFn) {
-  var el = document.getElementById(elId);
-  var items = [{id:'all',name:'Todos'}].concat(S.classes);
-  el.innerHTML = items.map(function(c) {
-    return '<div class="chip'+(c.id===current?' on':'')+'" onclick="'+onClickFn+'(\''+c.id+'\')">'+esc(c.name)+'</div>';
-  }).join('');
+  var el=document.getElementById(arguments[0]), current=arguments[1], handler=arguments[2];
+  var items=[{id:'all',name:'Todas as turmas'}].concat(S.classes);el.replaceChildren();
+  items.forEach(function(c){var b=document.createElement('button');b.type='button';b.className='chip'+(c.id===current?' on':'');b.textContent=c.name;b.setAttribute('aria-pressed',String(c.id===current));b.addEventListener('click',function(){window[handler](c.id);});el.appendChild(b);});
 }
 
 function setRkFilter(v) { rkFilter=v; renderRk(); }
@@ -2240,10 +1941,9 @@ function openProfile(id) {
 
   var sorted = S.students.slice().sort(function(a,b){ return b.points - a.points; });
   var rank = sorted.findIndex(function(x){ return x.id === id; }) + 1;
-  var medals = {1:'🏆', 2:'🥈', 3:'🥉'};
-  var rankTxt = (medals[rank] || '🎖️') + ' ' + (rank <= 3 ? rank+'º lugar' : rank+'º lugar');
+  var rankTxt = rank+'º lugar';
   var rankColor = rank===1 ? 'var(--gold)' : rank===2 ? 'var(--silver)' : rank===3 ? 'var(--bronze)' : 'var(--text2)';
-  document.getElementById('profile-rank').textContent = rankTxt;
+  document.getElementById('profile-rank').innerHTML = epIcon(rank===1?'trophy':'award')+' '+rankTxt;
   document.getElementById('profile-rank').style.color = rankColor;
 
   var borderColor = rank===1 ? 'var(--gold)' : rank===2 ? 'var(--silver)' : rank===3 ? 'var(--bronze)' : clsColor(s.classId);
@@ -2306,192 +2006,35 @@ function animateCount(el, target, dur, fmt) {
   requestAnimationFrame(step);
 }
 
-function launchConfetti() {
-  if (confettiLaunched) return;
-  confettiLaunched = true;
-  var colors = ['#FFD700','#FF6B6B','#4A9EFF','#00D4AA','#A855F7','#FF69B4','#00FF88','#FFA500'];
-  var c = document.createElement('div');
-  c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden';
-  document.body.appendChild(c);
-  for (var i = 0; i < 60; i++) {
-    var p = document.createElement('div');
-    var col = colors[i % colors.length];
-    var left = 5 + Math.random() * 90;
-    var delay = Math.random() * 2.2;
-    var dur = 2.5 + Math.random() * 2;
-    var size = 5 + Math.random() * 9;
-    var shape = Math.random() > 0.5 ? '50%' : '2px';
-    p.style.cssText = 'position:absolute;top:-15px;left:'+left+'%;width:'+size+'px;height:'+(size*0.55)+'px;background:'+col+';border-radius:'+shape+';animation:confettiFall '+dur+'s '+delay+'s ease-in both;transform:rotate('+Math.round(Math.random()*360)+'deg)';
-    c.appendChild(p);
-  }
-  setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 5500);
-}
+function launchConfetti() {}
 
 // ===== RANKING =====
 function renderRk() {
-  renderBanner();
-  renderChips('cf-rk', rkFilter, 'setRkFilter');
-  var sorted = S.students
-    .filter(function(s){ return rkFilter==='all'||s.classId===rkFilter; })
-    .slice().sort(function(a,b){ return b.points-a.points; });
-
-  var pEl = document.getElementById('podium');
-  var lEl = document.getElementById('rklist');
-
-  if (sorted.length===0) {
-    pEl.innerHTML='';
-    lEl.innerHTML='<div class="es"><div class="ei">🏆</div><h3>Nenhum aluno ainda</h3><p>Toque em + para adicionar o primeiro aluno</p></div>';
-    return;
-  }
-
-  if (sorted.length >= 1) launchConfetti();
-
-  var crowns = ['','🏆','🥈','🥉'];
-  var delays = {1:'.05s', 2:'.2s', 3:'.35s'};
-
-  // Pontuação mais alta — todos que a alcançam recebem a carta dourada
-  var maxPts = sorted[0].points;
-
-  function padRank(n) {
-    return ('0' + n).slice(-2);
-  }
-
-  function hallTag(s, compact) {
-    var info = getHallTop3Info(s);
-    if (!info.isTop3) return '';
-    var p = info.bestRank;
-    var title = ' title="Campeão do Hall da Aura"';
-    return compact
-      ? '<span class="hall-champion-badge"' + title + '>CAMPE&Atilde;O DO HALL</span><span class="hall-rank-chip">HALL #' + padRank(p) + '</span>'
-      : '<span class="hall-rank-chip">HALL #' + padRank(p) + '</span>';
-  }
-
-  function podiumTone(rank, isLeader) {
-    if (isLeader) return { cls:'aura-card--first' };
-    if (rank === 2) return { cls:'aura-card--second' };
-    return { cls:'aura-card--third' };
-  }
-
-  // ── Pódio Aura Ranker (top 3 cards lado a lado: 2º | 1º | 3º) ──
-  function auraCard(s, rank) {
-    if (!s) return '<div class="aura-podium-slot" aria-hidden="true"></div>';
-    var cn = clsName(s.classId);
-    var isLeader = s.points === maxPts && maxPts > 0;
-    var compRank = sorted.filter(function(x){ return x.points > s.points; }).length + 1; // empatados compartilham o nº
-    var hallInfo = getHallTop3Info(s);
-    var tone = podiumTone(rank, isLeader);
-    var hallCls = hallInfo.isTop3 ? ' ' + hallInfo.cls : '';
-    var championBadge = hallInfo.isTop3 ? '<span class="hall-champion-badge" title="Campeão do Hall da Aura">CAMPE&Atilde;O DO HALL</span>' : '';
-    var aniCls = '';
-    var aniStyle = '';
-    var ach = hallTag(s, false);
-    return '<div class="aura-card '+tone.cls+' aura-holo'+hallCls+aniCls+'" style="'+aniStyle+'" role="button" aria-label="Abrir perfil de '+esc(s.name)+'" onclick="openProfile(\''+s.id+'\')">'
-      +(isLeader ? goldParticles() : '')
-      +'<div class="aura-card__top'+(championBadge?'':' aura-card__top--rank-only')+'">'
-        +championBadge
-        +'<div class="aura-rank-badge">#'+padRank(compRank)+'</div>'
-      +'</div>'
-      +'<div class="aura-photo-frame">'+mkAv(s,'podium-av')+'</div>'
-      +'<div class="aura-card__body">'
-        +'<div class="aura-name" data-sid="'+s.id+'">'+esc(s.name)+'</div>'
-        +(cn?'<div class="aura-cls">'+esc(cn)+'</div>':'')
-      +'</div>'
-      +'<div class="aura-achievements">'+ach+'</div>'
-      +'<div class="aura-power">'
-        +'<div class="aura-power__label">AURA POWER</div>'
-        +'<div class="aura-power__value" data-pts-podium="'+s.points+'">'+s.points+'</div>'
-      +'</div>'
-      +'<div class="aura-card__foot">EduPoints</div>'
-      +'</div>';
-  }
-
-  // ── Novo ranking: carrossel 3D + pódio + lista ──
-  var top = sorted.slice(0,3);
-  var COLS = ['','c2','c3','c4'];
-  function rkRank(s){ return sorted.filter(function(x){ return x.points > s.points; }).length + 1; }
-  function pctLeader(s){ return maxPts > 0 ? Math.round(Math.max(0,s.points) / maxPts * 100) : 0; }
-  var cfList = sorted.slice(0, 7);
-  var cards = cfList.map(function(s, i){
-    var r = rkRank(s), cn = clsName(s.classId), lead = r === 1 && maxPts > 0;
-    return '<article class="ep-card aluno '+COLS[i%4]+'" role="button" tabindex="0" data-i="'+i+'" aria-label="Abrir perfil de '+esc(s.name)+'">'
-      +'<div class="ep-art">'+(lead?'<span class="crown" aria-hidden="true">👑</span>':'')+'<span class="ep-badge">#'+r+'</span>'+mkAv(s,'ep-avatar')+'</div>'
-      +'<div class="ep-body"><span class="ep-lvl">'+(cn?esc(cn):'Sem turma')+'</span><h3 class="ep-title">'+esc(s.name)+'</h3>'
-      +'<div class="ui-bar ep-bar" aria-hidden="true"><i style="width:'+Math.max(s.points>0?6:0,pctLeader(s))+'%"></i></div>'
-      +'<div class="ep-stats"><div><b>'+s.points+'</b><span>Aura</span></div><div><b>'+r+'º</b><span>Posição</span></div><div><b>'+pctLeader(s)+'%</b><span>do líder</span></div></div></div></article>';
-  }).join('');
-  var order = [1,0,2].filter(function(i){ return top[i]; });
-  var pod = order.map(function(i){ var s = top[i];
-    return '<div class="ep-pd p'+(i+1)+'" role="button" tabindex="0" data-id="'+s.id+'"><div class="nm">'+esc(s.name)+'</div><div class="xp" data-v="'+s.points+'">0</div><div class="bar">'+(i+1)+'º</div></div>'; }).join('');
-  pEl.innerHTML = '<div class="ep-rk"><div class="ep-ring a ep-spin"></div><div class="ep-ring b ep-spin"></div>'
-    +'<h1 class="ep-h1">Ranking</h1><p class="ep-lead">Quem mais brilhou na turma</p>'
-    +'<section class="ep-cf" id="ep-cf" aria-label="Destaques"><div class="ep-cf-track">'+cards+'</div></section>'
-    +'<div class="ep-cf-nav"><button class="ui-icon-btn" id="ep-prev" aria-label="Anterior">‹</button><button class="ui-icon-btn" id="ep-next" aria-label="Próximo">›</button></div>'
-    +'<div class="ep-podium" aria-label="Pódio">'+pod+'</div></div>';
-
-  var listHtml = sorted.slice(3).map(function(s, i){
-    var r = rkRank(s), cn = clsName(s.classId);
-    return '<div class="ep-row reveal" role="button" tabindex="0" data-id="'+s.id+'" style="transition-delay:'+(i*60)+'ms"><span class="pos">'+r+'</span><span class="ep-av">'+(s.fotoUrl?'<img src="'+esc(s.fotoUrl)+'" alt="" loading="lazy">':esc(initial(s.name)))+'</span>'
-      +'<div><div class="n">'+esc(s.name)+'</div><div class="t">'+(cn?esc(cn):'Sem turma')+'</div></div><div class="v">'+s.points+'<small>Aura</small></div></div>';
-  });
-  lEl.innerHTML = listHtml.length ? '<div class="ep-sep"><span class="ui-eyebrow">Demais posições</span></div><div class="ep-list">'+listHtml.join('')+'</div>' : '';
-  setTimeout(function(){ lEl.querySelectorAll('.reveal').forEach(function(e){ e.classList.add('in'); }); }, 60);
-
-  // contagem animada do pódio
-  pEl.querySelectorAll('.ep-pd .xp').forEach(function(el){ animateCount(el, parseInt(el.getAttribute('data-v'))||0, 1200); });
-  // abrir perfil
-  pEl.querySelectorAll('.ep-pd').forEach(function(el){ el.onclick = function(){ openProfile(el.getAttribute('data-id')); }; });
-  lEl.querySelectorAll('.ep-row').forEach(function(el){ el.onclick = function(){ openProfile(el.getAttribute('data-id')); }; });
-  // carrossel 3D
-  var cfN = cfList.length, cfEls = pEl.querySelectorAll('.ep-cf .ep-card');
-  if (typeof window.epCfCur !== 'number' || window.epCfCur >= cfN) window.epCfCur = 0;
-  function cfPlace(){
-    var w = window.innerWidth < 560 ? 150 : 230;
-    Array.prototype.forEach.call(cfEls, function(c, i){
-      var d = i - window.epCfCur, ad = Math.abs(d);
-      c.classList.toggle('active', d === 0);
-      c.style.transform = 'translateX('+(d*w)+'px) translateZ('+(-ad*140)+'px) rotateY('+(-(d>0?1:d<0?-1:0)*Math.min(ad,2)*26)+'deg) scale('+(d===0?1.04:.92)+')';
-      c.style.opacity = ad > 2 ? 0 : 1 - ad*.22; c.style.zIndex = 10 - ad; c.style.pointerEvents = ad > 2 ? 'none' : 'auto';
-    });
-  }
-  function cfGo(i){ window.epCfCur = (i + cfN) % cfN; cfPlace(); }
-  function cfAuto(){
-    clearInterval(window.epCfTimer);
-    if (!window.matchMedia('(prefers-reduced-motion:reduce)').matches && cfN > 1)
-      window.epCfTimer = setInterval(function(){
-        if (!document.getElementById('ep-cf')) { clearInterval(window.epCfTimer); return; }
-        cfGo(window.epCfCur + 1);
-      }, 3500);
-  }
-  Array.prototype.forEach.call(cfEls, function(c, i){
-    c.onclick = function(){ if (i === window.epCfCur) openProfile(cfList[i].id); else { cfGo(i); cfAuto(); } };
-    c.onkeydown = function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.onclick(); } };
-  });
-  document.getElementById('ep-next').onclick = function(){ cfGo(window.epCfCur + 1); cfAuto(); };
-  document.getElementById('ep-prev').onclick = function(){ cfGo(window.epCfCur - 1); cfAuto(); };
-  var cfBox = document.getElementById('ep-cf'), sx = null;
-  cfBox.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, {passive:true});
-  cfBox.addEventListener('touchend', function(e){ if (sx === null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40) { cfGo(window.epCfCur + (dx < 0 ? 1 : -1)); cfAuto(); } sx = null; });
-  cfPlace(); cfAuto();
-
-  // Remove classes de animação de entrada via animationend (once:true)
-  if (!rkAnimDone) {
-    var toClean = Array.prototype.slice.call(pEl.querySelectorAll('.animate__animated'))
-      .concat(Array.prototype.slice.call(lEl.querySelectorAll('.animate__animated')));
-    var pending = toClean.length;
-    if (pending === 0) {
-      rkAnimDone = true;
-    } else {
-      toClean.forEach(function(el) {
-        el.addEventListener('animationend', function() {
-          el.classList.remove('animate__animated', 'animate__bounceIn', 'animate__fadeInRight', 'animate__fadeInUp');
-          pending--;
-          if (pending <= 0) rkAnimDone = true;
-        }, { once: true });
-      });
-    }
-  }
-
-  attachHolo();
+  clearInterval(window.epCfTimer);
+  renderBanner(); renderChips('cf-rk', rkFilter, 'setRkFilter');
+  var sorted = S.students.filter(function(s){return rkFilter==='all'||s.classId===rkFilter;}).slice().sort(function(a,b){return b.points-a.points;});
+  var pEl=document.getElementById('podium'), lEl=document.getElementById('rklist');
+  var heading='<div class="ranking-heading"><div><h1>Ranking da turma<span>.</span></h1><p>Participação que faz a diferença.</p></div><button type="button" aria-label="Abrir Hall da Aura" class="btn btn-gh hall-shortcut">'+epIcon('award')+'Hall da Aura'+epIcon('arrow')+'</button></div>';
+  pEl.innerHTML=heading;
+  pEl.querySelector('.hall-shortcut').addEventListener('click',function(){go('hall');});
+  if(isAdmin){var tools=document.createElement('div');tools.className='ranking-actions';
+    var add=document.createElement('button');add.type='button';add.className='btn btn-p';add.innerHTML=epIcon('plus')+'Adicionar aluno';add.addEventListener('click',openAddStudent);
+    var scan=document.createElement('button');scan.type='button';scan.className='btn btn-gh';scan.innerHTML=epIcon('scan')+'Scanner';scan.addEventListener('click',function(){go('sc');});
+    tools.append(add,scan);pEl.appendChild(tools);}
+  var rank=function(st){return sorted.filter(function(x){return x.points>st.points;}).length+1;};
+  if(!sorted.length){lEl.innerHTML='<div class="es">'+epIcon('users')+'<h2>O ranking começa aqui</h2><p>'+(isAdmin?'Adicione alunos para acompanhar a participação da turma.':'Os alunos aparecerão aqui quando forem cadastrados.')+'</p></div>';renderMeta();return;}
+  var leaders=document.createElement('section');leaders.className='leader-grid';leaders.setAttribute('aria-label','Destaques da turma');
+  sorted.slice(0,3).forEach(function(st,i){
+    var r=rank(st), b=document.createElement('button');b.type='button';b.className='leader-card'+(r===1?' leader-first':'');
+    b.setAttribute('aria-label','Abrir perfil de '+st.name+', posição '+r+', '+st.points+' pontos');
+    b.innerHTML='<div class="leader-top"><span class="leader-position">'+epIcon(r===1?'trophy':'award')+r+'º lugar</span><span class="leader-index">'+String(i+1).padStart(2,'0')+'</span></div><div class="leader-person">'+mkAv(st,'leader-avatar')+'<div><h2>'+esc(st.name)+'</h2><p>'+esc(clsName(st.classId)||'Sem turma')+'</p></div></div><div class="leader-bottom"><div><strong>'+st.points.toLocaleString('pt-BR')+'</strong><span>pontos</span></div><span class="profile-link">Ver perfil '+epIcon('arrow')+'</span></div>';
+    b.addEventListener('click',function(){openProfile(st.id);});leaders.appendChild(b);
+  });pEl.appendChild(leaders);
+  lEl.innerHTML='<div class="classification-heading"><h2>Classificação</h2><span>'+sorted.length+' aluno'+(sorted.length===1?'':'s')+'</span></div><div class="ranking-table"><div class="ranking-columns" aria-hidden="true"><span>Posição</span><span>Aluno</span><span>Pontos</span><span></span></div></div>';
+  var table=lEl.querySelector('.ranking-table');
+  sorted.forEach(function(st){var b=document.createElement('button'),r=rank(st);b.type='button';b.className='ranking-row';b.setAttribute('aria-label','Abrir perfil de '+st.name+', posição '+r+', '+st.points+' pontos');
+    b.innerHTML='<span class="table-position'+(r===1?' first':'')+'">'+String(r).padStart(2,'0')+'</span><span class="table-student">'+mkAv(st,'table-avatar')+'<span><strong>'+esc(st.name)+'</strong><small>'+esc(clsName(st.classId)||'Sem turma')+'</small></span></span><span class="table-points">'+st.points.toLocaleString('pt-BR')+'</span>'+epIcon('arrow');
+    b.addEventListener('click',function(){openProfile(st.id);});table.appendChild(b);});
   renderMeta();
 }
 
@@ -2541,11 +2084,11 @@ function renderStudents() {
   var filtered = visibleStudents();
   var el = document.getElementById('stlist');
   var keepObs = document.getElementById('sel-obs') ? document.getElementById('sel-obs').value : '';
-  var tools = '<div class="st-tools"><button type="button" class="btn btn-gh btn-sm' + (selMode ? ' on' : '') + '" onclick="toggleSelMode()" aria-pressed="' + selMode + '">☑ ' + (selMode ? 'Sair da seleção' : 'Pontuar vários') + '</button>'
+  var tools = '<div class="st-tools"><button type="button" class="btn btn-p" onclick="openAddStudent()">'+epIcon('plus')+'Adicionar aluno</button><button type="button" class="btn btn-gh btn-sm' + (selMode ? ' on' : '') + '" onclick="toggleSelMode()" aria-pressed="' + selMode + '">' + (selMode ? 'Sair da seleção' : 'Pontuar vários') + '</button>'
     + (selMode ? '<button type="button" class="btn btn-gh btn-sm" onclick="selAllVisible()">Selecionar todos</button>' : '')
     + '<span class="st-count">' + filtered.length + ' aluno' + (filtered.length === 1 ? '' : 's') + '</span></div>';
   if (filtered.length===0) {
-    el.innerHTML = tools + '<div class="es"><div class="ei">👥</div><h3>Nenhum aluno encontrado</h3><p>Toque em + para adicionar</p></div>';
+    el.innerHTML = tools + '<div class="es"><div class="ei">'+epIcon('users')+'</div><h3>Nenhum aluno encontrado</h3><p>Use Adicionar aluno para cadastrar um novo participante.</p></div>';
     renderSelBar(); fixLabels();
     return;
   }
@@ -2629,7 +2172,7 @@ function renderCfg() {
         +'<div class="cldot" style="background:'+c.color+'"></div>'
         +'<div class="clname">'+esc(c.name)+'</div>'
         +'<div class="clcnt">'+cnt+' aluno'+(cnt!==1?'s':'')+'</div>'
-        +'<button class="btn btn-gh btn-sm" style="padding:6px 10px" onclick="delCls(\''+c.id+'\')">🗑️</button>'
+        +'<button class="btn btn-gh btn-sm" aria-label="Excluir turma '+esc(c.name)+'" style="padding:6px 10px" onclick="delCls(\''+c.id+'\')">'+epIcon('trash')+'</button>'
         +'</div>';
     }).join('');
   }
@@ -2682,6 +2225,7 @@ function toggleSound() {
   save();
   var tog = document.getElementById('stog');
   tog.classList.toggle('on', S.settings.sound);
+  tog.setAttribute('aria-checked',String(S.settings.sound));
 }
 
 function resetAllPts() {
@@ -2842,7 +2386,7 @@ function toggleResetBanner() {
 
 function updateBannerToggleUI() {
   var tog = document.getElementById('banner-tog');
-  if (tog) tog.classList.toggle('on', !!bannerCfg.ativo);
+  if (tog) {tog.classList.toggle('on', !!bannerCfg.ativo);tog.setAttribute('aria-checked',String(!!bannerCfg.ativo));}
 }
 
 // Atualiza o estado visual do botão de zerar (habilitado só se houver bimestre salvo)
@@ -2928,38 +2472,10 @@ function hallClick(alunoId) {
 }
 
 // 6 partículas douradas flutuantes (carta dourada estilo Mew EX)
-function goldParticles() {
-  var p = [[15,20],[80,25],[25,72],[72,76],[50,14],[45,88]];
-  var h = '';
-  for (var i = 0; i < p.length; i++) {
-    h += '<span class="gold-spark" style="left:' + p[i][0] + '%;top:' + p[i][1] + '%;animation-delay:' + (i*0.35) + 's"></span>';
-  }
-  return h;
-}
+function goldParticles() { return ""; }
 
 // Efeito holográfico: tilt 3D + brilho que segue o mouse nas cartas douradas
-function attachHolo() {
-  var cards = document.querySelectorAll('.ex-card.ex-1, .podium-aura-card.aura-gold, .aura-card--first, .aura-card.is-hall-top3');
-  cards.forEach(function(card) {
-    if (card._holo) return;
-    card._holo = true;
-    card.addEventListener('mousemove', function(e) {
-      var r = card.getBoundingClientRect();
-      var px = (e.clientX - r.left) / r.width;   // 0..1
-      var py = (e.clientY - r.top)  / r.height;  // 0..1
-      var rx = (0.5 - py) * 20;  // -10..10deg
-      var ry = (px - 0.5) * 20;  // -10..10deg
-      card.style.transform = 'perspective(700px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)';
-      card.style.setProperty('--mx', (px*100).toFixed(1) + '%');
-      card.style.setProperty('--my', (py*100).toFixed(1) + '%');
-      card.classList.add('holo-active');
-    });
-    card.addEventListener('mouseleave', function() {
-      card.style.transform = '';
-      card.classList.remove('holo-active');
-    });
-  });
-}
+function attachHolo() {}
 
 // tier: 1=ouro, 2=prata, 3=bronze (cor da carta) · rank: ranking de competição (#)
 function exCard(r, tier, rank) {
@@ -3557,6 +3073,7 @@ function renderProfileChart(id) {
 
 // Acessibilidade: dá nome a campos sem <label> (leitor de tela)
 function fixLabels() {
+  polishControls();
   var names = { 'ssearch':'Buscar aluno', 'st-name':'Nome do aluno', 'st-cls':'Turma do aluno', 'cls-name':'Nome da turma', 'cust-val':'Valor personalizado', 'modal-obs':'Observação', 'admin-email':'E-mail do professor', 'admin-pwd':'Senha', 'bim-name':'Nome do bimestre', 'scanpts':'Pontos por leitura do QR' };
   document.querySelectorAll('input,select,textarea').forEach(function(e) {
     if (e.type === 'hidden' || e.getAttribute('aria-label')) return;
@@ -3566,6 +3083,19 @@ function fixLabels() {
     if (!n && e.id) n = e.id.replace(/-/g, ' ');
     if (n) e.setAttribute('aria-label', n);
   });
+}
+
+function polishControls() {
+  var marks={'🏆':'trophy','⚡':'award','📷':'scan','📱':'scan','👥':'users','📋':'history','⚙️':'settings','🗑️':'trash','✏️':'settings','🖨️':'print','💾':'download','📂':'upload','☁️':'cloud','📊':'chart','🔒':'lock','🔄':'refresh','🔊':'sound','📚':'award','🙋':'users','✅':'award','⭐':'award','🤝':'users','📭':'history','🎒':'award','⚠️':'bell','🚨':'bell','🚫':'bell','🔧':'settings'};
+  document.querySelectorAll('button,.mt,.hall-champs-title,.ex-pts,.ex-mini-pts,.ei,.cat-dui>span:first-child').forEach(function(el){
+    var text=Array.from(el.childNodes).find(function(n){return n.nodeType===3&&n.textContent.trim();});if(!text)return;
+    var raw=text.textContent.trim(),key=Object.keys(marks).find(function(k){return raw.indexOf(k)===0;});if(!key)return;
+    var label=raw.slice(key.length).trim();text.textContent=label?' '+label:'';
+    var holder=document.createElement('span');holder.className='control-icon';holder.innerHTML=epIcon(marks[key]);text.before(holder);
+    if(!label&&!el.getAttribute('aria-label'))el.setAttribute('aria-label',marks[key]==='trash'?'Excluir turma':'Abrir opções');
+  });
+  document.querySelectorAll('.ssi[onclick]').forEach(function(el){el.setAttribute('role','button');el.tabIndex=0;el.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}};});
+  document.querySelectorAll('.tog').forEach(function(el){el.setAttribute('role','switch');el.tabIndex=0;el.setAttribute('aria-checked',String(el.classList.contains('on')));var label=el.parentElement.querySelector('.ssil');if(label)el.setAttribute('aria-label',label.textContent);el.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}};});
 }
 
 function initApp() {
@@ -3647,7 +3177,7 @@ function initBackgroundFX() {
 }
 
 (function() {
-  initBackgroundFX();
+  initProfessionalUI();
   document.getElementById('app').style.display = 'flex';
   initApp();
 })();

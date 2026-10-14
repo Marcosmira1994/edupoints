@@ -1,0 +1,39 @@
+/* Localized Gameplex-style motion: pointer fill, tilt and panel transitions. */
+:root{--motion-out:cubic-bezier(.23,1,.32,1);--motion-drawer:cubic-bezier(.32,.72,0,1);--motion-press:120ms;--motion-panel:220ms;--motion-fill:500ms}
+.motion-ready :is(.btn,.qp,.qp1,.ui-icon-btn,#menu-btn,#fs-btn,#lock-btn,.mc){position:relative;isolation:isolate;overflow:hidden;transition:background .15s ease,color .15s ease,transform var(--motion-press) var(--motion-out)}
+.motion-ready :is(.btn,.qp,.qp1,.ui-icon-btn,#menu-btn,#fs-btn,#lock-btn,.mc)::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;background:var(--ui-accent);clip-path:circle(0% at var(--pointer-x,50%) var(--pointer-y,50%));transition:clip-path var(--motion-fill) ease}
+.motion-ready :is(.qpa,.qp1,.btn-success)::before{background:#294332}
+.motion-ready :is(.qpr,.btn-r,.btn-error)::before{background:#4a272d}
+.motion-ready .btn-p::before,.motion-ready .btn-g::before{background:#ffac87}
+.motion-ready :is(.btn,.qp,.qp1,.chip,.mc):active:not(:disabled){transform:scale(.97)}
+.motion-ready .leader-card{transition:transform 200ms var(--motion-out),border-color 160ms ease;transform-origin:center;backface-visibility:hidden}
+.motion-ready .leader-card .profile-link>.ep-icon,.motion-ready .ranking-row>.ep-icon{transition:transform 180ms var(--motion-out)}
+.motion-ready .ranking-row{transition:background 150ms ease}
+.motion-ready .leader-avatar{transition:transform 220ms var(--motion-out)}
+.motion-ready .side-link{transition:background 150ms ease,color 150ms ease}
+.motion-ready .side-link>.ep-icon,.motion-ready .side-link>[data-icon]{transition:transform 180ms var(--motion-out)}
+/* Keep the menu mounted so close can reverse an interrupted open. */
+.motion-ready .menu-dd{display:flex;visibility:hidden;opacity:0;pointer-events:none;transform:translateY(-8px) scale(.97);transform-origin:top right;transition:opacity 160ms var(--motion-out),transform 180ms var(--motion-out),visibility 0s linear 180ms}
+.motion-ready .menu-dd.open{animation:none;visibility:visible;opacity:1;pointer-events:auto;transform:translateY(0) scale(1);transition-delay:0s}
+.motion-ready .ov{transition:opacity 180ms var(--motion-out),visibility 0s linear var(--motion-panel)}
+.motion-ready .ov.on{transition-delay:0s}
+.motion-ready .ov>.ep-modal{transform:translateY(20px) scale(.98);transition:transform var(--motion-panel) var(--motion-drawer)}
+.motion-ready .ov.on>.ep-modal{transform:translateY(0) scale(1)}
+.motion-ready #mov-profile .ep-modal{transform:translateY(20px) scale(.98)!important}
+.motion-ready #mov-profile.on .ep-modal{transform:translateY(0) scale(1)!important}
+.motion-ready .tog{transition:background 150ms ease}.motion-ready .tog::after{left:3px!important;transform:translateX(0);transition:transform 180ms var(--motion-out)}.motion-ready .tog.on::after{transform:translateX(18px)}
+@media(hover:hover) and (pointer:fine){
+ .motion-ready :is(.btn,.qp,.qp1,.ui-icon-btn,#menu-btn,#fs-btn,#lock-btn,.mc):hover:not(:disabled)::before{clip-path:circle(150% at var(--pointer-x,50%) var(--pointer-y,50%))}
+ .motion-ready :is(.btn-gh,.btn-b,.ui-icon-btn,#menu-btn,#fs-btn,#lock-btn,.mc):hover:not(:disabled){color:var(--ui-on-accent)!important;border-color:var(--ui-accent)!important;background:transparent}
+ .motion-ready .leader-card:hover .profile-link>.ep-icon,.motion-ready .ranking-row:hover>.ep-icon{transform:translateX(3px)}
+ .motion-ready .leader-card:hover .leader-avatar{transform:translateY(-2px)}
+ .motion-ready .side-link:hover>.ep-icon,.motion-ready .side-link:hover>[data-icon]{transform:translateX(2px)}
+}
+/* Keyboard and reduced-motion state changes remain immediate and legible. */
+.motion-ready body.motion-keyboard :is(.menu-dd,.ov,.ep-modal){transition:none!important;animation:none!important}
+@media(prefers-reduced-motion:reduce){
+ .motion-ready :is(.btn,.qp,.qp1,.ui-icon-btn,.mc,.chip,.leader-card,.leader-avatar,.ranking-row,.profile-link>.ep-icon,.ranking-row>.ep-icon,.side-link,.side-link>[data-icon],.menu-dd,.ov,.ep-modal,.tog,.tog::after,#menu-btn,#fs-btn,#lock-btn){transition:none!important;animation:none!important}
+ .motion-ready :is(.btn,.qp,.qp1,.ui-icon-btn,#menu-btn,#fs-btn,#lock-btn,.mc)::before{display:none}
+ .motion-ready :is(.btn,.qp,.qp1,.chip,.mc,.leader-card,.leader-avatar,.profile-link>.ep-icon,.ranking-row>.ep-icon,.side-link>[data-icon]){transform:none!important}
+ .motion-ready .menu-dd{transform:none}.motion-ready .ov>.ep-modal,.motion-ready #mov-profile .ep-modal{transform:none!important}
+}
