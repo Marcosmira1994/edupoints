@@ -65,6 +65,34 @@
     return {ranking:list,periodCount:periods.size,duplicateNames:dupNames,skipped:skipped,
       partial:dupNames.length>0||skipped.unnamed>0||skipped.noStudent>0||skipped.badPoints>0};
   }
+  /* Overall ranking: sum of saved points per student across all saved bimesters.
+     A bimester name saved twice counts once (highest score), like champions(). */
+  function overall(records){
+    var people=new Map();
+    (records||[]).forEach(function(r){
+      if(!r||r.alunoId==null||r.alunoId==='')return;
+      var name=String(r.bimestre==null?'':r.bimestre).trim(),pts=Number(r.pontos);
+      if(!name||!Number.isFinite(pts))return;
+      var id=String(r.alunoId),x=people.get(id),at=new Date(r.criadoEm).getTime();at=Number.isFinite(at)?at:0;
+      if(!x){x={alunoId:id,name:'',fotoUrl:null,seenAt:-1,periods:new Map()};people.set(id,x);}
+      if(at>=x.seenAt){x.seenAt=at;if(r.alunoNome)x.name=r.alunoNome;if(r.fotoUrl)x.fotoUrl=r.fotoUrl;}
+      else{if(!x.name&&r.alunoNome)x.name=r.alunoNome;if(!x.fotoUrl&&r.fotoUrl)x.fotoUrl=r.fotoUrl;}
+      if(!x.periods.has(name)||pts>x.periods.get(name))x.periods.set(name,pts);
+    });
+    var list=[];
+    people.forEach(function(x){
+      var total=0;x.periods.forEach(function(v){total+=v;});
+      list.push({alunoId:x.alunoId,name:x.name,fotoUrl:x.fotoUrl,points:total,count:x.periods.size});
+    });
+    list.sort(function(a,b){return b.points-a.points||String(a.name).localeCompare(String(b.name),'pt-BR');});
+    var tiers=[];
+    list.forEach(function(x,i){
+      if(!tiers.includes(x.points))tiers.push(x.points);
+      x.tier=tiers.indexOf(x.points)+1;
+      x.rank=i&&list[i-1].points===x.points?list[i-1].rank:i+1;
+    });
+    return list;
+  }
   var memo={src:null,len:-1,value:null};
   function index(){
     var src=root.hallAura||[];
@@ -138,6 +166,40 @@
       return wrap;
     }
 
+    var ov=overall(root.hallAura);
+    if(ov.length){
+      var os=node('section','hall-overall'),oh=node('div','hall-champions-heading'),ot=node('h2','','⚡ Ranking Geral — Todos os Bimestres');ot.id='hall-overall-title';
+      os.setAttribute('aria-labelledby',ot.id);oh.append(ot,node('p','','Soma dos pontos de cada aluno em todos os bimestres salvos no Hall.'));os.append(oh);
+      function ovLabel(x){return x.points.toLocaleString('pt-BR')+' pts · '+x.count+' bimestre'+(x.count===1?'':'s');}
+      function ovOpen(x,e){
+        if(!(root.S.students||[]).some(function(s){return s.id===x.alunoId;}))return e;
+        e.type='button';e.setAttribute('aria-label','Abrir perfil atual de '+(x.name||'Aluno sem nome')+', '+x.rank+'º no ranking geral, '+ovLabel(x));
+        e.addEventListener('click',function(){root.openProfile(x.alunoId);});return e;
+      }
+      function ovHasStudent(x){return (root.S.students||[]).some(function(s){return s.id===x.alunoId;});}
+      var ohon=node('div','hall-honors');ohon.setAttribute('aria-label','Destaques do ranking geral');
+      ov.filter(function(x){return x.tier<=3;}).forEach(function(x){
+        var card=ovOpen(x,node(ovHasStudent(x)?'button':'article','hall-honor hall-tier-'+x.tier)),top=node('div','hall-honor-top'),pos=node('span','hall-placement');
+        pos.append(icon(x.tier===1?'trophy':'award'),document.createTextNode(x.rank+'º lugar'));top.append(pos);
+        card.append(top,avatar({record:{alunoId:x.alunoId,alunoNome:x.name,fotoUrl:x.fotoUrl}},'hall-portrait'),node('h3','hall-student-name',x.name||'Aluno sem nome'));
+        var sc=node('div','hall-honor-score');sc.append(node('strong','',x.points.toLocaleString('pt-BR')),node('span','','pts · '+x.count+' bimestre'+(x.count===1?'':'s')));card.append(sc);
+        ohon.append(card);
+      });os.append(ohon);
+      var rest=ov.filter(function(x){return x.tier>3;});
+      if(rest.length){
+        var ol=node('div','hall-results');
+        rest.forEach(function(x){
+          var row=ovOpen(x,node(ovHasStudent(x)?'button':'article','hall-result')),who=node('span','hall-result-person'),text=node('span','hall-result-name');
+          text.append(node('strong','',x.name||'Aluno sem nome'));
+          who.append(avatar({record:{alunoId:x.alunoId,alunoNome:x.name,fotoUrl:x.fotoUrl}},'hall-list-avatar'),text);
+          row.append(node('span','hall-result-rank',String(x.rank).padStart(2,'0')),who);
+          var v=node('span','hall-result-points');v.append(node('strong','',x.points.toLocaleString('pt-BR')),node('small','','pts · '+x.count+' bimestre'+(x.count===1?'':'s')));row.append(v);
+          row.append(ovHasStudent(x)?icon('arrow'):node('span','hall-result-end','—'));ol.append(row);
+        });os.append(ol);
+      }
+      el.append(os);
+    }
+
     var champs=index().data,expanded=render.expanded||(render.expanded=new Set());
     var cs=node('section','hall-champions'),ch=node('div','hall-champions-heading'),ct=node('h2','','Ranking dos Campeões');ct.id='hall-champions-title';
     cs.setAttribute('aria-labelledby',ct.id);ch.append(ct,node('p','','Uma estrela por bimestre encerrado em 1º lugar, com base nos bimestres salvos no Hall.'));cs.append(ch);
@@ -193,6 +255,6 @@
       var value=node('span','hall-result-points');value.append(node('strong','',item.points.toLocaleString('pt-BR')),node('small','','pontos'));row.append(value);if(current(item))row.append(icon('arrow'));else row.append(node('span','hall-result-end','—'));list.append(row);
     });section.append(list,node('p','hall-history-note','Este é o resultado salvo ao encerrar o bimestre. O perfil, quando disponível, mostra os dados atuais do aluno.'));el.append(section);
   }
-  var api={groups:groups,render:render,champions:champions,titlesFor:titlesFor,titleDetails:titleDetails,mark:mark,stars:stars};
+  var api={overall:overall,groups:groups,render:render,champions:champions,titlesFor:titlesFor,titleDetails:titleDetails,mark:mark,stars:stars};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.EPhall=api;
 })(typeof window!=='undefined'?window:globalThis);
